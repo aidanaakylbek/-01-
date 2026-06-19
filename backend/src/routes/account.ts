@@ -19,6 +19,10 @@ const loginSchema = z.object({
 // POST /api/account/register
 router.post("/register", async (req, res) => {
   try {
+    if (!supabaseClient) {
+      return res.status(503).json({ error: "Supabase not configured. Contact administrator." });
+    }
+
     const body = registerSchema.parse(req.body);
 
     const { data, error } = await supabaseClient.auth.signUp({
@@ -56,6 +60,10 @@ router.post("/register", async (req, res) => {
 // POST /api/account/login
 router.post("/login", async (req, res) => {
   try {
+    if (!supabaseClient) {
+      return res.status(503).json({ error: "Supabase not configured. Contact administrator." });
+    }
+
     const body = loginSchema.parse(req.body);
 
     const { data, error } = await supabaseClient.auth.signInWithPassword({
@@ -89,6 +97,10 @@ router.post("/login", async (req, res) => {
 // GET /api/account/profile
 router.get("/profile", async (req, res) => {
   try {
+    if (!supabaseClient) {
+      return res.status(503).json({ error: "Supabase not configured" });
+    }
+
     const authHeader = req.headers.authorization;
     if (!authHeader?.startsWith("Bearer ")) {
       return res.status(401).json({ error: "Missing or invalid token" });
@@ -116,6 +128,10 @@ router.get("/profile", async (req, res) => {
 // POST /api/account/logout
 router.post("/logout", async (req, res) => {
   try {
+    if (!supabaseClient) {
+      return res.status(503).json({ error: "Supabase not configured" });
+    }
+
     const { error } = await supabaseClient.auth.signOut();
 
     if (error) {

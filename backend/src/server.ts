@@ -9,11 +9,17 @@ import chatRoutes from "./routes/chat.js";
 import accountRoutes from "./routes/account.js";
 import healthRoutes from "./routes/health.js";
 
-// Load environment variables
-dotenv.config();
-
+// Load environment variables from .env file
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+const envPath = join(__dirname, "../.env");
+console.log("Loading .env from:", envPath);
+dotenv.config({ path: envPath });
+
+// Log loaded variables
+console.log("Environment:", process.env.NODE_ENV);
+console.log("Supabase URL:", process.env.SUPABASE_URL ? "✓" : "✗");
+console.log("OpenAI Key:", process.env.OPENAI_API_KEY ? "✓" : "✗");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
