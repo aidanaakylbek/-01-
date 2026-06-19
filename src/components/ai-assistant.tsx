@@ -15,6 +15,8 @@ const INITIAL_MESSAGE: ChatMessage = {
 
 const FRIENDLY_ERROR =
   "I could not answer right now, but do not worry. Please try again in a moment, or ask your teacher if it is urgent.";
+const CONFIG_ERROR =
+  "AI Tutor is connected to the app, but the Google AI key is not added yet. Add GOOGLE_API_KEY to the server .env file and restart the app.";
 
 export function AIAssistant() {
   const [isOpen, setIsOpen] = useState(false);
@@ -46,10 +48,13 @@ export function AIAssistant() {
           messages: nextMessages.filter((message) => message !== INITIAL_MESSAGE).slice(-12),
         }),
       });
-      const data = (await response.json()) as { reply?: string; error?: string };
+      const data = (await response.json()) as { reply?: string; error?: string; code?: string };
 
       if (!response.ok || !data.reply) {
-        throw new Error(data.error ?? "AI tutor request failed");
+        const message =
+          data.code === "missing_google_key" ? CONFIG_ERROR : (data.error ?? FRIENDLY_ERROR);
+        setMessages((prev) => [...prev, { role: "assistant", content: message }]);
+        return;
       }
 
       setMessages((prev) => [
@@ -75,8 +80,8 @@ export function AIAssistant() {
       </button>
 
       <Drawer open={isOpen} onOpenChange={setIsOpen}>
-        <DrawerContent className="h-[80vh] max-h-[80vh]">
-          <DrawerHeader className="border-b border-outline-variant py-4">
+        <DrawerContent className="h-[85vh] max-h-[85vh] overflow-hidden">
+          <DrawerHeader className="shrink-0 border-b border-outline-variant py-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-secondary text-on-secondary rounded-full flex items-center justify-center">
                 <span className="material-symbols-outlined text-lg">smart_toy</span>
@@ -92,14 +97,14 @@ export function AIAssistant() {
             </div>
           </DrawerHeader>
 
-          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 bg-background">
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 space-y-4 bg-background">
             {messages.map((msg, idx) => (
               <div
                 key={`${msg.role}-${idx}`}
                 className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
               >
                 <div
-                  className={`max-w-xs lg:max-w-md rounded-2xl px-4 py-3 font-body-md text-body-md ${
+                  className={`max-w-[min(88vw,760px)] rounded-2xl px-4 py-3 font-body-md text-body-md ${
                     msg.role === "user"
                       ? "bg-secondary text-on-secondary"
                       : "bg-surface-container-high text-on-surface border border-outline-variant"
@@ -125,7 +130,7 @@ export function AIAssistant() {
           </div>
 
           <form
-            className="border-t border-outline-variant bg-surface px-4 py-4 flex gap-2"
+            className="shrink-0 border-t border-outline-variant bg-surface px-4 py-4 flex gap-2"
             onSubmit={handleSendMessage}
           >
             <input

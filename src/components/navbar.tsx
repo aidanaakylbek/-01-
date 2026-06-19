@@ -4,18 +4,19 @@ import { useLanguage, Lang } from "@/hooks/use-language";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useAccountDashboard } from "@/hooks/use-account-dashboard";
 
-type Tab = "home" | "practice" | "progress" | "reports";
+type Tab = "home" | "subjects" | "practice" | "progress" | "reports";
 
 interface NavTab {
   id: Tab;
   labelKey: string;
   icon: string;
-  to?: "/home" | "/plan" | "/progress" | "/reports" | "/login" | "/register";
+  to?: "/home" | "/subjects" | "/plan" | "/progress" | "/reports" | "/login" | "/register";
   disabled?: boolean;
 }
 
 const tabs: NavTab[] = [
   { id: "home", labelKey: "nav_home", icon: "home", to: "/home" },
+  { id: "subjects", labelKey: "nav_subjects", icon: "auto_stories", to: "/subjects" },
   { id: "practice", labelKey: "nav_practice", icon: "exercise", to: "/plan" },
   { id: "progress", labelKey: "nav_progress", icon: "analytics", to: "/progress" },
   { id: "reports", labelKey: "nav_reports", icon: "description", to: "/reports" },
@@ -108,6 +109,7 @@ export function Navbar() {
   // Determine active tab based on pathname
   const activeTab = (): Tab | "" => {
     if (currentPath === "/") return "home";
+    if (currentPath.startsWith("/subjects")) return "subjects";
     if (currentPath.startsWith("/plan")) return "practice";
     if (currentPath.startsWith("/progress")) return "progress";
     if (currentPath.startsWith("/reports")) return "reports";

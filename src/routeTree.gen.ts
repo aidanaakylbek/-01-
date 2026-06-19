@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SubjectsRouteImport } from './routes/subjects'
 import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as ProgressRouteImport } from './routes/progress'
@@ -20,8 +21,15 @@ import { Route as DiagnosticRouteImport } from './routes/diagnostic'
 import { Route as CareersRouteImport } from './routes/careers'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SubjectsSubjectIdRouteImport } from './routes/subjects.$subjectId'
+import { Route as ApiReviewRouteImport } from './routes/api/review'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 
+const SubjectsRoute = SubjectsRouteImport.update({
+  id: '/subjects',
+  path: '/subjects',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ReportsRoute = ReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
@@ -77,6 +85,16 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SubjectsSubjectIdRoute = SubjectsSubjectIdRouteImport.update({
+  id: '/$subjectId',
+  path: '/$subjectId',
+  getParentRoute: () => SubjectsRoute,
+} as any)
+const ApiReviewRoute = ApiReviewRouteImport.update({
+  id: '/api/review',
+  path: '/api/review',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
@@ -95,7 +113,10 @@ export interface FileRoutesByFullPath {
   '/progress': typeof ProgressRoute
   '/register': typeof RegisterRoute
   '/reports': typeof ReportsRoute
+  '/subjects': typeof SubjectsRouteWithChildren
   '/api/chat': typeof ApiChatRoute
+  '/api/review': typeof ApiReviewRoute
+  '/subjects/$subjectId': typeof SubjectsSubjectIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -109,7 +130,10 @@ export interface FileRoutesByTo {
   '/progress': typeof ProgressRoute
   '/register': typeof RegisterRoute
   '/reports': typeof ReportsRoute
+  '/subjects': typeof SubjectsRouteWithChildren
   '/api/chat': typeof ApiChatRoute
+  '/api/review': typeof ApiReviewRoute
+  '/subjects/$subjectId': typeof SubjectsSubjectIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -124,7 +148,10 @@ export interface FileRoutesById {
   '/progress': typeof ProgressRoute
   '/register': typeof RegisterRoute
   '/reports': typeof ReportsRoute
+  '/subjects': typeof SubjectsRouteWithChildren
   '/api/chat': typeof ApiChatRoute
+  '/api/review': typeof ApiReviewRoute
+  '/subjects/$subjectId': typeof SubjectsSubjectIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -140,7 +167,10 @@ export interface FileRouteTypes {
     | '/progress'
     | '/register'
     | '/reports'
+    | '/subjects'
     | '/api/chat'
+    | '/api/review'
+    | '/subjects/$subjectId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -154,7 +184,10 @@ export interface FileRouteTypes {
     | '/progress'
     | '/register'
     | '/reports'
+    | '/subjects'
     | '/api/chat'
+    | '/api/review'
+    | '/subjects/$subjectId'
   id:
     | '__root__'
     | '/'
@@ -168,7 +201,10 @@ export interface FileRouteTypes {
     | '/progress'
     | '/register'
     | '/reports'
+    | '/subjects'
     | '/api/chat'
+    | '/api/review'
+    | '/subjects/$subjectId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -183,11 +219,20 @@ export interface RootRouteChildren {
   ProgressRoute: typeof ProgressRoute
   RegisterRoute: typeof RegisterRoute
   ReportsRoute: typeof ReportsRoute
+  SubjectsRoute: typeof SubjectsRouteWithChildren
   ApiChatRoute: typeof ApiChatRoute
+  ApiReviewRoute: typeof ApiReviewRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/subjects': {
+      id: '/subjects'
+      path: '/subjects'
+      fullPath: '/subjects'
+      preLoaderRoute: typeof SubjectsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reports': {
       id: '/reports'
       path: '/reports'
@@ -265,6 +310,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/subjects/$subjectId': {
+      id: '/subjects/$subjectId'
+      path: '/$subjectId'
+      fullPath: '/subjects/$subjectId'
+      preLoaderRoute: typeof SubjectsSubjectIdRouteImport
+      parentRoute: typeof SubjectsRoute
+    }
+    '/api/review': {
+      id: '/api/review'
+      path: '/api/review'
+      fullPath: '/api/review'
+      preLoaderRoute: typeof ApiReviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/chat': {
       id: '/api/chat'
       path: '/api/chat'
@@ -274,6 +333,18 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface SubjectsRouteChildren {
+  SubjectsSubjectIdRoute: typeof SubjectsSubjectIdRoute
+}
+
+const SubjectsRouteChildren: SubjectsRouteChildren = {
+  SubjectsSubjectIdRoute: SubjectsSubjectIdRoute,
+}
+
+const SubjectsRouteWithChildren = SubjectsRoute._addFileChildren(
+  SubjectsRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -287,7 +358,9 @@ const rootRouteChildren: RootRouteChildren = {
   ProgressRoute: ProgressRoute,
   RegisterRoute: RegisterRoute,
   ReportsRoute: ReportsRoute,
+  SubjectsRoute: SubjectsRouteWithChildren,
   ApiChatRoute: ApiChatRoute,
+  ApiReviewRoute: ApiReviewRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

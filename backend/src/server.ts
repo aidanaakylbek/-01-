@@ -19,7 +19,7 @@ dotenv.config({ path: envPath });
 // Log loaded variables
 console.log("Environment:", process.env.NODE_ENV);
 console.log("Supabase URL:", process.env.SUPABASE_URL ? "✓" : "✗");
-console.log("OpenAI Key:", process.env.OPENAI_API_KEY ? "✓" : "✗");
+console.log("Google AI Key:", process.env.GOOGLE_API_KEY ? "✓" : "✗");
 
 const app = express();
 const PORT = process.env.PORT || 3000;

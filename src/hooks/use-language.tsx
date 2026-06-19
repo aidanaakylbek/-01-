@@ -13,6 +13,7 @@ const translations: Record<Lang, Record<string, string>> = {
     // Common
     logo_title: "AulBridge",
     nav_home: "Home",
+    nav_subjects: "Subjects",
     nav_practice: "Practice",
     nav_progress: "Progress",
     nav_reports: "Reports",
@@ -177,6 +178,7 @@ const translations: Record<Lang, Record<string, string>> = {
     // Common
     logo_title: "AulBridge",
     nav_home: "Басты бет",
+    nav_subjects: "Пәндер",
     nav_practice: "Тәжірибе",
     nav_progress: "Ілгерілеу",
     nav_reports: "Есептер",
@@ -343,6 +345,7 @@ const translations: Record<Lang, Record<string, string>> = {
     // Common
     logo_title: "AulBridge",
     nav_home: "Главная",
+    nav_subjects: "Предметы",
     nav_practice: "Практика",
     nav_progress: "Прогресс",
     nav_reports: "Отчеты",

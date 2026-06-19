@@ -1,5 +1,5 @@
 import express from "express";
-import OpenAI from "openai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { z } from "zod";
 
 const router = express.Router();
@@ -23,30 +23,31 @@ router.post("/", async (req, res) => {
   try {
     const body = chatRequestSchema.parse(req.body);
 
-    if (!process.env.OPENAI_API_KEY) {
+    if (!process.env.GOOGLE_API_KEY) {
       return res.status(500).json({
-        error: "AI tutor is not configured yet. Please add OPENAI_API_KEY to your server environment.",
+        error: "AI tutor is not configured yet. Please add GOOGLE_API_KEY to your server environment.",
       });
     }
 
-    const openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
+    const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
+    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [
-        {
-          role: "system",
-          content: SYSTEM_PROMPT,
-        },
-        ...body.messages,
-      ],
-      temperature: 0.7,
-      max_tokens: 1000,
-    });
+    // Convert messages to Google's format
+    const history = body.messages.slice(0, -1).map((msg) => ({
+      role: msg.role === "user" ? ("user" as const) : ("model" as const),
+      parts: [{ text: msg.content }],
+    }));
 
-    const assistantMessage = response.choices[0].message.content;
+    const chat = model.startChat({ history });
+    const userMessage = body.messages[body.messages.length - 1];
+
+    const response = await chat.sendMessage([
+      {
+        text: `${SYSTEM_PROMPT}\n\nUser: ${userMessage.content}`,
+      },
+    ]);
+
+    const assistantMessage = response.response.text();
 
     if (!assistantMessage) {
       return res.status(500).json({ error: "No response from AI model" });
