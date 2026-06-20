@@ -23,9 +23,12 @@ export const Route = createFileRoute("/")({
 });
 
 const fill1 = { fontVariationSettings: "'FILL' 1" } as const;
+const heroImage =
+  "https://lh3.googleusercontent.com/aida-public/AB6AXuALsLekp1kh9Qv7U3WcCfEXIbERnlzksP2BqJdq3RWWQJhwN8srSuBidfRR9xn-XjHS38yMnWa5HLGyt7pllRucngvYYljHaSW1Pcn9yN-uF1QkKckNBQbQhrdBhUkBJOyjs1wYoevyW42Ie_RjIyZMaSxNAk8_6IWhkFx28cTPMfepkJtPx2k0wkHzhmD_YvW1Jc_wY-8aApvIuQSz1k1S1SE3Ah0WCJIXpMUD2A6HDy_fWYHQKjTs1T0GXjcxjC_dMevk1P9QURk";
 
 function Landing() {
   const { t, language } = useLanguage();
+  const heroCopy = getHeroCopy(language);
 
   return (
     <>
@@ -34,60 +37,65 @@ function Landing() {
       {/* ───── Main Content ───── */}
       <main style={{ isolation: "isolate" }}>
         {/* Hero */}
-        <section className="relative pt-16 pb-24 lg:pt-32 lg:pb-40 overflow-hidden px-margin-mobile md:px-margin-desktop">
-          <div
-            className="max-w-container-max mx-auto grid lg:grid-cols-12 gap-8 items-center relative"
-            style={{ isolation: "isolate" }}
-          >
-            <div className="z-10 relative lg:col-span-5 lg:mt-asymmetric-offset">
-              <h1 className="font-headline-lg-mobile text-headline-lg-mobile md:font-display-xl md:text-display-xl text-primary mb-8 leading-tight">
-                {language === "KZ" ? (
-                  <>
-                    <span className="text-secondary">Bridge</span>: НИШ, БИЛ және РФМШ-ға дайындық
-                  </>
-                ) : language === "RU" ? (
-                  <>
-                    <span className="text-secondary">Bridge</span>: подготовка к НИШ, БИЛ и РФМШ
-                  </>
-                ) : (
-                  <>
-                    <span className="text-secondary">Bridge</span>: prepare for NIS, BIL and NSPM
-                  </>
-                )}
+        <section
+          className="relative min-h-[calc(100svh-8rem)] overflow-hidden border-b border-outline-variant bg-cover bg-center md:min-h-[calc(100svh-5rem)] md:bg-[center_right] px-margin-mobile md:px-margin-desktop"
+          style={{
+            backgroundImage: `linear-gradient(90deg, rgba(255,248,243,0.98) 0%, rgba(255,248,243,0.9) 42%, rgba(255,248,243,0.34) 72%, rgba(255,248,243,0.08) 100%), url(${heroImage})`,
+          }}
+        >
+          <div className="max-w-container-max mx-auto min-h-[calc(100svh-8rem)] md:min-h-[calc(100svh-5rem)] py-8 md:py-16 flex items-center">
+            <div className="w-full max-w-3xl">
+              <div className="inline-flex items-center gap-3 border border-outline-variant bg-surface/85 px-4 py-2.5 mb-5 md:mb-7">
+                <span className="material-symbols-outlined text-secondary">school</span>
+                <span className="font-label-caps text-label-caps uppercase tracking-widest text-primary">
+                  {heroCopy.badge}
+                </span>
+              </div>
+
+              <h1 className="font-display-xl text-[48px] leading-[0.95] md:text-[96px] md:leading-[0.92] tracking-normal text-primary mb-4 md:mb-6">
+                Bridge
               </h1>
-              <p className="font-body-lg text-body-lg text-on-surface-variant mb-12 max-w-xl">
+              <p className="font-headline-lg-mobile text-[28px] leading-[1.15] md:font-headline-lg md:text-headline-lg text-primary max-w-2xl mb-4 md:mb-5">
+                {heroCopy.title}
+              </p>
+              <p className="font-body-lg text-base leading-7 md:text-body-lg text-on-surface-variant max-w-2xl mb-6 md:mb-8">
                 {t("hero_desc")}
               </p>
-              <div className="flex flex-col sm:flex-row gap-6">
+
+              <div className="flex flex-col sm:flex-row gap-3 md:gap-4 mb-6 md:mb-8">
                 <Link
                   to="/register"
-                  className="bg-secondary text-on-secondary font-label-caps text-label-caps uppercase tracking-widest px-8 py-5 hover:bg-secondary-container hover:text-on-secondary-container transition-all btn-squish flex justify-center items-center gap-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
+                  className="bg-secondary text-on-secondary font-label-caps text-label-caps uppercase tracking-widest px-6 py-4 md:px-7 md:py-5 hover:bg-secondary-container hover:text-on-secondary-container transition-all btn-squish flex justify-center items-center gap-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary border border-secondary"
                 >
                   {t("hero_btn_diagnostic")}
                   <span className="material-symbols-outlined text-xl">arrow_forward</span>
                 </Link>
                 <a
-                  className="bg-transparent text-primary font-label-caps text-label-caps uppercase tracking-widest px-8 py-5 hover:bg-surface-container transition-all btn-squish flex justify-center items-center gap-3 border-2 border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary cursor-pointer"
+                  className="bg-surface/85 text-primary font-label-caps text-label-caps uppercase tracking-widest px-6 py-4 md:px-7 md:py-5 hover:bg-surface-container transition-all btn-squish flex justify-center items-center gap-3 border-2 border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary cursor-pointer"
                   href="#how-it-works"
                 >
                   <span className="material-symbols-outlined text-xl">play_circle</span>
                   {t("hero_btn_video")}
                 </a>
               </div>
-            </div>
-            <div className="relative z-0 lg:col-span-7 h-full min-h-[500px] lg:min-h-[700px] lg:-mt-asymmetric-offset pl-0 lg:pl-12">
-              <div className="absolute inset-0 bg-surface-container-high organic-shape-1 translate-x-4 translate-y-4 opacity-50"></div>
-              <div className="relative h-full w-full overflow-hidden border border-outline-variant rounded-tr-[100px] rounded-bl-[100px]">
-                <img
-                  alt="Bridge to the future illustration"
-                  className="w-full h-full object-cover scale-105 hover:scale-100 transition-transform duration-700"
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuALsLekp1kh9Qv7U3WcCfEXIbERnlzksP2BqJdq3RWWQJhwN8srSuBidfRR9xn-XjHS38yMnWa5HLGyt7pllRucngvYYljHaSW1Pcn9yN-uF1QkKckNBQbQhrdBhUkBJOyjs1wYoevyW42Ie_RjIyZMaSxNAk8_6IWhkFx28cTPMfepkJtPx2k0wkHzhmD_YvW1Jc_wY-8aApvIuQSz1k1S1SE3Ah0WCJIXpMUD2A6HDy_fWYHQKjTs1T0GXjcxjC_dMevk1P9QURk"
-                />
-                <div className="absolute inset-0 bg-secondary mix-blend-overlay opacity-10"></div>
+
+              <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:gap-3 max-w-2xl">
+                {heroCopy.tracks.map((track) => (
+                  <div
+                    key={track.title}
+                    className="border border-outline-variant bg-surface/90 px-3 py-2.5 sm:px-4 sm:py-3"
+                  >
+                    <div className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
+                      {track.title}
+                    </div>
+                    <div className="hidden sm:block font-label-sm text-label-sm text-on-surface-variant mt-1">
+                      {track.subtitle}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
-          <div className="absolute top-20 right-20 w-96 h-96 bg-secondary-fixed rounded-full blur-3xl opacity-20 -z-10"></div>
         </section>
 
         {/* Stats */}
@@ -302,4 +310,40 @@ function Landing() {
       <SiteFooter />
     </>
   );
+}
+
+function getHeroCopy(language: string) {
+  if (language === "KZ") {
+    return {
+      badge: "Нақты мақсат. Жеке дайындық.",
+      title: "НИШ, БИЛ және РФМШ емтихандарына ақылды дайындық.",
+      tracks: [
+        { title: "НИШ", subtitle: "Логика және сандық талдау" },
+        { title: "БИЛ", subtitle: "Оқу сауаттылығы және тілдер" },
+        { title: "РФМШ", subtitle: "Математика және есептер" },
+      ],
+    };
+  }
+
+  if (language === "RU") {
+    return {
+      badge: "Четкая цель. Личная подготовка.",
+      title: "Умная подготовка к экзаменам НИШ, БИЛ и РФМШ.",
+      tracks: [
+        { title: "НИШ", subtitle: "Логика и количественный анализ" },
+        { title: "БИЛ", subtitle: "Чтение и языки" },
+        { title: "РФМШ", subtitle: "Математика и задачи" },
+      ],
+    };
+  }
+
+  return {
+    badge: "Clear goal. Personal preparation.",
+    title: "Smart preparation for NIS, BIL and NSPM entrance exams.",
+    tracks: [
+      { title: "NIS", subtitle: "Logic and quantitative reasoning" },
+      { title: "BIL", subtitle: "Reading literacy and languages" },
+      { title: "NSPM", subtitle: "Math and problem solving" },
+    ],
+  };
 }
