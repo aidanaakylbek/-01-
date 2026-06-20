@@ -8,7 +8,7 @@ export const Route = createFileRoute("/progress")({
   loader: () => getAccountDashboard(),
   head: () => ({
     meta: [
-      { title: "My Progress — Bridge" },
+      { title: "My Progress — Aibi" },
       {
         name: "description",
         content: "Weekly accuracy, time spent, and subject status across NIS, BIL & NSPM tracks.",

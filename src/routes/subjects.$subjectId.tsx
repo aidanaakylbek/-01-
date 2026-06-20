@@ -11,10 +11,10 @@ export const Route = createFileRoute("/subjects/$subjectId")({
   },
   head: ({ loaderData }) => ({
     meta: [
-      { title: `${loaderData?.subject.title.EN ?? "Subject"} — Bridge` },
+      { title: `${loaderData?.subject.title.EN ?? "Subject"} — Aibi` },
       {
         name: "description",
-        content: loaderData?.subject.description.EN ?? "Bridge subject modules and topics.",
+        content: loaderData?.subject.description.EN ?? "Aibi subject modules and topics.",
       },
     ],
   }),

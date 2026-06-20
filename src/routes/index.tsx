@@ -6,16 +6,16 @@ import { useLanguage } from "@/hooks/use-language";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Aibi by Bridge — NIS, BIL & NSPM Exam Preparation" },
+      { title: "Aibi — NIS, BIL & NSPM Exam Preparation" },
       {
         name: "description",
         content:
-          "Aibi is the Bridge AI tutor for students preparing for NIS, BIL, and NSPM entrance exams.",
+          "Aibi is the AI tutor for students preparing for NIS, BIL, and NSPM entrance exams.",
       },
-      { property: "og:title", content: "Aibi by Bridge — NIS, BIL & NSPM Exam Preparation" },
+      { property: "og:title", content: "Aibi — NIS, BIL & NSPM Exam Preparation" },
       {
         property: "og:description",
-        content: "Aibi is the Bridge AI tutor for NIS, BIL, and NSPM entrance exams.",
+        content: "Aibi is the AI tutor for NIS, BIL, and NSPM entrance exams.",
       },
     ],
   }),
@@ -133,9 +133,9 @@ function Landing() {
                   fg: "text-on-secondary-container",
                 },
                 {
-                  value: t("stats_bridges_val"),
-                  label: t("stats_bridges_lbl"),
-                  desc: t("stats_bridges_desc"),
+                  value: t("stats_learners_val"),
+                  label: t("stats_learners_lbl"),
+                  desc: t("stats_learners_desc"),
                   icon: "architecture",
                   shape: "organic-shape-1",
                   bg: "bg-secondary",
@@ -257,7 +257,7 @@ function Landing() {
           <div className="max-w-container-max mx-auto grid lg:grid-cols-2 gap-16 items-center">
             <div className="relative z-0 h-full min-h-[400px] lg:min-h-[600px] overflow-hidden border border-outline-variant">
               <img
-                alt="Bridge study illustration"
+                alt="Aibi study illustration"
                 className="w-full h-full object-cover hover:scale-105 transition-all duration-700"
                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuCEFCGJlNkmjihsc69n7rgFZpRHmlnbqJ6AJNjz-zp06gj_s3q1kci-VH2EfUGRDXcONCvXMpJz6KEHV3aMyCDbMGj1oAh8Rly2tvqctOJ61ke-CKsxJnPjOzIGJ241RIorF2l8v9klCelKUuuquR3nnlrToi4qf0lukcT9vpT8ylr-p5-uPjkNW04GjemcofSEP5mJmQ2m2a7ff3G2TjL7hzAIUB4fwe13cxp7OvZ4jIzT80Q4jIBFuAyYkIGri9GYHuE9vBYhvVw"
               />

@@ -6,10 +6,10 @@ import { useLanguage } from "@/hooks/use-language";
 export const Route = createFileRoute("/subjects")({
   head: () => ({
     meta: [
-      { title: "Subjects — Bridge" },
+      { title: "Subjects — Aibi" },
       {
         name: "description",
-        content: "All Bridge subjects with modules and topics for NIS, BIL, and NSPM preparation.",
+        content: "All Aibi subjects with modules and topics for NIS, BIL, and NSPM preparation.",
       },
     ],
   }),

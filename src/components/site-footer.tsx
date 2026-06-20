@@ -15,16 +15,16 @@ export function SiteFooter() {
       <div className="flex flex-col md:flex-row justify-between items-start py-20 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto">
         <div className="mb-12 md:mb-0 max-w-sm">
           <div className="font-headline-md text-headline-md text-secondary font-bold mb-6">
-            Bridge
+            Aibi
           </div>
           <p className="font-body-md text-body-md text-on-surface-variant mb-6">
             {t("footer_desc")}
           </p>
           <a
             className="mb-6 block font-label-caps text-label-caps text-secondary uppercase tracking-widest hover:text-primary transition-colors"
-            href="mailto:info.aulbridge@gmail.com"
+            href="mailto:info.aibi@gmail.com"
           >
-            info.aulbridge@gmail.com
+            info.aibi@gmail.com
           </a>
           <p className="font-label-caps text-label-caps text-outline uppercase tracking-widest opacity-60">
             {t("footer_rights")}

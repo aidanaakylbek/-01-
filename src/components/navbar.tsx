@@ -45,7 +45,7 @@ export function Navbar() {
   const profileInitials = account?.initials ?? "AB";
   const profileName =
     account?.name ??
-    (language === "KZ" ? "Bridge оқушысы" : language === "RU" ? "Ученик Bridge" : "Bridge Student");
+    (language === "KZ" ? "Aibi оқушысы" : language === "RU" ? "Ученик Aibi" : "Aibi Student");
 
   const currentPath = location.pathname;
   const isLanding = currentPath === "/";
@@ -63,7 +63,7 @@ export function Navbar() {
           notificationTwo: "Пробный экзамен: суббота, 10:00.",
           notificationThree: "Повторите тему: логические задачи.",
           profileTitle: "Профиль ученика",
-          profileName: "Bridge Student",
+          profileName: "Aibi Student",
           profileStatus: "68% готовности",
           myProgress: "Мой прогресс",
           studyPlan: "План обучения",
@@ -76,7 +76,7 @@ export function Navbar() {
             notificationTwo: "Сынақ емтихан: сенбі, 10:00.",
             notificationThree: "Тақырыпты қайталаңыз: логикалық есептер.",
             profileTitle: "Оқушы профилі",
-            profileName: "Bridge Student",
+            profileName: "Aibi Student",
             profileStatus: "68% дайындық",
             myProgress: "Менің прогресім",
             studyPlan: "Оқу жоспары",
@@ -88,7 +88,7 @@ export function Navbar() {
             notificationTwo: "Mock exam: Saturday, 10:00.",
             notificationThree: "Review topic: Logic Problems.",
             profileTitle: "Student Profile",
-            profileName: "Bridge Student",
+            profileName: "Aibi Student",
             profileStatus: "68% readiness",
             myProgress: "My Progress",
             studyPlan: "Study Plan",
@@ -197,7 +197,7 @@ export function Navbar() {
               <span className="material-symbols-outlined text-2xl">school</span>
             </div>
             <h1 className="font-headline-md text-headline-md font-bold text-primary whitespace-nowrap">
-              <span className="text-secondary font-bold">Bridge</span>
+              <span className="text-secondary font-bold">Aibi</span>
             </h1>
           </a>
 
@@ -424,7 +424,7 @@ export function Navbar() {
               className="flex items-center gap-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             >
               <h1 className="font-headline-md text-headline-md font-bold text-primary">
-                <span className="text-secondary font-bold">Bridge</span>
+                <span className="text-secondary font-bold">Aibi</span>
               </h1>
             </a>
             <button

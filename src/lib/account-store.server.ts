@@ -61,7 +61,7 @@ type StoredAccount = Account & {
 const demoAccount: StoredAccount = {
   id: "demo-aidana",
   name: "Aidana Akylbek",
-  email: "aidana@aulbridge.kz",
+  email: "aidana@aibi.kz",
   grade: "7",
   initials: "AA",
   password: "demo123",

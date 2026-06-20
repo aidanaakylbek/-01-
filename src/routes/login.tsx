@@ -7,8 +7,8 @@ import { loginAccount } from "@/lib/api/account.functions";
 export const Route = createFileRoute("/login")({
   head: () => ({
     meta: [
-      { title: "Login - Bridge" },
-      { name: "description", content: "Sign in to your Bridge account." },
+      { title: "Login - Aibi" },
+      { name: "description", content: "Sign in to your Aibi account." },
     ],
   }),
   component: Login,

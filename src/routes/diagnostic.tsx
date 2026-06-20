@@ -8,11 +8,10 @@ import { useLanguage } from "@/hooks/use-language";
 export const Route = createFileRoute("/diagnostic")({
   head: () => ({
     meta: [
-      { title: "Find Your Level — Bridge" },
+      { title: "Find Your Level — Aibi" },
       {
         name: "description",
-        content:
-          "Take the Bridge diagnostic to find your level across NIS, BIL, and NSPM subjects.",
+        content: "Take the Aibi diagnostic to find your level across NIS, BIL, and NSPM subjects.",
       },
     ],
   }),

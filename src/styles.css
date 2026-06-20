@@ -4,7 +4,7 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Bridge design tokens */
+/* Aibi design tokens */
 :root {
   --background: #fff8f3;
   --on-background: #201b13;

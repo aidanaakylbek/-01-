@@ -7,8 +7,8 @@ import { registerAccount } from "@/lib/api/account.functions";
 export const Route = createFileRoute("/register")({
   head: () => ({
     meta: [
-      { title: "Register - Bridge" },
-      { name: "description", content: "Create your Bridge student account." },
+      { title: "Register - Aibi" },
+      { name: "description", content: "Create your Aibi student account." },
     ],
   }),
   component: Register,
