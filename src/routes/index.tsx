@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Navbar } from "@/components/navbar";
 import { SiteFooter } from "@/components/site-footer";
 import { useLanguage } from "@/hooks/use-language";
+import { AibiMark } from "@/components/aibi-mark";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -46,7 +47,7 @@ function Landing() {
           <div className="max-w-container-max mx-auto min-h-[calc(100svh-8rem)] md:min-h-[calc(100svh-5rem)] py-8 md:py-16 flex items-center">
             <div className="w-full max-w-3xl">
               <div className="inline-flex items-center gap-3 border border-outline-variant bg-surface/85 px-4 py-2.5 mb-5 md:mb-7">
-                <span className="material-symbols-outlined text-secondary">school</span>
+                <AibiMark className="border-0 shadow-none" shape="circle" size="sm" />
                 <span className="font-label-caps text-label-caps uppercase tracking-widest text-primary">
                   {heroCopy.badge}
                 </span>
@@ -64,9 +65,7 @@ function Landing() {
 
               <div className="border-l-4 border-secondary bg-surface/90 px-4 py-3 mb-6 md:mb-8 max-w-xl">
                 <div className="flex items-start gap-3">
-                  <span className="material-symbols-outlined text-secondary text-2xl">
-                    smart_toy
-                  </span>
+                  <AibiMark className="mt-0.5" shape="circle" size="sm" />
                   <p className="font-body-md text-body-md text-on-surface-variant">
                     {heroCopy.aibiLine}
                   </p>

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { AibiMark } from "@/components/aibi-mark";
 
 type ChatMessage = {
   role: "user" | "assistant";
@@ -74,7 +75,12 @@ export function AIAssistant() {
         className="fixed bottom-8 right-8 z-40 w-14 h-14 bg-secondary text-on-secondary rounded-full shadow-lg hover:shadow-xl hover:bg-secondary-container hover:text-on-secondary-container transition-all flex items-center justify-center btn-squish border border-secondary"
         onClick={() => setIsOpen(true)}
       >
-        <span className="material-symbols-outlined text-2xl">smart_toy</span>
+        <AibiMark
+          className="border-0 shadow-none"
+          label="Open Aibi Tutor"
+          shape="circle"
+          size="lg"
+        />
       </button>
 
       {isOpen && (
@@ -90,9 +96,7 @@ export function AIAssistant() {
             <div className="mx-auto mt-3 h-1.5 w-[92px] rounded-full bg-muted shrink-0" />
             <header className="shrink-0 border-b border-outline-variant px-4 py-3 sm:py-4">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 sm:w-10 sm:h-10 bg-secondary text-on-secondary rounded-full flex items-center justify-center shrink-0">
-                  <span className="material-symbols-outlined text-lg">smart_toy</span>
-                </div>
+                <AibiMark shape="circle" size="md" />
                 <div className="min-w-0 flex-1">
                   <h2 className="font-headline-md text-title-lg sm:text-headline-md">
                     Aibi AI Tutor

@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useLanguage, Lang } from "@/hooks/use-language";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useAccountDashboard } from "@/hooks/use-account-dashboard";
+import { AibiMark } from "@/components/aibi-mark";
 
 type Tab = "home" | "subjects" | "practice" | "progress" | "reports";
 
@@ -190,12 +191,7 @@ export function Navbar() {
             className="flex items-center gap-3 min-w-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             onClick={() => setMobileOpen(false)}
           >
-            <div
-              aria-hidden="true"
-              className="w-10 h-10 flex-shrink-0 bg-secondary text-on-secondary border border-secondary flex items-center justify-center"
-            >
-              <span className="material-symbols-outlined text-2xl">school</span>
-            </div>
+            <AibiMark aria-hidden="true" size="md" />
             <h1 className="font-headline-md text-headline-md font-bold text-primary whitespace-nowrap">
               <span className="text-secondary font-bold">Aibi</span>
             </h1>
@@ -423,6 +419,7 @@ export function Navbar() {
               onClick={() => setMobileOpen(false)}
               className="flex items-center gap-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             >
+              <AibiMark aria-hidden="true" size="md" />
               <h1 className="font-headline-md text-headline-md font-bold text-primary">
                 <span className="text-secondary font-bold">Aibi</span>
               </h1>
