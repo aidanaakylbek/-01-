@@ -6,10 +6,10 @@ import { useLanguage } from "@/hooks/use-language";
 export const Route = createFileRoute("/plan")({
   head: () => ({
     meta: [
-      { title: "Personalized Study Plan — AulBridge" },
+      { title: "Personalized Study Plan — Bridge" },
       {
         name: "description",
-        content: "Your weekly AulBridge study plan, adapted to your strengths and gaps.",
+        content: "Your weekly Bridge study plan, adapted to your strengths and gaps.",
       },
     ],
   }),

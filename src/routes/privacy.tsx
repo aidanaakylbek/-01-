@@ -6,10 +6,10 @@ import { useLanguage } from "@/hooks/use-language";
 export const Route = createFileRoute("/privacy")({
   head: () => ({
     meta: [
-      { title: "Privacy Policy - AulBridge" },
+      { title: "Privacy Policy - Bridge" },
       {
         name: "description",
-        content: "AulBridge privacy policy.",
+        content: "Bridge privacy policy.",
       },
     ],
   }),
@@ -24,9 +24,9 @@ function Privacy() {
           eyebrow: "Құжат",
           title: "Құпиялылық саясаты",
           paragraphs: [
-            "AulBridge оқушы профилін жасау, прогресті өлшеу және оқу ұсыныстарын дайындау үшін ғана қажетті ақпаратты жинайды.",
+            "Bridge оқушы профилін жасау, прогресті өлшеу және оқу ұсыныстарын дайындау үшін ғана қажетті ақпаратты жинайды.",
             "Оқушы нәтижелері, оқу белсенділігі және ата-аналарға арналған есептер дайындықты жақсарту үшін қолданылады және үшінші тараптарға сатылмайды.",
-            "Ата-аналар мен оқушылар аккаунт ақпаратын түзету немесе жою туралы AulBridge командасына хабарласа алады.",
+            "Ата-аналар мен оқушылар аккаунт ақпаратын түзету немесе жою туралы Bridge командасына хабарласа алады.",
           ],
         }
       : language === "RU"
@@ -34,18 +34,18 @@ function Privacy() {
             eyebrow: "Документ",
             title: "Политика конфиденциальности",
             paragraphs: [
-              "AulBridge собирает только данные, необходимые для создания профиля ученика, измерения прогресса и подготовки учебных рекомендаций.",
+              "Bridge собирает только данные, необходимые для создания профиля ученика, измерения прогресса и подготовки учебных рекомендаций.",
               "Результаты ученика, учебная активность и родительские отчеты используются для улучшения подготовки и не продаются третьим лицам.",
-              "Родители и ученики могут запросить исправление или удаление данных аккаунта, связавшись с командой AulBridge.",
+              "Родители и ученики могут запросить исправление или удаление данных аккаунта, связавшись с командой Bridge.",
             ],
           }
         : {
             eyebrow: "Legal",
             title: "Privacy Policy",
             paragraphs: [
-              "AulBridge collects only the information needed to create a student profile, measure progress, and prepare learning recommendations.",
+              "Bridge collects only the information needed to create a student profile, measure progress, and prepare learning recommendations.",
               "Student results, study activity, and parent reports are used to improve preparation and are not sold to third parties.",
-              "Parents and students may request correction or deletion of account information by contacting the AulBridge team.",
+              "Parents and students may request correction or deletion of account information by contacting the Bridge team.",
             ],
           };
 

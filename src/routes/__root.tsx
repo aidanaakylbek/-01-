@@ -79,23 +79,49 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "AulBridge — Bridge to NIS & BIL Success" },
-      { name: "description", content: "Personalized AI preparation for NIS, BIL, and NSPM. Built for rural students in Kazakhstan." },
-      { property: "og:title", content: "AulBridge — Bridge to NIS & BIL Success" },
-      { property: "og:description", content: "Personalized AI preparation for NIS, BIL, and NSPM. Built for rural students in Kazakhstan." },
+      { title: "Bridge — NIS, BIL & NSPM Exam Preparation" },
+      {
+        name: "description",
+        content:
+          "Personalized AI preparation for students preparing for NIS, BIL, and NSPM entrance exams.",
+      },
+      { property: "og:title", content: "Bridge — NIS, BIL & NSPM Exam Preparation" },
+      {
+        property: "og:description",
+        content:
+          "Personalized AI preparation for students preparing for NIS, BIL, and NSPM entrance exams.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "AulBridge — Bridge to NIS & BIL Success" },
-      { name: "twitter:description", content: "Personalized AI preparation for NIS, BIL, and NSPM. Built for rural students in Kazakhstan." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/5186e822-d928-471f-afb5-457b4bd87965/id-preview-5dc4d2e3--3d510b11-be9d-4844-b080-8d5fa018b382.lovable.app-1781435872034.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/5186e822-d928-471f-afb5-457b4bd87965/id-preview-5dc4d2e3--3d510b11-be9d-4844-b080-8d5fa018b382.lovable.app-1781435872034.png" },
+      { name: "twitter:title", content: "Bridge — NIS, BIL & NSPM Exam Preparation" },
+      {
+        name: "twitter:description",
+        content:
+          "Personalized AI preparation for students preparing for NIS, BIL, and NSPM entrance exams.",
+      },
+      {
+        property: "og:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/5186e822-d928-471f-afb5-457b4bd87965/id-preview-5dc4d2e3--3d510b11-be9d-4844-b080-8d5fa018b382.lovable.app-1781435872034.png",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/5186e822-d928-471f-afb5-457b4bd87965/id-preview-5dc4d2e3--3d510b11-be9d-4844-b080-8d5fa018b382.lovable.app-1781435872034.png",
+      },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap",
+      },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap",
+      },
     ],
   }),
   shellComponent: RootShell,

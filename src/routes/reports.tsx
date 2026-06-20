@@ -7,7 +7,7 @@ export const Route = createFileRoute("/reports")({
   loader: () => getAccountDashboard(),
   head: () => ({
     meta: [
-      { title: "Parent Report - AulBridge" },
+      { title: "Parent Report - Bridge" },
       {
         name: "description",
         content: "Parent-facing report with student progress, risks, and next actions.",
@@ -179,7 +179,7 @@ function ParentReport() {
         <header className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 mb-stack-lg">
           <div>
             <span className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
-              AulBridge
+              Bridge
             </span>
             <h1 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary mt-3">
               {copy.title}

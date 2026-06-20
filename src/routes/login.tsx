@@ -7,8 +7,8 @@ import { loginAccount } from "@/lib/api/account.functions";
 export const Route = createFileRoute("/login")({
   head: () => ({
     meta: [
-      { title: "Login - AulBridge" },
-      { name: "description", content: "Sign in to your AulBridge account." },
+      { title: "Login - Bridge" },
+      { name: "description", content: "Sign in to your Bridge account." },
     ],
   }),
   component: Login,

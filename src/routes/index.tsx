@@ -6,16 +6,16 @@ import { useLanguage } from "@/hooks/use-language";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "AulBridge — Bridge to NIS & BIL Success" },
+      { title: "Bridge — NIS, BIL & NSPM Exam Preparation" },
       {
         name: "description",
         content:
-          "Personalized AI preparation designed for rural students. A custom learning path for NIS, BIL & NSPM success.",
+          "Personalized AI preparation for students preparing for NIS, BIL, and NSPM entrance exams.",
       },
-      { property: "og:title", content: "AulBridge — Bridge to NIS & BIL Success" },
+      { property: "og:title", content: "Bridge — NIS, BIL & NSPM Exam Preparation" },
       {
         property: "og:description",
-        content: "Personalized AI preparation designed for rural students.",
+        content: "Personalized AI preparation for NIS, BIL, and NSPM entrance exams.",
       },
     ],
   }),
@@ -43,23 +43,15 @@ function Landing() {
               <h1 className="font-headline-lg-mobile text-headline-lg-mobile md:font-display-xl md:text-display-xl text-primary mb-8 leading-tight">
                 {language === "KZ" ? (
                   <>
-                    <span className="hand-drawn-underline text-secondary">
-                      Зияткерлік мектептер
-                    </span>{" "}
-                    мен <span className="hand-drawn-underline text-secondary">БИЛ</span>-ге барар
-                    жолыңыз
+                    <span className="text-secondary">Bridge</span>: НИШ, БИЛ және РФМШ-ға дайындық
                   </>
                 ) : language === "RU" ? (
                   <>
-                    Постройте свой мост к успеху в{" "}
-                    <span className="hand-drawn-underline text-secondary">НИШ</span> и{" "}
-                    <span className="hand-drawn-underline text-secondary">БИЛ</span>
+                    <span className="text-secondary">Bridge</span>: подготовка к НИШ, БИЛ и РФМШ
                   </>
                 ) : (
                   <>
-                    Build Your Bridge to{" "}
-                    <span className="hand-drawn-underline text-secondary">NIS</span> and{" "}
-                    <span className="hand-drawn-underline text-secondary">BIL</span> Success
+                    <span className="text-secondary">Bridge</span>: prepare for NIS, BIL and NSPM
                   </>
                 )}
               </h1>
@@ -246,7 +238,7 @@ function Landing() {
           <div className="max-w-container-max mx-auto grid lg:grid-cols-2 gap-16 items-center">
             <div className="relative z-0 h-full min-h-[400px] lg:min-h-[600px] overflow-hidden border border-outline-variant">
               <img
-                alt="AulBridge hybrid illustration"
+                alt="Bridge study illustration"
                 className="w-full h-full object-cover hover:scale-105 transition-all duration-700"
                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuCEFCGJlNkmjihsc69n7rgFZpRHmlnbqJ6AJNjz-zp06gj_s3q1kci-VH2EfUGRDXcONCvXMpJz6KEHV3aMyCDbMGj1oAh8Rly2tvqctOJ61ke-CKsxJnPjOzIGJ241RIorF2l8v9klCelKUuuquR3nnlrToi4qf0lukcT9vpT8ylr-p5-uPjkNW04GjemcofSEP5mJmQ2m2a7ff3G2TjL7hzAIUB4fwe13cxp7OvZ4jIzT80Q4jIBFuAyYkIGri9GYHuE9vBYhvVw"
               />

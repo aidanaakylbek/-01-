@@ -7,10 +7,10 @@ export const Route = createFileRoute("/home")({
   loader: () => getAccountDashboard(),
   head: () => ({
     meta: [
-      { title: "Home — AulBridge" },
+      { title: "Home — Bridge" },
       {
         name: "description",
-        content: "Your AulBridge readiness, today's plan, and weak topic focus.",
+        content: "Your Bridge readiness, today's plan, and weak topic focus.",
       },
     ],
   }),

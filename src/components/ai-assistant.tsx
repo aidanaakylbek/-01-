@@ -8,7 +8,7 @@ type ChatMessage = {
 const INITIAL_MESSAGE: ChatMessage = {
   role: "assistant",
   content:
-    "Hello! I'm your AulBridge AI Tutor. Ask me about math, logic, reading, languages, study plans, or NIS/BIL/NSPM exam preparation.",
+    "Hello! I'm your Bridge AI Tutor. Ask me about math, logic, reading, languages, study plans, or NIS/BIL/NSPM exam preparation.",
 };
 
 const FRIENDLY_ERROR =
@@ -95,7 +95,7 @@ export function AIAssistant() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <h2 className="font-headline-md text-title-lg sm:text-headline-md">
-                    AulBridge AI Tutor
+                    Bridge AI Tutor
                   </h2>
                   <p className="text-xs text-on-surface-variant line-clamp-1">
                     Step-by-step help for exams and study plans

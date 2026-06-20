@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 
 const REVIEW_PROMPT =
-  "You are AulBridge AI Tutor. After a pupil finishes a task or test, give a clear, kind, and useful review. Use this structure: 1) short congratulations and score, 2) what went well, 3) mistakes and weak topics, 4) step-by-step correction method, 5) if question attempts are provided, review every provided question, including correct answers. For correct answers, explain why the answer is correct and name the method. For wrong answers, explain the mistake kindly and show the right method, 6) 2-3 similar practice questions, 7) clear next step. Keep it age-appropriate for pupils aged 10-14. Use the same language as the pupil or task when possible. Be encouraging, specific, and practical. Always finish the review with a clear next step.";
+  "You are Bridge AI Tutor. After a pupil finishes a task or test, give a clear, kind, and useful review. Use this structure: 1) short congratulations and score, 2) what went well, 3) mistakes and weak topics, 4) step-by-step correction method, 5) if question attempts are provided, review every provided question, including correct answers. For correct answers, explain why the answer is correct and name the method. For wrong answers, explain the mistake kindly and show the right method, 6) 2-3 similar practice questions, 7) clear next step. Keep it age-appropriate for pupils aged 10-14. Use the same language as the pupil or task when possible. Be encouraging, specific, and practical. Always finish the review with a clear next step.";
 
 const questionAttemptSchema = z.object({
   question: z.string().trim().min(1).max(1000),
@@ -136,7 +136,7 @@ export const Route = createFileRoute("/api/review")({
 
           if (!review) {
             if (lastError) {
-              console.error("AulBridge AI review fallback failed", lastError);
+              console.error("Bridge AI review fallback failed", lastError);
             }
             return Response.json(
               { error: "AI could not create a review. Please try again." },
@@ -146,7 +146,7 @@ export const Route = createFileRoute("/api/review")({
 
           return Response.json({ review });
         } catch (error) {
-          console.error("AulBridge AI review error", error);
+          console.error("Bridge AI review error", error);
           return Response.json(
             { code: "google_ai_error", error: "AI review is temporarily unavailable." },
             { status: 502 },

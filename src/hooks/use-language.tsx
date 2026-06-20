@@ -11,7 +11,7 @@ interface LanguageContextType {
 const translations: Record<Lang, Record<string, string>> = {
   EN: {
     // Common
-    logo_title: "AulBridge",
+    logo_title: "Bridge",
     nav_home: "Home",
     nav_subjects: "Subjects",
     nav_practice: "Practice",
@@ -23,11 +23,11 @@ const translations: Record<Lang, Record<string, string>> = {
     nav_open_menu: "Open menu",
 
     // Landing Page
-    hero_tagline: "Empowering Rural Students",
+    hero_tagline: "For Every Ambitious Student",
     hero_title_1: "Build Your Bridge to ",
     hero_title_2: " Success",
     hero_desc:
-      "Personalized AI preparation designed for students in rural areas. Turn your potential into achievement with a custom learning path tailored to your unique needs.",
+      "Personalized AI preparation for every student preparing for NIS, BIL, and NSPM. Turn your potential into achievement with diagnostics, study plans, and step-by-step AI support.",
     hero_btn_diagnostic: "Start Your Free Diagnostic",
     hero_btn_video: "Watch How It Works",
     stats_transform_val: "32%",
@@ -38,7 +38,7 @@ const translations: Record<Lang, Record<string, string>> = {
     stats_path_desc: "The optimal timeline for consistent, sustainable learning growth.",
     stats_bridges_val: "12,400+",
     stats_bridges_lbl: "Bridges Built",
-    stats_bridges_desc: "Empowering students across remote regions to reach their full potential.",
+    stats_bridges_desc: "Helping students from every background reach their full potential.",
     features_title_1: "Smarter Learning, ",
     features_title_2: "Faster Results",
     features_desc:
@@ -55,22 +55,22 @@ const translations: Record<Lang, Record<string, string>> = {
     vision_title_1: "Prepare for the Schools of Tomorrow, ",
     vision_title_2: "Today",
     vision_desc:
-      "Join the next generation of leaders and innovators at NIS, BIL, and NSPM. Our platform connects the reality of rural education with the ambition of elite institutions.",
+      "Join the next generation of leaders and innovators at NIS, BIL, and NSPM. Bridge connects each student's current level with the skills needed for selective school exams.",
     vision_btn_stories: "View Success Stories",
     cta_title: "Ready to Start Your Journey?",
     cta_desc:
       "Take the first step towards your NIS or BIL dream today with our sophisticated AI platform.",
     footer_desc:
       "Building the bridge to a brighter future for every student. Intelligent, adaptive, and human-centric.",
-    footer_rights: "© 2024 AulBridge Inc.",
+    footer_rights: "© 2024 Bridge Inc.",
     footer_for_parents: "For Parents",
     footer_success_stories: "Success Stories",
     footer_privacy: "Privacy Policy",
     footer_terms: "Terms of Service",
 
     // Home Dashboard
-    home_title: "Home — AulBridge",
-    home_meta_desc: "Your AulBridge readiness, today's plan, and weak topic focus.",
+    home_title: "Home — Bridge",
+    home_meta_desc: "Your Bridge readiness, today's plan, and weak topic focus.",
     home_readiness_title: "NIS/BIL/NSPM Readiness",
     home_readiness_desc: "You are on track. Keep it up!",
     home_readiness_val: "Ready",
@@ -92,8 +92,8 @@ const translations: Record<Lang, Record<string, string>> = {
     home_focus_btn: "Review Topic",
 
     // Study Plan
-    plan_title: "Personalized Study Plan — AulBridge",
-    plan_meta_desc: "Your weekly AulBridge study plan, adapted to your strengths and gaps.",
+    plan_title: "Personalized Study Plan — Bridge",
+    plan_meta_desc: "Your weekly Bridge study plan, adapted to your strengths and gaps.",
     plan_header: "Your Path to Success",
     plan_subheader: "Week 3 • Focus: Logical Reasoning",
     plan_insight_title: "Coach Insight",
@@ -122,7 +122,7 @@ const translations: Record<Lang, Record<string, string>> = {
     plan_btn_start: "Start",
 
     // Progress Page
-    prog_title: "My Progress — AulBridge",
+    prog_title: "My Progress — Bridge",
     prog_meta_desc:
       "Weekly accuracy, time spent, and subject status across NIS, BIL & NSPM tracks.",
     prog_header: "My Progress",
@@ -154,9 +154,9 @@ const translations: Record<Lang, Record<string, string>> = {
     prog_fri: "Fri",
 
     // Diagnostic Page
-    diag_title: "Find Your Level — AulBridge",
+    diag_title: "Find Your Level — Bridge",
     diag_meta_desc:
-      "Take the AulBridge diagnostic to find your level across NIS, BIL, and NSPM subjects.",
+      "Take the Bridge diagnostic to find your level across NIS, BIL, and NSPM subjects.",
     diag_back: "Go back",
     diag_header: "Find Your Level",
     diag_progress_lbl: "Diagnostic Progress",
@@ -176,7 +176,7 @@ const translations: Record<Lang, Record<string, string>> = {
   },
   KZ: {
     // Common
-    logo_title: "AulBridge",
+    logo_title: "Bridge",
     nav_home: "Басты бет",
     nav_subjects: "Пәндер",
     nav_practice: "Тәжірибе",
@@ -188,11 +188,11 @@ const translations: Record<Lang, Record<string, string>> = {
     nav_open_menu: "Мәзірді ашу",
 
     // Landing Page
-    hero_tagline: "Ауыл оқушыларын қолдау",
+    hero_tagline: "Мақсаты бар әр оқушыға",
     hero_title_1: "Зияткерлік мектептер мен БИЛ-ге ",
     hero_title_2: " барар жолыңыз",
     hero_desc:
-      "Ауылдық жерлердегі оқушыларға арналған дербес AI дайындығы. Өз әлеуетіңізді сіздің қажеттіліктеріңізге бейімделген жеке оқу жолымен жетістікке айналдырыңыз.",
+      "НИШ, БИЛ және РФМШ-ға дайындалатын әр оқушыға арналған дербес AI дайындық. Диагностика, оқу жоспары және қадамдық AI көмек арқылы әлеуетіңізді нәтижеге айналдырыңыз.",
     hero_btn_diagnostic: "Тегін диагностиканы бастау",
     hero_btn_video: "Қалай жұмыс істейтінін көру",
     stats_transform_val: "32%",
@@ -203,7 +203,7 @@ const translations: Record<Lang, Record<string, string>> = {
     stats_path_desc: "Тұрақты әрі жүйелі оқу дамуына арналған оңтайлы мерзім.",
     stats_bridges_val: "12,400+",
     stats_bridges_lbl: "Салынған көпірлер",
-    stats_bridges_desc: "Шалғай аймақтардағы оқушылардың өз әлеуетін ашуға мүмкіндік беру.",
+    stats_bridges_desc: "Әр түрлі ортадан келген оқушыларға өз әлеуетін ашуға көмектесу.",
     features_title_1: "Ақылды оқыту, ",
     features_title_2: "жылдам нәтиже",
     features_desc:
@@ -220,21 +220,21 @@ const translations: Record<Lang, Record<string, string>> = {
     vision_title_1: "Ертеңгі күннің мектептеріне ",
     vision_title_2: "бүгіннен дайындалыңыз",
     vision_desc:
-      "Зияткерлік мектептер, БИЛ және РФМШ-дағы келесі буын көшбасшылары мен инноваторларына қосылыңыз. Біздің платформа ауылдық білім беру шындығын элиталық оқу орындарының амбицияларымен байланыстырады.",
+      "Зияткерлік мектептер, БИЛ және РФМШ-дағы келесі буын көшбасшылары мен инноваторларына қосылыңыз. Bridge әр оқушының қазіргі деңгейін таңдаулы мектеп емтихандарына қажет дағдылармен байланыстырады.",
     vision_btn_stories: "Жетістік тарихын көру",
     cta_title: "Саяхатыңызды бастауға дайынсыз ба?",
     cta_desc:
       "Біздің озық AI платформамызбен бүгін Зияткерлік мектеп немесе БИЛ арманыңызға алғашқы қадам жасаңыз.",
     footer_desc:
       "Әр оқушы үшін жарқын болашаққа көпір салу. Ақылды, бейімделгіш және адамға бағытталған.",
-    footer_rights: "© 2024 AulBridge Inc.",
+    footer_rights: "© 2024 Bridge Inc.",
     footer_for_parents: "Ата-аналар үшін",
     footer_success_stories: "Жетістік тарихы",
     footer_privacy: "Құпиялылық саясаты",
     footer_terms: "Қызмет көрсету шарттары",
 
     // Home Dashboard
-    home_title: "Басты бет — AulBridge",
+    home_title: "Басты бет — Bridge",
     home_meta_desc: "Сіздің дайындығыңыз, бүгінгі жоспарыңыз және әлсіз тақырыптарға назар аудару.",
     home_readiness_title: "НИШ/БИЛ/РФМШ-ға дайындық",
     home_readiness_desc: "Сіз дұрыс жолдасыз. Осылай жалғастырыңыз!",
@@ -257,7 +257,7 @@ const translations: Record<Lang, Record<string, string>> = {
     home_focus_btn: "Тақырыпты қайталау",
 
     // Study Plan
-    plan_title: "Жеке оқу жоспары — AulBridge",
+    plan_title: "Жеке оқу жоспары — Bridge",
     plan_meta_desc: "Күшті және әлсіз тұстарыңызға бейімделген апталық оқу жоспарыңыз.",
     plan_header: "Сәттілікке апарар жолыңыз",
     plan_subheader: "3-апта • Назарда: Логикалық ойлау",
@@ -289,7 +289,7 @@ const translations: Record<Lang, Record<string, string>> = {
     plan_btn_start: "Бастау",
 
     // Progress Page
-    prog_title: "Менің прогресім — AulBridge",
+    prog_title: "Менің прогресім — Bridge",
     prog_meta_desc:
       "Апталық дәлдік, оқуға жұмсалған уақыт және НИШ, БИЛ мен РФМШ бағыттарындағы пән мәртебелері.",
     prog_header: "Менің прогресім",
@@ -321,9 +321,9 @@ const translations: Record<Lang, Record<string, string>> = {
     prog_fri: "Жұм",
 
     // Diagnostic Page
-    diag_title: "Өз деңгейіңізді анықтаңыз — AulBridge",
+    diag_title: "Өз деңгейіңізді анықтаңыз — Bridge",
     diag_meta_desc:
-      "НИШ, БИЛ және РФМШ пәндері бойынша деңгейіңізді анықтау үшін AulBridge диагностикасынан өтіңіз.",
+      "НИШ, БИЛ және РФМШ пәндері бойынша деңгейіңізді анықтау үшін Bridge диагностикасынан өтіңіз.",
     diag_back: "Артқа оралу",
     diag_header: "Өз деңгейіңізді анықтаңыз",
     diag_progress_lbl: "Диагностика прогресі",
@@ -343,7 +343,7 @@ const translations: Record<Lang, Record<string, string>> = {
   },
   RU: {
     // Common
-    logo_title: "AulBridge",
+    logo_title: "Bridge",
     nav_home: "Главная",
     nav_subjects: "Предметы",
     nav_practice: "Практика",
@@ -355,11 +355,11 @@ const translations: Record<Lang, Record<string, string>> = {
     nav_open_menu: "Открыть меню",
 
     // Landing Page
-    hero_tagline: "Поддержка сельских учеников",
+    hero_tagline: "Для каждого мотивированного ученика",
     hero_title_1: "Постройте свой мост к успеху в ",
     hero_title_2: " НИШ и БИЛ",
     hero_desc:
-      "Персонализированная AI-подготовка для учащихся сельских районов. Превратите свой потенциал в достижения с помощью индивидуального пути обучения.",
+      "Персонализированная AI-подготовка для каждого ученика, который готовится к НИШ, БИЛ и РФМШ. Превратите свой потенциал в результат с диагностикой, учебным планом и пошаговой AI-помощью.",
     hero_btn_diagnostic: "Начать бесплатную диагностику",
     hero_btn_video: "Посмотреть, как это работает",
     stats_transform_val: "32%",
@@ -370,7 +370,7 @@ const translations: Record<Lang, Record<string, string>> = {
     stats_path_desc: "Оптимальные сроки для стабильного и устойчивого роста обучения.",
     stats_bridges_val: "12,400+",
     stats_bridges_lbl: "Построенные мосты",
-    stats_bridges_desc: "Помощь учащимся из отдаленных регионов в раскрытии своего потенциала.",
+    stats_bridges_desc: "Помощь ученикам из разных школ и городов раскрывать свой потенциал.",
     features_title_1: "Умное обучение, ",
     features_title_2: "быстрые результаты",
     features_desc:
@@ -387,21 +387,21 @@ const translations: Record<Lang, Record<string, string>> = {
     vision_title_1: "Готовьтесь к школам будущего уже ",
     vision_title_2: "сегодня",
     vision_desc:
-      "Присоединяйтесь к следующему поколению лидеров и новаторов в НИШ, БИЛ и РФМШ. Наша платформа соединяет реальность сельского образования с амбициями элитных учебных заведений.",
+      "Присоединяйтесь к следующему поколению лидеров и новаторов в НИШ, БИЛ и РФМШ. Bridge соединяет текущий уровень ученика с навыками, нужными для поступления.",
     vision_btn_stories: "Посмотреть истории успеха",
     cta_title: "Готовы начать свой путь?",
     cta_desc:
       "Сделайте первый шаг к своей мечте о НИШ или БИЛ сегодня с помощью нашей продвинутой AI-платформы.",
     footer_desc:
       "Строим мост в светлое будущее для каждого ученика. Интеллектуальный, адаптивный и человекоцентричный подход.",
-    footer_rights: "© 2024 AulBridge Inc.",
+    footer_rights: "© 2024 Bridge Inc.",
     footer_for_parents: "Родителям",
     footer_success_stories: "Истории успеха",
     footer_privacy: "Политика конфиденциальности",
     footer_terms: "Условия использования",
 
     // Home Dashboard
-    home_title: "Главная — AulBridge",
+    home_title: "Главная — Bridge",
     home_meta_desc: "Ваша готовность, сегодняшний план и фокус на слабых темах.",
     home_readiness_title: "Готовность к НИШ/БИЛ/РФМШ",
     home_readiness_desc: "Вы на правильном пути. Так держать!",
@@ -424,7 +424,7 @@ const translations: Record<Lang, Record<string, string>> = {
     home_focus_btn: "Повторить тему",
 
     // Study Plan
-    plan_title: "Персональный план обучения — AulBridge",
+    plan_title: "Персональный план обучения — Bridge",
     plan_meta_desc: "Ваш еженедельный план обучения, адаптированный к сильным и слабым сторонам.",
     plan_header: "Ваш путь к успеху",
     plan_subheader: "Неделя 3 • Фокус: Логическое мышление",
@@ -454,7 +454,7 @@ const translations: Record<Lang, Record<string, string>> = {
     plan_btn_start: "Начать",
 
     // Progress Page
-    prog_title: "Мой прогресс — AulBridge",
+    prog_title: "Мой прогресс — Bridge",
     prog_meta_desc:
       "Еженедельная точность, затраченное время и статус предметов по направлениям НИШ, БИЛ и РФМШ.",
     prog_header: "Мой прогресс",
@@ -486,9 +486,9 @@ const translations: Record<Lang, Record<string, string>> = {
     prog_fri: "Пят",
 
     // Diagnostic Page
-    diag_title: "Определите свой уровень — AulBridge",
+    diag_title: "Определите свой уровень — Bridge",
     diag_meta_desc:
-      "Пройдите диагностику AulBridge, чтобы определить свой уровень по предметам НИШ, БИЛ и РФМШ.",
+      "Пройдите диагностику Bridge, чтобы определить свой уровень по предметам НИШ, БИЛ и РФМШ.",
     diag_back: "Вернуться назад",
     diag_header: "Определите свой уровень",
     diag_progress_lbl: "Прогресс диагностики",
