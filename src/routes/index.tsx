@@ -6,16 +6,16 @@ import { useLanguage } from "@/hooks/use-language";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Bridge — NIS, BIL & NSPM Exam Preparation" },
+      { title: "Aibi by Bridge — NIS, BIL & NSPM Exam Preparation" },
       {
         name: "description",
         content:
-          "Personalized AI preparation for students preparing for NIS, BIL, and NSPM entrance exams.",
+          "Aibi is the Bridge AI tutor for students preparing for NIS, BIL, and NSPM entrance exams.",
       },
-      { property: "og:title", content: "Bridge — NIS, BIL & NSPM Exam Preparation" },
+      { property: "og:title", content: "Aibi by Bridge — NIS, BIL & NSPM Exam Preparation" },
       {
         property: "og:description",
-        content: "Personalized AI preparation for NIS, BIL, and NSPM entrance exams.",
+        content: "Aibi is the Bridge AI tutor for NIS, BIL, and NSPM entrance exams.",
       },
     ],
   }),
@@ -52,8 +52,8 @@ function Landing() {
                 </span>
               </div>
 
-              <h1 className="font-display-xl text-[48px] leading-[0.95] md:text-[96px] md:leading-[0.92] tracking-normal text-primary mb-4 md:mb-6">
-                Bridge
+              <h1 className="font-display-xl text-[56px] leading-[0.95] md:text-[112px] md:leading-[0.9] tracking-normal text-primary mb-4 md:mb-6">
+                Aibi
               </h1>
               <p className="font-headline-lg-mobile text-[28px] leading-[1.15] md:font-headline-lg md:text-headline-lg text-primary max-w-2xl mb-4 md:mb-5">
                 {heroCopy.title}
@@ -61,6 +61,17 @@ function Landing() {
               <p className="font-body-lg text-base leading-7 md:text-body-lg text-on-surface-variant max-w-2xl mb-6 md:mb-8">
                 {t("hero_desc")}
               </p>
+
+              <div className="border-l-4 border-secondary bg-surface/90 px-4 py-3 mb-6 md:mb-8 max-w-xl">
+                <div className="flex items-start gap-3">
+                  <span className="material-symbols-outlined text-secondary text-2xl">
+                    smart_toy
+                  </span>
+                  <p className="font-body-md text-body-md text-on-surface-variant">
+                    {heroCopy.aibiLine}
+                  </p>
+                </div>
+              </div>
 
               <div className="flex flex-col sm:flex-row gap-3 md:gap-4 mb-6 md:mb-8">
                 <Link
@@ -316,7 +327,9 @@ function getHeroCopy(language: string) {
   if (language === "KZ") {
     return {
       badge: "Нақты мақсат. Жеке дайындық.",
-      title: "НИШ, БИЛ және РФМШ емтихандарына ақылды дайындық.",
+      title: "Сенің НИШ, БИЛ және РФМШ-ға дайындайтын AI көмекшің.",
+      aibiLine:
+        "Aibi жауапты ғана айтпайды: әдісін түсіндіреді, қатені көрсетеді және келесі қадамды ұсынады.",
       tracks: [
         { title: "НИШ", subtitle: "Логика және сандық талдау" },
         { title: "БИЛ", subtitle: "Оқу сауаттылығы және тілдер" },
@@ -328,7 +341,9 @@ function getHeroCopy(language: string) {
   if (language === "RU") {
     return {
       badge: "Четкая цель. Личная подготовка.",
-      title: "Умная подготовка к экзаменам НИШ, БИЛ и РФМШ.",
+      title: "Твой AI-помощник для подготовки к НИШ, БИЛ и РФМШ.",
+      aibiLine:
+        "Aibi не просто дает ответ: объясняет метод, показывает ошибку и предлагает следующий шаг.",
       tracks: [
         { title: "НИШ", subtitle: "Логика и количественный анализ" },
         { title: "БИЛ", subtitle: "Чтение и языки" },
@@ -339,7 +354,9 @@ function getHeroCopy(language: string) {
 
   return {
     badge: "Clear goal. Personal preparation.",
-    title: "Smart preparation for NIS, BIL and NSPM entrance exams.",
+    title: "Your AI study guide for NIS, BIL and NSPM entrance exams.",
+    aibiLine:
+      "Aibi does not just give answers: it explains the method, finds mistakes, and suggests the next step.",
     tracks: [
       { title: "NIS", subtitle: "Logic and quantitative reasoning" },
       { title: "BIL", subtitle: "Reading literacy and languages" },
