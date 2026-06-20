@@ -80,31 +80,31 @@ export function AIAssistant() {
       </button>
 
       <Drawer open={isOpen} onOpenChange={setIsOpen}>
-        <DrawerContent className="h-[85vh] max-h-[85vh] overflow-hidden">
-          <DrawerHeader className="shrink-0 border-b border-outline-variant py-4">
+        <DrawerContent className="h-[calc(100dvh-0.75rem)] max-h-[calc(100dvh-0.75rem)] sm:h-[85dvh] sm:max-h-[85dvh] overflow-hidden flex flex-col">
+          <DrawerHeader className="shrink-0 border-b border-outline-variant py-3 sm:py-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-secondary text-on-secondary rounded-full flex items-center justify-center">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 bg-secondary text-on-secondary rounded-full flex items-center justify-center shrink-0">
                 <span className="material-symbols-outlined text-lg">smart_toy</span>
               </div>
-              <div>
-                <DrawerTitle className="font-headline-md text-headline-md">
+              <div className="min-w-0">
+                <DrawerTitle className="font-headline-md text-title-lg sm:text-headline-md">
                   AulBridge AI Tutor
                 </DrawerTitle>
-                <p className="text-xs text-on-surface-variant">
+                <p className="text-xs text-on-surface-variant line-clamp-1">
                   Step-by-step help for exams and study plans
                 </p>
               </div>
             </div>
           </DrawerHeader>
 
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 space-y-4 bg-background">
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 sm:px-4 py-3 sm:py-4 space-y-4 bg-background">
             {messages.map((msg, idx) => (
               <div
                 key={`${msg.role}-${idx}`}
                 className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
               >
                 <div
-                  className={`max-w-[min(88vw,760px)] rounded-2xl px-4 py-3 font-body-md text-body-md ${
+                  className={`max-w-[min(86vw,760px)] sm:max-w-[min(88vw,760px)] rounded-2xl px-4 py-3 font-body-md text-body-md ${
                     msg.role === "user"
                       ? "bg-secondary text-on-secondary"
                       : "bg-surface-container-high text-on-surface border border-outline-variant"
@@ -130,11 +130,11 @@ export function AIAssistant() {
           </div>
 
           <form
-            className="shrink-0 border-t border-outline-variant bg-surface px-4 py-4 flex gap-2"
+            className="shrink-0 border-t border-outline-variant bg-surface px-3 sm:px-4 py-3 sm:py-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] flex gap-2"
             onSubmit={handleSendMessage}
           >
             <input
-              className="flex-1 px-4 py-2.5 bg-surface-container-low border border-outline-variant rounded-full font-body-md text-body-md text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-secondary"
+              className="min-w-0 flex-1 px-4 py-2.5 bg-surface-container-low border border-outline-variant rounded-full font-body-md text-sm sm:text-body-md text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-secondary"
               disabled={isLoading}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask about percentages, logic, English, or study plans..."
