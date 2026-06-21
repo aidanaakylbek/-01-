@@ -39,24 +39,24 @@ function Landing() {
         <section className="relative overflow-hidden border-b border-outline-variant bg-surface px-margin-mobile md:px-margin-desktop">
           <div className="max-w-container-max mx-auto min-h-[calc(100svh-7rem)] md:min-h-[calc(100svh-5rem)] py-8 md:py-14 grid lg:grid-cols-[minmax(0,0.95fr)_minmax(420px,0.8fr)] gap-8 lg:gap-14 items-center">
             <div className="relative z-10">
-              <div className="inline-flex items-center gap-3 border border-outline-variant bg-surface-container-lowest px-4 py-2.5 mb-5 md:mb-7">
+              <div className="motion-rise inline-flex items-center gap-3 border border-outline-variant bg-surface-container-lowest px-4 py-2.5 mb-5 md:mb-7">
                 <AibiMark className="border-0 shadow-none" shape="circle" size="sm" />
                 <span className="font-label-caps text-label-caps uppercase tracking-widest text-primary">
                   {heroCopy.badge}
                 </span>
               </div>
 
-              <h1 className="font-display-xl text-[56px] leading-[0.95] md:text-[112px] md:leading-[0.9] tracking-normal text-primary mb-4 md:mb-6">
+              <h1 className="motion-rise motion-delay-1 font-display-xl text-[56px] leading-[0.95] md:text-[112px] md:leading-[0.9] tracking-normal text-primary mb-4 md:mb-6">
                 Aibi
               </h1>
-              <p className="font-headline-lg-mobile text-[28px] leading-[1.15] md:font-headline-lg md:text-headline-lg text-primary max-w-2xl mb-4 md:mb-5">
+              <p className="motion-rise motion-delay-2 font-headline-lg-mobile text-[28px] leading-[1.15] md:font-headline-lg md:text-headline-lg text-primary max-w-2xl mb-4 md:mb-5">
                 {heroCopy.title}
               </p>
-              <p className="font-body-lg text-base leading-7 md:text-body-lg text-on-surface-variant max-w-2xl mb-6 md:mb-8">
+              <p className="motion-rise motion-delay-3 font-body-lg text-base leading-7 md:text-body-lg text-on-surface-variant max-w-2xl mb-6 md:mb-8">
                 {t("hero_desc")}
               </p>
 
-              <div className="border-l-4 border-secondary bg-surface-container-lowest px-4 py-3 mb-6 md:mb-8 max-w-xl shadow-sm">
+              <div className="motion-rise motion-delay-4 border-l-4 border-secondary bg-surface-container-lowest px-4 py-3 mb-6 md:mb-8 max-w-xl shadow-sm">
                 <div className="flex items-start gap-3">
                   <AibiMark className="mt-0.5" shape="circle" size="sm" />
                   <p className="font-body-md text-body-md text-on-surface-variant">
@@ -65,13 +65,15 @@ function Landing() {
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-3 md:gap-4 mb-6 md:mb-8">
+              <div className="motion-rise motion-delay-4 flex flex-col sm:flex-row gap-3 md:gap-4 mb-6 md:mb-8">
                 <Link
                   to="/register"
                   className="bg-secondary text-on-secondary font-label-caps text-label-caps uppercase tracking-widest px-6 py-4 md:px-7 md:py-5 hover:bg-secondary-container hover:text-on-secondary-container transition-all btn-squish flex justify-center items-center gap-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary border border-secondary"
                 >
                   {t("hero_btn_diagnostic")}
-                  <span className="material-symbols-outlined text-xl">arrow_forward</span>
+                  <span className="material-symbols-outlined motion-arrow text-xl">
+                    arrow_forward
+                  </span>
                 </Link>
                 <a
                   className="bg-surface/85 text-primary font-label-caps text-label-caps uppercase tracking-widest px-6 py-4 md:px-7 md:py-5 hover:bg-surface-container transition-all btn-squish flex justify-center items-center gap-3 border-2 border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary cursor-pointer"
@@ -82,7 +84,7 @@ function Landing() {
                 </a>
               </div>
 
-              <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:gap-3 max-w-2xl">
+              <div className="motion-rise motion-delay-4 grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:gap-3 max-w-2xl">
                 {heroCopy.tracks.map((track) => (
                   <div
                     key={track.title}
@@ -103,7 +105,7 @@ function Landing() {
               <div className="absolute right-0 top-0 hidden h-24 w-24 border-r-2 border-t-2 border-secondary md:block" />
               <div className="absolute bottom-2 left-0 hidden h-20 w-20 border-b-2 border-l-2 border-primary md:block" />
 
-              <div className="relative ml-auto max-w-[560px] border border-primary bg-surface-container-lowest shadow-[16px_16px_0_var(--secondary-container)]">
+              <div className="motion-panel motion-delay-2 relative ml-auto max-w-[560px] border border-primary bg-surface-container-lowest shadow-[16px_16px_0_var(--secondary-container)]">
                 <div className="flex items-center justify-between border-b border-outline-variant px-4 py-3">
                   <div>
                     <p className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
@@ -114,7 +116,7 @@ function Landing() {
                     </p>
                   </div>
                   <div className="flex gap-1.5" aria-hidden="true">
-                    <span className="h-2.5 w-2.5 rounded-full bg-secondary" />
+                    <span className="motion-pulse-dot h-2.5 w-2.5 rounded-full bg-secondary" />
                     <span className="h-2.5 w-2.5 rounded-full bg-primary" />
                     <span className="h-2.5 w-2.5 rounded-full bg-outline" />
                   </div>
@@ -123,7 +125,7 @@ function Landing() {
                 <div className="grid gap-5 p-4 md:grid-cols-[0.9fr_1.1fr] md:p-6">
                   <div className="flex flex-col items-center justify-center border border-outline-variant bg-surface px-4 py-6 text-center">
                     <AibiMark
-                      className="h-32 w-32 border-0 bg-transparent shadow-none md:h-44 md:w-44"
+                      className="motion-float h-32 w-32 border-0 bg-transparent shadow-none md:h-44 md:w-44"
                       label="Aibi character"
                       shape="circle"
                       size="lg"
@@ -143,7 +145,7 @@ function Landing() {
                       ["Practice", "12 tasks", "NIS, BIL, NSPM"],
                     ].map(([label, value, note]) => (
                       <div
-                        className="grid grid-cols-[1fr_auto] gap-3 border border-outline-variant bg-surface px-4 py-3"
+                        className="motion-route-card grid grid-cols-[1fr_auto] gap-3 border border-outline-variant bg-surface px-4 py-3"
                         key={label}
                       >
                         <div>
@@ -168,7 +170,9 @@ function Landing() {
                             Solve 5 logic questions
                           </p>
                         </div>
-                        <span className="material-symbols-outlined text-3xl">arrow_forward</span>
+                        <span className="material-symbols-outlined motion-arrow text-3xl">
+                          arrow_forward
+                        </span>
                       </div>
                     </div>
                   </div>

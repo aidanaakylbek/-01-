@@ -333,4 +333,119 @@
   .delay-200 {
     animation-delay: 0.2s;
   }
+
+  .motion-rise {
+    opacity: 0;
+    transform: translateY(18px);
+    animation: motion-rise 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  }
+
+  .motion-panel {
+    opacity: 0;
+    transform: translate(18px, 14px) rotate(0.8deg);
+    animation: motion-panel 0.85s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  }
+
+  .motion-float {
+    animation: motion-float 4.8s ease-in-out infinite;
+  }
+
+  .motion-route-card {
+    transform: translateX(0);
+    transition:
+      transform 0.24s ease,
+      border-color 0.24s ease,
+      background-color 0.24s ease;
+  }
+
+  .motion-route-card:hover {
+    transform: translateX(6px);
+    border-color: var(--secondary);
+    background-color: var(--surface-container-low);
+  }
+
+  .motion-pulse-dot {
+    animation: motion-pulse-dot 1.9s ease-in-out infinite;
+  }
+
+  .motion-arrow {
+    transition: transform 0.2s ease;
+  }
+
+  .btn-squish:hover .motion-arrow,
+  .motion-route-card:hover .motion-arrow {
+    transform: translateX(4px);
+  }
+
+  .motion-delay-1 {
+    animation-delay: 0.08s;
+  }
+
+  .motion-delay-2 {
+    animation-delay: 0.16s;
+  }
+
+  .motion-delay-3 {
+    animation-delay: 0.24s;
+  }
+
+  .motion-delay-4 {
+    animation-delay: 0.32s;
+  }
+
+  @keyframes motion-rise {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes motion-panel {
+    to {
+      opacity: 1;
+      transform: translate(0, 0) rotate(0deg);
+    }
+  }
+
+  @keyframes motion-float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  @keyframes motion-pulse-dot {
+    0%,
+    100% {
+      opacity: 0.45;
+      transform: scale(0.88);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .motion-rise,
+    .motion-panel,
+    .motion-float,
+    .motion-pulse-dot,
+    .chart-line,
+    .progress-68,
+    .animate-bounce {
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
+
+    .motion-route-card,
+    .motion-arrow,
+    .btn-squish {
+      transition: none;
+    }
+  }
 }
