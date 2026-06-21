@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+﻿import { createFileRoute } from "@tanstack/react-router";
 import { AIReviewPanel } from "@/components/ai-review-panel";
 import { Navbar } from "@/components/navbar";
 import { useLanguage } from "@/hooks/use-language";
@@ -6,10 +6,10 @@ import { useLanguage } from "@/hooks/use-language";
 export const Route = createFileRoute("/plan")({
   head: () => ({
     meta: [
-      { title: "Personalized Study Plan — Aibi" },
+      { title: "Personalized Study Plan — AI-Sana" },
       {
         name: "description",
-        content: "Your weekly Aibi study plan, adapted to your strengths and gaps.",
+        content: "Your weekly AI-Sana study plan, adapted to your strengths and gaps.",
       },
     ],
   }),

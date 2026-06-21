@@ -1,4 +1,4 @@
-import { Link, useLocation } from "@tanstack/react-router";
+﻿import { Link, useLocation } from "@tanstack/react-router";
 import { useState, useEffect, useCallback } from "react";
 import { useLanguage, Lang } from "@/hooks/use-language";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -46,7 +46,11 @@ export function Navbar() {
   const profileInitials = account?.initials ?? "AB";
   const profileName =
     account?.name ??
-    (language === "KZ" ? "Aibi оқушысы" : language === "RU" ? "Ученик Aibi" : "Aibi Student");
+    (language === "KZ"
+      ? "AI-Sana оқушысы"
+      : language === "RU"
+        ? "Ученик AI-Sana"
+        : "AI-Sana Student");
 
   const currentPath = location.pathname;
   const isLanding = currentPath === "/";
@@ -64,7 +68,7 @@ export function Navbar() {
           notificationTwo: "Пробный экзамен: суббота, 10:00.",
           notificationThree: "Повторите тему: логические задачи.",
           profileTitle: "Профиль ученика",
-          profileName: "Aibi Student",
+          profileName: "AI-Sana Student",
           profileStatus: "68% готовности",
           myProgress: "Мой прогресс",
           studyPlan: "План обучения",
@@ -77,7 +81,7 @@ export function Navbar() {
             notificationTwo: "Сынақ емтихан: сенбі, 10:00.",
             notificationThree: "Тақырыпты қайталаңыз: логикалық есептер.",
             profileTitle: "Оқушы профилі",
-            profileName: "Aibi Student",
+            profileName: "AI-Sana Student",
             profileStatus: "68% дайындық",
             myProgress: "Менің прогресім",
             studyPlan: "Оқу жоспары",
@@ -89,7 +93,7 @@ export function Navbar() {
             notificationTwo: "Mock exam: Saturday, 10:00.",
             notificationThree: "Review topic: Logic Problems.",
             profileTitle: "Student Profile",
-            profileName: "Aibi Student",
+            profileName: "AI-Sana Student",
             profileStatus: "68% readiness",
             myProgress: "My Progress",
             studyPlan: "Study Plan",
@@ -193,7 +197,7 @@ export function Navbar() {
           >
             <AibiMark aria-hidden="true" size="md" />
             <h1 className="font-headline-md text-headline-md font-bold text-primary whitespace-nowrap">
-              <span className="text-secondary font-bold">Aibi</span>
+              <span className="text-secondary font-bold">AI-Sana</span>
             </h1>
           </a>
 
@@ -421,7 +425,7 @@ export function Navbar() {
             >
               <AibiMark aria-hidden="true" size="md" />
               <h1 className="font-headline-md text-headline-md font-bold text-primary">
-                <span className="text-secondary font-bold">Aibi</span>
+                <span className="text-secondary font-bold">AI-Sana</span>
               </h1>
             </a>
             <button

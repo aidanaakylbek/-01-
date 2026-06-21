@@ -1,4 +1,4 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+﻿import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { Navbar } from "@/components/navbar";
 import { getSubject } from "@/data/subjects";
 import { useLanguage } from "@/hooks/use-language";
@@ -11,10 +11,10 @@ export const Route = createFileRoute("/subjects/$subjectId")({
   },
   head: ({ loaderData }) => ({
     meta: [
-      { title: `${loaderData?.subject.title.EN ?? "Subject"} — Aibi` },
+      { title: `${loaderData?.subject.title.EN ?? "Subject"} — AI-Sana` },
       {
         name: "description",
-        content: loaderData?.subject.description.EN ?? "Aibi subject modules and topics.",
+        content: loaderData?.subject.description.EN ?? "AI-Sana subject modules and topics.",
       },
     ],
   }),

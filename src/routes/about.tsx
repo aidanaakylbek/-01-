@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+﻿import { createFileRoute, Link } from "@tanstack/react-router";
 import { Navbar } from "@/components/navbar";
 import { SiteFooter } from "@/components/site-footer";
 import { useLanguage } from "@/hooks/use-language";
@@ -6,10 +6,10 @@ import { useLanguage } from "@/hooks/use-language";
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
-      { title: "About - Aibi" },
+      { title: "About - AI-Sana" },
       {
         name: "description",
-        content: "About Aibi and its mission for exam preparation.",
+        content: "About AI-Sana and its mission for exam preparation.",
       },
     ],
   }),
@@ -22,7 +22,7 @@ function About() {
     language === "KZ"
       ? {
           title: "Біз туралы",
-          body: "Aibi НИШ, БИЛ және РФМШ-ға дайындалатын әр оқушыға көмектеседі: диагностика, жеке оқу жоспары және ата-аналарға түсінікті есептер арқылы.",
+          body: "AI-Sana НИШ, БИЛ және РФМШ-ға дайындалатын әр оқушыға көмектеседі: диагностика, жеке оқу жоспары және ата-аналарға түсінікті есептер арқылы.",
           cards: [
             ["psychology", "Диагностика", "Оқушының күшті жақтары мен білім олқылықтарын табамыз."],
             [
@@ -37,7 +37,7 @@ function About() {
       : language === "RU"
         ? {
             title: "О нас",
-            body: "Aibi помогает каждому ученику готовиться к НИШ, БИЛ и РФМШ через диагностику, персональный учебный план и понятные отчеты для родителей.",
+            body: "AI-Sana помогает каждому ученику готовиться к НИШ, БИЛ и РФМШ через диагностику, персональный учебный план и понятные отчеты для родителей.",
             cards: [
               ["psychology", "Диагностика", "Находим сильные стороны и пробелы ученика."],
               ["route", "План", "Показываем, что учить сегодня и как двигаться дальше."],
@@ -47,7 +47,7 @@ function About() {
           }
         : {
             title: "About",
-            body: "Aibi helps every student prepare for NIS, BIL, and NSPM through diagnostics, a personalized study plan, and clear parent reports.",
+            body: "AI-Sana helps every student prepare for NIS, BIL, and NSPM through diagnostics, a personalized study plan, and clear parent reports.",
             cards: [
               ["psychology", "Diagnostics", "We find each student's strengths and knowledge gaps."],
               ["route", "Plan", "We show what to study today and how to move forward."],
@@ -65,7 +65,7 @@ function About() {
       <Navbar />
       <main className="max-w-4xl mx-auto px-container-padding-mobile md:px-container-padding-desktop py-stack-lg">
         <span className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
-          Aibi
+          AI-Sana
         </span>
         <h1 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary mt-4">
           {copy.title}

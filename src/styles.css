@@ -4,60 +4,60 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Aibi design tokens */
+/* AI-Sana design tokens */
 :root {
-  --background: #fff8f3;
-  --on-background: #201b13;
-  --surface: #fff8f3;
-  --on-surface: #201b13;
-  --on-surface-variant: #45474b;
-  --surface-variant: #ece1d4;
-  --surface-bright: #fff8f3;
-  --surface-dim: #e4d8cc;
-  --surface-tint: #5b5e66;
+  --background: #fbf7ff;
+  --on-background: #21182b;
+  --surface: #fbf7ff;
+  --on-surface: #21182b;
+  --on-surface-variant: #51465d;
+  --surface-variant: #eadff6;
+  --surface-bright: #fffaff;
+  --surface-dim: #e4d7ee;
+  --surface-tint: #7c3aed;
   --surface-container-lowest: #ffffff;
-  --surface-container-low: #fef2e5;
-  --surface-container: #f8ecdf;
-  --surface-container-high: #f2e6da;
-  --surface-container-highest: #ece1d4;
+  --surface-container-low: #f5edff;
+  --surface-container: #efe5fb;
+  --surface-container-high: #e8dcf5;
+  --surface-container-highest: #dfd1ec;
 
-  --primary: #000000;
+  --primary: #1b1028;
   --on-primary: #ffffff;
-  --primary-container: #181c22;
-  --on-primary-container: #80848c;
-  --primary-fixed: #dfe2eb;
-  --primary-fixed-dim: #c3c6cf;
-  --on-primary-fixed: #181c22;
-  --on-primary-fixed-variant: #43474e;
-  --inverse-primary: #c3c6cf;
+  --primary-container: #332044;
+  --on-primary-container: #f0dfff;
+  --primary-fixed: #f0dfff;
+  --primary-fixed-dim: #d8bdf3;
+  --on-primary-fixed: #241133;
+  --on-primary-fixed-variant: #64407e;
+  --inverse-primary: #e2c7ff;
 
-  --secondary: #0040e0;
+  --secondary: #7c3aed;
   --on-secondary: #ffffff;
-  --secondary-container: #2e5bff;
-  --on-secondary-container: #efefff;
-  --secondary-fixed: #dde1ff;
-  --secondary-fixed-dim: #b8c3ff;
-  --on-secondary-fixed: #001356;
-  --on-secondary-fixed-variant: #0035be;
+  --secondary-container: #a78bfa;
+  --on-secondary-container: #1f1230;
+  --secondary-fixed: #efe7ff;
+  --secondary-fixed-dim: #d8c2ff;
+  --on-secondary-fixed: #230b4d;
+  --on-secondary-fixed-variant: #6330c7;
 
-  --tertiary: #000000;
+  --tertiary: #2f1651;
   --on-tertiary: #ffffff;
-  --tertiary-container: #1c1c19;
-  --on-tertiary-container: #858480;
-  --tertiary-fixed: #e5e2dd;
-  --tertiary-fixed-dim: #c9c6c2;
-  --on-tertiary-fixed: #1c1c19;
-  --on-tertiary-fixed-variant: #474743;
+  --tertiary-container: #ead7ff;
+  --on-tertiary-container: #2a123d;
+  --tertiary-fixed: #ead7ff;
+  --tertiary-fixed-dim: #d7b8ff;
+  --on-tertiary-fixed: #260d3c;
+  --on-tertiary-fixed-variant: #6f3ba0;
 
   --error: #ba1a1a;
   --on-error: #ffffff;
   --error-container: #ffdad6;
   --on-error-container: #93000a;
 
-  --outline: #76777b;
-  --outline-variant: #c6c6cb;
-  --inverse-surface: #362f27;
-  --inverse-on-surface: #fbefe2;
+  --outline: #81748d;
+  --outline-variant: #d2c3e8;
+  --inverse-surface: #2b2136;
+  --inverse-on-surface: #f8ecff;
 }
 
 @theme inline {
@@ -260,7 +260,7 @@
     left: -2px;
     right: -4px;
     height: 12px;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 20' preserveAspectRatio='none'%3E%3Cpath d='M0,15 Q25,5 50,15 T100,10' fill='none' stroke='%230040e0' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 20' preserveAspectRatio='none'%3E%3Cpath d='M0,15 Q25,5 50,15 T100,10' fill='none' stroke='%237c3aed' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-size: 100% 100%;
     z-index: -1;

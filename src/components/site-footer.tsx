@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+﻿import { Link } from "@tanstack/react-router";
 import { useLanguage } from "@/hooks/use-language";
 
 export function SiteFooter() {
@@ -15,7 +15,7 @@ export function SiteFooter() {
       <div className="flex flex-col md:flex-row justify-between items-start py-20 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto">
         <div className="mb-12 md:mb-0 max-w-sm">
           <div className="font-headline-md text-headline-md text-secondary font-bold mb-6">
-            Aibi
+            AI-Sana
           </div>
           <p className="font-body-md text-body-md text-on-surface-variant mb-6">
             {t("footer_desc")}

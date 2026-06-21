@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import { AibiMark } from "@/components/aibi-mark";
 
 type ChatMessage = {
@@ -9,7 +9,7 @@ type ChatMessage = {
 const INITIAL_MESSAGE: ChatMessage = {
   role: "assistant",
   content:
-    "Hello! I'm your Aibi AI Tutor. Ask me about math, logic, reading, languages, study plans, or NIS/BIL/NSPM exam preparation.",
+    "Hello! I'm your AI-Sana AI Tutor. Ask me about math, logic, reading, languages, study plans, or NIS/BIL/NSPM exam preparation.",
 };
 
 const FRIENDLY_ERROR =
@@ -77,7 +77,7 @@ export function AIAssistant() {
       >
         <AibiMark
           className="border-0 shadow-none"
-          label="Open Aibi Tutor"
+          label="Open AI-Sana Tutor"
           shape="circle"
           size="lg"
         />
@@ -99,7 +99,7 @@ export function AIAssistant() {
                 <AibiMark shape="circle" size="md" />
                 <div className="min-w-0 flex-1">
                   <h2 className="font-headline-md text-title-lg sm:text-headline-md">
-                    Aibi AI Tutor
+                    AI-Sana AI Tutor
                   </h2>
                   <p className="text-xs text-on-surface-variant line-clamp-1">
                     Step-by-step help for exams and study plans

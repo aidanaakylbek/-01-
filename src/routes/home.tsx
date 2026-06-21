@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+﻿import { createFileRoute, Link } from "@tanstack/react-router";
 import { Navbar } from "@/components/navbar";
 import { useLanguage } from "@/hooks/use-language";
 import { getAccountDashboard } from "@/lib/api/account.functions";
@@ -7,10 +7,10 @@ export const Route = createFileRoute("/home")({
   loader: () => getAccountDashboard(),
   head: () => ({
     meta: [
-      { title: "Home — Aibi" },
+      { title: "Home — AI-Sana" },
       {
         name: "description",
-        content: "Your Aibi readiness, today's plan, and weak topic focus.",
+        content: "Your AI-Sana readiness, today's plan, and weak topic focus.",
       },
     ],
   }),

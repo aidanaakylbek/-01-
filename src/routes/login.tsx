@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+﻿import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { FormEvent } from "react";
 import { Navbar } from "@/components/navbar";
 import { useLanguage } from "@/hooks/use-language";
@@ -7,8 +7,8 @@ import { loginAccount } from "@/lib/api/account.functions";
 export const Route = createFileRoute("/login")({
   head: () => ({
     meta: [
-      { title: "Login - Aibi" },
-      { name: "description", content: "Sign in to your Aibi account." },
+      { title: "Login - AI-Sana" },
+      { name: "description", content: "Sign in to your AI-Sana account." },
     ],
   }),
   component: Login,

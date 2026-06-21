@@ -1,4 +1,4 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+﻿import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
   Link,
@@ -79,13 +79,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Aibi — NIS, BIL & NSPM Exam Preparation" },
+      { title: "AI-Sana — NIS, BIL & NSPM Exam Preparation" },
       {
         name: "description",
         content:
           "Personalized AI preparation for students preparing for NIS, BIL, and NSPM entrance exams.",
       },
-      { property: "og:title", content: "Aibi — NIS, BIL & NSPM Exam Preparation" },
+      { property: "og:title", content: "AI-Sana — NIS, BIL & NSPM Exam Preparation" },
       {
         property: "og:description",
         content:
@@ -93,7 +93,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "Aibi — NIS, BIL & NSPM Exam Preparation" },
+      { name: "twitter:title", content: "AI-Sana — NIS, BIL & NSPM Exam Preparation" },
       {
         name: "twitter:description",
         content:

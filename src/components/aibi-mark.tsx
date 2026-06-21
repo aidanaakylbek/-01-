@@ -1,7 +1,7 @@
-import type { HTMLAttributes } from "react";
+﻿import type { HTMLAttributes } from "react";
 
 import { cn } from "@/lib/utils";
-import aibiMascot from "@/assets/aibi-mascot.png";
+import aiSanaHero from "@/assets/ai-sana-hero.jpg";
 
 type AibiMarkProps = HTMLAttributes<HTMLDivElement> & {
   className?: string;
@@ -18,7 +18,7 @@ const sizeClasses = {
 
 export function AibiMark({
   className,
-  label = "Aibi",
+  label = "AI-Sana",
   size = "md",
   shape = "square",
   ...props
@@ -38,9 +38,9 @@ export function AibiMark({
       <img
         alt=""
         aria-hidden="true"
-        className="w-[115%] h-[115%] object-contain"
+        className="h-full w-full object-cover"
         draggable={false}
-        src={aibiMascot}
+        src={aiSanaHero}
       />
     </div>
   );

@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+﻿import { createFileRoute, Link } from "@tanstack/react-router";
 import { Navbar } from "@/components/navbar";
 import { SiteFooter } from "@/components/site-footer";
 import { useLanguage } from "@/hooks/use-language";
@@ -7,16 +7,16 @@ import { AibiMark } from "@/components/aibi-mark";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Aibi — NIS, BIL & NSPM Exam Preparation" },
+      { title: "AI-Sana — NIS, BIL & NSPM Exam Preparation" },
       {
         name: "description",
         content:
-          "Aibi is the AI tutor for students preparing for NIS, BIL, and NSPM entrance exams.",
+          "AI-Sana is the AI tutor for students preparing for NIS, BIL, and NSPM entrance exams.",
       },
-      { property: "og:title", content: "Aibi — NIS, BIL & NSPM Exam Preparation" },
+      { property: "og:title", content: "AI-Sana — NIS, BIL & NSPM Exam Preparation" },
       {
         property: "og:description",
-        content: "Aibi is the AI tutor for NIS, BIL, and NSPM entrance exams.",
+        content: "AI-Sana is the AI tutor for NIS, BIL, and NSPM entrance exams.",
       },
     ],
   }),
@@ -47,7 +47,7 @@ function Landing() {
               </div>
 
               <h1 className="motion-rise motion-delay-1 font-display-xl text-[56px] leading-[0.95] md:text-[112px] md:leading-[0.9] tracking-normal text-primary mb-4 md:mb-6">
-                Aibi
+                AI-Sana
               </h1>
               <p className="motion-rise motion-delay-2 font-headline-lg-mobile text-[28px] leading-[1.15] md:font-headline-lg md:text-headline-lg text-primary max-w-2xl mb-4 md:mb-5">
                 {heroCopy.title}
@@ -109,7 +109,7 @@ function Landing() {
                 <div className="flex items-center justify-between border-b border-outline-variant px-4 py-3">
                   <div>
                     <p className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
-                      Aibi path
+                      AI-Sana path
                     </p>
                     <p className="font-title-md text-title-md text-primary">
                       Today&apos;s learning route
@@ -126,7 +126,7 @@ function Landing() {
                   <div className="flex flex-col items-center justify-center border border-outline-variant bg-surface px-4 py-6 text-center">
                     <AibiMark
                       className="motion-float h-32 w-32 border-0 bg-transparent shadow-none md:h-44 md:w-44"
-                      label="Aibi character"
+                      label="AI-Sana character"
                       shape="circle"
                       size="lg"
                     />
@@ -316,7 +316,7 @@ function Landing() {
               <div className="mb-8 flex items-center justify-between border-b border-outline-variant pb-5">
                 <div>
                   <p className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
-                    Aibi review
+                    AI-Sana review
                   </p>
                   <p className="font-title-md text-title-md text-primary">After every task</p>
                 </div>
@@ -410,7 +410,7 @@ function getHeroCopy(language: string) {
       badge: "Нақты мақсат. Жеке дайындық.",
       title: "Сенің НИШ, БИЛ және РФМШ-ға дайындайтын AI көмекшің.",
       aibiLine:
-        "Aibi жауапты ғана айтпайды: әдісін түсіндіреді, қатені көрсетеді және келесі қадамды ұсынады.",
+        "AI-Sana жауапты ғана айтпайды: әдісін түсіндіреді, қатені көрсетеді және келесі қадамды ұсынады.",
       tracks: [
         { title: "НИШ", subtitle: "Логика және сандық талдау" },
         { title: "БИЛ", subtitle: "Оқу сауаттылығы және тілдер" },
@@ -424,7 +424,7 @@ function getHeroCopy(language: string) {
       badge: "Четкая цель. Личная подготовка.",
       title: "Твой AI-помощник для подготовки к НИШ, БИЛ и РФМШ.",
       aibiLine:
-        "Aibi не просто дает ответ: объясняет метод, показывает ошибку и предлагает следующий шаг.",
+        "AI-Sana не просто дает ответ: объясняет метод, показывает ошибку и предлагает следующий шаг.",
       tracks: [
         { title: "НИШ", subtitle: "Логика и количественный анализ" },
         { title: "БИЛ", subtitle: "Чтение и языки" },
@@ -437,7 +437,7 @@ function getHeroCopy(language: string) {
     badge: "Clear goal. Personal preparation.",
     title: "Your AI study guide for NIS, BIL and NSPM entrance exams.",
     aibiLine:
-      "Aibi does not just give answers: it explains the method, finds mistakes, and suggests the next step.",
+      "AI-Sana does not just give answers: it explains the method, finds mistakes, and suggests the next step.",
     tracks: [
       { title: "NIS", subtitle: "Logic and quantitative reasoning" },
       { title: "BIL", subtitle: "Reading literacy and languages" },

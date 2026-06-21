@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+﻿import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AIReviewPanel } from "@/components/ai-review-panel";
 import { Navbar } from "@/components/navbar";
@@ -8,10 +8,11 @@ import { useLanguage } from "@/hooks/use-language";
 export const Route = createFileRoute("/diagnostic")({
   head: () => ({
     meta: [
-      { title: "Find Your Level — Aibi" },
+      { title: "Find Your Level — AI-Sana" },
       {
         name: "description",
-        content: "Take the Aibi diagnostic to find your level across NIS, BIL, and NSPM subjects.",
+        content:
+          "Take the AI-Sana diagnostic to find your level across NIS, BIL, and NSPM subjects.",
       },
     ],
   }),

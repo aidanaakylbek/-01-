@@ -1,4 +1,4 @@
-import { createFileRoute, Link, Outlet, useLocation } from "@tanstack/react-router";
+﻿import { createFileRoute, Link, Outlet, useLocation } from "@tanstack/react-router";
 import { Navbar } from "@/components/navbar";
 import { subjects, type Subject } from "@/data/subjects";
 import { useLanguage } from "@/hooks/use-language";
@@ -6,10 +6,10 @@ import { useLanguage } from "@/hooks/use-language";
 export const Route = createFileRoute("/subjects")({
   head: () => ({
     meta: [
-      { title: "Subjects — Aibi" },
+      { title: "Subjects — AI-Sana" },
       {
         name: "description",
-        content: "All Aibi subjects with modules and topics for NIS, BIL, and NSPM preparation.",
+        content: "All AI-Sana subjects with modules and topics for NIS, BIL, and NSPM preparation.",
       },
     ],
   }),

@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+﻿import { createFileRoute } from "@tanstack/react-router";
 import { Navbar } from "@/components/navbar";
 import { useLanguage } from "@/hooks/use-language";
 import { getAccountDashboard } from "@/lib/api/account.functions";
@@ -8,7 +8,7 @@ export const Route = createFileRoute("/progress")({
   loader: () => getAccountDashboard(),
   head: () => ({
     meta: [
-      { title: "My Progress — Aibi" },
+      { title: "My Progress — AI-Sana" },
       {
         name: "description",
         content: "Weekly accuracy, time spent, and subject status across NIS, BIL & NSPM tracks.",

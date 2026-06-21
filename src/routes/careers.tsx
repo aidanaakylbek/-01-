@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+﻿import { createFileRoute } from "@tanstack/react-router";
 import { Navbar } from "@/components/navbar";
 import { SiteFooter } from "@/components/site-footer";
 import { useLanguage } from "@/hooks/use-language";
@@ -6,10 +6,10 @@ import { useLanguage } from "@/hooks/use-language";
 export const Route = createFileRoute("/careers")({
   head: () => ({
     meta: [
-      { title: "Careers - Aibi" },
+      { title: "Careers - AI-Sana" },
       {
         name: "description",
-        content: "Careers and open roles at Aibi.",
+        content: "Careers and open roles at AI-Sana.",
       },
     ],
   }),
@@ -25,7 +25,7 @@ function Careers() {
           title: "Вакансиялар",
           body: "Біз мектеп оқушыларына қолжетімді дайындық беретін платформа құрып жатырмыз. Білім теңдігі миссиясы сізге жақын болса, танысуға қуаныштымыз.",
           emptyTitle: "Қазір ашық вакансия жоқ",
-          emptyText: "Aibi командасында жаңа позициялар пайда болғанда, осы бетті жаңартамыз.",
+          emptyText: "AI-Sana командасында жаңа позициялар пайда болғанда, осы бетті жаңартамыз.",
         }
       : language === "RU"
         ? {
@@ -33,14 +33,14 @@ function Careers() {
             title: "Вакансии",
             body: "Мы строим платформу для доступной подготовки школьников. Если вам близка миссия образовательного равенства, будем рады познакомиться.",
             emptyTitle: "Открытых вакансий пока нет",
-            emptyText: "Мы обновим эту страницу, когда появятся новые позиции в команде Aibi.",
+            emptyText: "Мы обновим эту страницу, когда появятся новые позиции в команде AI-Sana.",
           }
         : {
             eyebrow: "Careers",
             title: "Careers",
             body: "We are building a platform for accessible student preparation. If educational equity matters to you, we would be glad to meet.",
             emptyTitle: "No open roles yet",
-            emptyText: "We will update this page when new Aibi team positions appear.",
+            emptyText: "We will update this page when new AI-Sana team positions appear.",
           };
 
   return (

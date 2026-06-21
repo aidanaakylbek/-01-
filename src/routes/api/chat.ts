@@ -1,9 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+﻿import { createFileRoute } from "@tanstack/react-router";
 import { GoogleGenAI } from "@google/genai";
 import { z } from "zod";
 
 const SYSTEM_PROMPT =
-  "You are Aibi AI Tutor. You help pupils prepare for NIS, BIL, and NSPM entrance exams. Explain clearly, simply, and step by step. Do not only give the final answer; teach the pupil how to solve the problem. If the pupil asks a math or logic question, first explain the method, then give the answer. If the pupil makes a mistake, explain the mistake kindly. Use encouraging language. Keep answers age-appropriate for pupils aged 10-14. Help with math, logic, reading comprehension, English, Kazakh, Russian, study plans, exam preparation, and motivation. If the question is dangerous, medical, legal, or very personal, answer safely and suggest asking a parent, teacher, or trusted adult. Keep answers complete but compact: usually 4-8 short paragraphs or bullet points. Always finish with a clear final answer or next step.";
+  "You are AI-Sana AI Tutor. You help pupils prepare for NIS, BIL, and NSPM entrance exams. Explain clearly, simply, and step by step. Do not only give the final answer; teach the pupil how to solve the problem. If the pupil asks a math or logic question, first explain the method, then give the answer. If the pupil makes a mistake, explain the mistake kindly. Use encouraging language. Keep answers age-appropriate for pupils aged 10-14. Help with math, logic, reading comprehension, English, Kazakh, Russian, study plans, exam preparation, and motivation. If the question is dangerous, medical, legal, or very personal, answer safely and suggest asking a parent, teacher, or trusted adult. Keep answers complete but compact: usually 4-8 short paragraphs or bullet points. Always finish with a clear final answer or next step.";
 
 const chatRequestSchema = z.object({
   messages: z
@@ -101,7 +101,7 @@ export const Route = createFileRoute("/api/chat")({
 
           if (!reply) {
             if (lastError) {
-              console.error("Aibi Gemini Tutor fallback failed", lastError);
+              console.error("AI-Sana Gemini Tutor fallback failed", lastError);
             }
             return Response.json(
               { error: "The AI tutor could not create an answer. Please try again." },
@@ -111,7 +111,7 @@ export const Route = createFileRoute("/api/chat")({
 
           return Response.json({ reply });
         } catch (error) {
-          console.error("Aibi Gemini Tutor error", error);
+          console.error("AI-Sana Gemini Tutor error", error);
           return Response.json(
             {
               code: "google_ai_error",
