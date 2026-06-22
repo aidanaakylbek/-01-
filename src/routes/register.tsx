@@ -26,6 +26,7 @@ function Register() {
           name: "Имя ученика",
           email: "Электронная почта",
           grade: "Класс",
+          parentWhatsApp: "WhatsApp родителя",
           password: "Пароль",
           submit: "Создать аккаунт",
           haveAccount: "Уже есть аккаунт?",
@@ -38,6 +39,7 @@ function Register() {
             name: "Оқушының аты",
             email: "Электрондық пошта",
             grade: "Сынып",
+            parentWhatsApp: "Ата-ананың WhatsApp нөмірі",
             password: "Құпия сөз",
             submit: "Аккаунт ашу",
             haveAccount: "Аккаунтыңыз бар ма?",
@@ -49,6 +51,7 @@ function Register() {
             name: "Student name",
             email: "Email",
             grade: "Grade",
+            parentWhatsApp: "Parent WhatsApp",
             password: "Password",
             submit: "Create Account",
             haveAccount: "Already have an account?",
@@ -63,6 +66,7 @@ function Register() {
         name: String(formData.get("name") ?? ""),
         email: String(formData.get("email") ?? ""),
         grade: String(formData.get("grade") ?? ""),
+        parentWhatsApp: String(formData.get("parentWhatsApp") ?? ""),
         password: String(formData.get("password") ?? ""),
       },
     });
@@ -127,6 +131,18 @@ function Register() {
                 <option value="8">8</option>
                 <option value="9">9</option>
               </select>
+            </label>
+
+            <label className="flex flex-col gap-2 font-label-md text-label-md text-primary">
+              {copy.parentWhatsApp}
+              <input
+                className="h-12 border border-outline-variant bg-surface px-4 font-body-md text-body-md text-on-surface focus:border-secondary focus:outline-none"
+                name="parentWhatsApp"
+                type="tel"
+                autoComplete="tel"
+                placeholder="+7 700 123 45 67"
+                required
+              />
             </label>
 
             <label className="flex flex-col gap-2 font-label-md text-label-md text-primary">

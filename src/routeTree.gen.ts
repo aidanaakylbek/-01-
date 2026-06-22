@@ -22,6 +22,7 @@ import { Route as CareersRouteImport } from './routes/careers'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SubjectsSubjectIdRouteImport } from './routes/subjects.$subjectId'
+import { Route as ApiWhatsappWeeklyReportRouteImport } from './routes/api/whatsapp-weekly-report'
 import { Route as ApiReviewRouteImport } from './routes/api/review'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 
@@ -90,6 +91,11 @@ const SubjectsSubjectIdRoute = SubjectsSubjectIdRouteImport.update({
   path: '/$subjectId',
   getParentRoute: () => SubjectsRoute,
 } as any)
+const ApiWhatsappWeeklyReportRoute = ApiWhatsappWeeklyReportRouteImport.update({
+  id: '/api/whatsapp-weekly-report',
+  path: '/api/whatsapp-weekly-report',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiReviewRoute = ApiReviewRouteImport.update({
   id: '/api/review',
   path: '/api/review',
@@ -116,6 +122,7 @@ export interface FileRoutesByFullPath {
   '/subjects': typeof SubjectsRouteWithChildren
   '/api/chat': typeof ApiChatRoute
   '/api/review': typeof ApiReviewRoute
+  '/api/whatsapp-weekly-report': typeof ApiWhatsappWeeklyReportRoute
   '/subjects/$subjectId': typeof SubjectsSubjectIdRoute
 }
 export interface FileRoutesByTo {
@@ -133,6 +140,7 @@ export interface FileRoutesByTo {
   '/subjects': typeof SubjectsRouteWithChildren
   '/api/chat': typeof ApiChatRoute
   '/api/review': typeof ApiReviewRoute
+  '/api/whatsapp-weekly-report': typeof ApiWhatsappWeeklyReportRoute
   '/subjects/$subjectId': typeof SubjectsSubjectIdRoute
 }
 export interface FileRoutesById {
@@ -151,6 +159,7 @@ export interface FileRoutesById {
   '/subjects': typeof SubjectsRouteWithChildren
   '/api/chat': typeof ApiChatRoute
   '/api/review': typeof ApiReviewRoute
+  '/api/whatsapp-weekly-report': typeof ApiWhatsappWeeklyReportRoute
   '/subjects/$subjectId': typeof SubjectsSubjectIdRoute
 }
 export interface FileRouteTypes {
@@ -170,6 +179,7 @@ export interface FileRouteTypes {
     | '/subjects'
     | '/api/chat'
     | '/api/review'
+    | '/api/whatsapp-weekly-report'
     | '/subjects/$subjectId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -187,6 +197,7 @@ export interface FileRouteTypes {
     | '/subjects'
     | '/api/chat'
     | '/api/review'
+    | '/api/whatsapp-weekly-report'
     | '/subjects/$subjectId'
   id:
     | '__root__'
@@ -204,6 +215,7 @@ export interface FileRouteTypes {
     | '/subjects'
     | '/api/chat'
     | '/api/review'
+    | '/api/whatsapp-weekly-report'
     | '/subjects/$subjectId'
   fileRoutesById: FileRoutesById
 }
@@ -222,6 +234,7 @@ export interface RootRouteChildren {
   SubjectsRoute: typeof SubjectsRouteWithChildren
   ApiChatRoute: typeof ApiChatRoute
   ApiReviewRoute: typeof ApiReviewRoute
+  ApiWhatsappWeeklyReportRoute: typeof ApiWhatsappWeeklyReportRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -317,6 +330,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SubjectsSubjectIdRouteImport
       parentRoute: typeof SubjectsRoute
     }
+    '/api/whatsapp-weekly-report': {
+      id: '/api/whatsapp-weekly-report'
+      path: '/api/whatsapp-weekly-report'
+      fullPath: '/api/whatsapp-weekly-report'
+      preLoaderRoute: typeof ApiWhatsappWeeklyReportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/review': {
       id: '/api/review'
       path: '/api/review'
@@ -361,6 +381,7 @@ const rootRouteChildren: RootRouteChildren = {
   SubjectsRoute: SubjectsRouteWithChildren,
   ApiChatRoute: ApiChatRoute,
   ApiReviewRoute: ApiReviewRoute,
+  ApiWhatsappWeeklyReportRoute: ApiWhatsappWeeklyReportRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

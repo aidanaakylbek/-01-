@@ -4,6 +4,7 @@ export type Account = {
   email: string;
   grade: string;
   initials: string;
+  parentWhatsApp: string;
 };
 
 export type DashboardTask = {
@@ -64,6 +65,7 @@ const demoAccount: StoredAccount = {
   email: "aidana@aibi.kz",
   grade: "7",
   initials: "AA",
+  parentWhatsApp: "+77001234567",
   password: "demo123",
 };
 
@@ -193,6 +195,7 @@ export function registerAccount(input: {
   name: string;
   email: string;
   grade: string;
+  parentWhatsApp: string;
   password: string;
 }) {
   const account: StoredAccount = {
@@ -201,6 +204,7 @@ export function registerAccount(input: {
     email: input.email.trim().toLowerCase(),
     grade: input.grade,
     initials: getInitials(input.name),
+    parentWhatsApp: input.parentWhatsApp.trim(),
     password: input.password,
   };
 

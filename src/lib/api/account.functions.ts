@@ -17,6 +17,7 @@ export const registerAccount = createServerFn({ method: "POST" })
       name: z.string().min(2),
       email: z.string().email(),
       grade: z.string().min(1),
+      parentWhatsApp: z.string().trim().min(7),
       password: z.string().min(6),
     }),
   )

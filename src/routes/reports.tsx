@@ -39,6 +39,10 @@ function ParentReport() {
           openProgress: "Посмотреть прогресс",
           risks: "Зоны риска",
           recommendations: "Рекомендации на неделю",
+          whatsappTitle: "WhatsApp-отчет",
+          whatsappText:
+            "Каждый понедельник AI-Sana автоматически отправляет родителю короткий отчет в WhatsApp.",
+          whatsappStatus: "Автоматически, 1 раз в неделю",
           lessonsCompleted: "Уроки завершены",
           studyTime: "Время обучения",
           averageAccuracy: "Средняя точность",
@@ -86,6 +90,10 @@ function ParentReport() {
             openProgress: "Прогресті көру",
             risks: "Тәуекел аймақтары",
             recommendations: "Аптаға ұсыныстар",
+            whatsappTitle: "WhatsApp есебі",
+            whatsappText:
+              "AI-Sana әр дүйсенбі ата-анаға WhatsApp арқылы қысқа есепті автоматты түрде жібереді.",
+            whatsappStatus: "Автоматты түрде, аптасына 1 рет",
             lessonsCompleted: "Аяқталған сабақтар",
             studyTime: "Оқу уақыты",
             averageAccuracy: "Орташа дәлдік",
@@ -132,6 +140,10 @@ function ParentReport() {
             openProgress: "View Progress",
             risks: "Risk Areas",
             recommendations: "Recommendations This Week",
+            whatsappTitle: "WhatsApp Report",
+            whatsappText:
+              "Every Monday, AI-Sana automatically sends a short parent report to WhatsApp.",
+            whatsappStatus: "Automatic, once per week",
             lessonsCompleted: "Lessons completed",
             studyTime: "Study time",
             averageAccuracy: "Average accuracy",
@@ -277,6 +289,20 @@ function ParentReport() {
                 {copy.nextExamLine}
               </p>
             </div>
+            <div className="mt-6 border-t border-outline-variant pt-5">
+              <h3 className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
+                {copy.whatsappTitle}
+              </h3>
+              <p className="font-body-md text-body-md text-on-surface-variant mt-2">
+                {copy.whatsappText}
+              </p>
+              <p className="font-label-md text-label-md text-primary mt-3">
+                {copy.whatsappStatus}
+                {dashboard.account.parentWhatsApp
+                  ? ` • ${maskWhatsAppPhone(dashboard.account.parentWhatsApp)}`
+                  : ""}
+              </p>
+            </div>
           </div>
         </section>
 
@@ -349,4 +375,14 @@ function ParentReport() {
       </main>
     </div>
   );
+}
+
+function maskWhatsAppPhone(phone: string) {
+  const digits = phone.replace(/[^\d]/g, "");
+
+  if (digits.length < 5) {
+    return phone;
+  }
+
+  return `+${digits.slice(0, 3)} *** ** ${digits.slice(-2)}`;
 }
