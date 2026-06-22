@@ -22,9 +22,9 @@ export function SiteFooter() {
           </p>
           <a
             className="mb-6 block font-label-caps text-label-caps text-secondary uppercase tracking-widest hover:text-primary transition-colors"
-            href="mailto:info.aibi@gmail.com"
+            href="mailto:info.aisana@gmail.com"
           >
-            info.aibi@gmail.com
+            info.aisana@gmail.com
           </a>
           <p className="font-label-caps text-label-caps text-outline uppercase tracking-widest opacity-60">
             {t("footer_rights")}
