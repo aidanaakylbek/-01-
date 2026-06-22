@@ -124,7 +124,8 @@ function SubjectsPage() {
         <section className="flex flex-col gap-stack-lg">
           {copy.tracks.map((track) => (
             <div
-              className="border border-outline-variant bg-surface-container-lowest p-5 md:p-6"
+              id={track.id.toLowerCase()}
+              className="scroll-mt-28 border border-outline-variant bg-surface-container-lowest p-5 md:p-6"
               key={track.id}
             >
               <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3 border-b border-outline-variant pb-5 mb-5">

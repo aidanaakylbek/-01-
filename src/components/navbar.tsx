@@ -5,19 +5,23 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useAccountDashboard } from "@/hooks/use-account-dashboard";
 import { AibiMark } from "@/components/aibi-mark";
 
-type Tab = "home" | "subjects" | "practice" | "progress" | "reports";
+type Tab = "home" | "nis" | "bil" | "nspm" | "practice" | "progress" | "reports";
 
 interface NavTab {
   id: Tab;
-  labelKey: string;
+  label?: string;
+  labelKey?: string;
   icon: string;
   to?: "/home" | "/subjects" | "/plan" | "/progress" | "/reports" | "/login" | "/register";
+  href?: string;
   disabled?: boolean;
 }
 
 const tabs: NavTab[] = [
   { id: "home", labelKey: "nav_home", icon: "home", to: "/home" },
-  { id: "subjects", labelKey: "nav_subjects", icon: "auto_stories", to: "/subjects" },
+  { id: "nis", label: "NIS", icon: "school", href: "/subjects#nis" },
+  { id: "bil", label: "BIL", icon: "local_library", href: "/subjects#bil" },
+  { id: "nspm", label: "NSPM", icon: "functions", href: "/subjects#nspm" },
   { id: "practice", labelKey: "nav_practice", icon: "exercise", to: "/plan" },
   { id: "progress", labelKey: "nav_progress", icon: "analytics", to: "/progress" },
   { id: "reports", labelKey: "nav_reports", icon: "description", to: "/reports" },
@@ -110,7 +114,6 @@ export function Navbar() {
   // Determine active tab based on pathname
   const activeTab = (): Tab | "" => {
     if (currentPath === "/") return "home";
-    if (currentPath.startsWith("/subjects")) return "subjects";
     if (currentPath.startsWith("/plan")) return "practice";
     if (currentPath.startsWith("/progress")) return "progress";
     if (currentPath.startsWith("/reports")) return "reports";
@@ -119,6 +122,7 @@ export function Navbar() {
   };
 
   const active = activeTab();
+  const navLabel = (tab: NavTab) => tab.label ?? (tab.labelKey ? t(tab.labelKey) : "");
 
   const closeHeaderPanels = useCallback(() => {
     setNotificationsOpen(false);
@@ -212,7 +216,7 @@ export function Navbar() {
                 isActive ? "active text-primary" : "text-on-surface-variant hover:text-primary"
               } ${tab.disabled ? "opacity-45 cursor-not-allowed hover:text-on-surface-variant" : ""}`;
 
-              if (tab.disabled || !tab.to) {
+              if (tab.disabled || (!tab.to && !tab.href)) {
                 return (
                   <button
                     key={tab.id}
@@ -221,8 +225,21 @@ export function Navbar() {
                     className={className}
                     aria-disabled="true"
                   >
-                    {t(tab.labelKey)}
+                    {navLabel(tab)}
                   </button>
+                );
+              }
+
+              if (tab.href) {
+                return (
+                  <a
+                    key={tab.id}
+                    href={tab.href}
+                    className={className}
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    {navLabel(tab)}
+                  </a>
                 );
               }
 
@@ -233,7 +250,7 @@ export function Navbar() {
                   aria-current={isActive ? "page" : undefined}
                   className={className}
                 >
-                  {t(tab.labelKey)}
+                  {navLabel(tab)}
                 </Link>
               );
             })}
@@ -450,7 +467,7 @@ export function Navbar() {
                   : "text-on-surface hover:bg-surface-container-high"
               } ${tItem.disabled ? "opacity-45 cursor-not-allowed hover:bg-transparent" : ""}`;
 
-              if (tItem.disabled || !tItem.to) {
+              if (tItem.disabled || (!tItem.to && !tItem.href)) {
                 return (
                   <button
                     key={tItem.id}
@@ -460,8 +477,27 @@ export function Navbar() {
                     className={className}
                   >
                     <span className="material-symbols-outlined text-2xl">{tItem.icon}</span>
-                    <span className="font-headline-md text-headline-md">{t(tItem.labelKey)}</span>
+                    <span className="font-headline-md text-headline-md">{navLabel(tItem)}</span>
                   </button>
+                );
+              }
+
+              if (tItem.href) {
+                return (
+                  <a
+                    key={tItem.id}
+                    href={tItem.href}
+                    onClick={() => setMobileOpen(false)}
+                    className={className}
+                  >
+                    <span
+                      className="material-symbols-outlined text-2xl"
+                      style={isActive ? { fontVariationSettings: "'FILL' 1" } : undefined}
+                    >
+                      {tItem.icon}
+                    </span>
+                    <span className="font-headline-md text-headline-md">{navLabel(tItem)}</span>
+                  </a>
                 );
               }
 
@@ -479,7 +515,7 @@ export function Navbar() {
                   >
                     {tItem.icon}
                   </span>
-                  <span className="font-headline-md text-headline-md">{t(tItem.labelKey)}</span>
+                  <span className="font-headline-md text-headline-md">{navLabel(tItem)}</span>
                 </Link>
               );
             })}
