@@ -94,13 +94,17 @@ async function sendWhatsAppText({
   const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
   const graphVersion = process.env.WHATSAPP_GRAPH_API_VERSION ?? DEFAULT_GRAPH_VERSION;
   const normalizedTo = normalizeWhatsAppPhone(to || process.env.DEMO_PARENT_WHATSAPP || "");
+  const missingConfig = [
+    !token ? "WHATSAPP_ACCESS_TOKEN" : null,
+    !phoneNumberId ? "WHATSAPP_PHONE_NUMBER_ID" : null,
+    !normalizedTo ? "parentWhatsApp or DEMO_PARENT_WHATSAPP" : null,
+  ].filter(Boolean);
 
-  if (!token || !phoneNumberId || !normalizedTo) {
+  if (missingConfig.length > 0) {
     return {
       ok: false,
       code: "missing_config",
-      detail:
-        "Set WHATSAPP_ACCESS_TOKEN, WHATSAPP_PHONE_NUMBER_ID, and parentWhatsApp/DEMO_PARENT_WHATSAPP to send automatic reports.",
+      detail: `Missing WhatsApp config: ${missingConfig.join(", ")}.`,
     };
   }
 
