@@ -5,6 +5,7 @@ export type Account = {
   grade: string;
   initials: string;
   parentWhatsApp: string;
+  parentWhatsAppVerified: boolean;
 };
 
 export type DashboardTask = {
@@ -59,6 +60,11 @@ type StoredAccount = Account & {
   password: string;
 };
 
+type ParentWhatsAppVerification = {
+  code: string;
+  expiresAt: number;
+};
+
 const demoAccount: StoredAccount = {
   id: "demo-aidana",
   name: "Aidana Akylbek",
@@ -66,10 +72,12 @@ const demoAccount: StoredAccount = {
   grade: "7",
   initials: "AA",
   parentWhatsApp: "+77001234567",
+  parentWhatsAppVerified: true,
   password: "demo123",
 };
 
 const accounts = new Map<string, StoredAccount>([[demoAccount.email, demoAccount]]);
+const parentWhatsAppVerifications = new Map<string, ParentWhatsAppVerification>();
 let activeEmail = demoAccount.email;
 
 function getInitials(name: string) {
@@ -196,15 +204,23 @@ export function registerAccount(input: {
   email: string;
   grade: string;
   parentWhatsApp: string;
+  parentWhatsAppVerificationCode: string;
   password: string;
 }) {
+  const parentWhatsApp = input.parentWhatsApp.trim();
+
+  if (!verifyParentWhatsAppCode(parentWhatsApp, input.parentWhatsAppVerificationCode)) {
+    throw new Error("Parent WhatsApp verification code is incorrect or expired.");
+  }
+
   const account: StoredAccount = {
     id: `account-${Date.now()}`,
     name: input.name.trim(),
     email: input.email.trim().toLowerCase(),
     grade: input.grade,
     initials: getInitials(input.name),
-    parentWhatsApp: input.parentWhatsApp.trim(),
+    parentWhatsApp,
+    parentWhatsAppVerified: true,
     password: input.password,
   };
 
@@ -212,6 +228,44 @@ export function registerAccount(input: {
   activeEmail = account.email;
 
   return toPublicAccount(account);
+}
+
+export function createParentWhatsAppCode(phone: string) {
+  const normalizedPhone = normalizePhone(phone);
+
+  if (!normalizedPhone) {
+    throw new Error("Parent WhatsApp number is required.");
+  }
+
+  const code = String(Math.floor(100000 + Math.random() * 900000));
+
+  parentWhatsAppVerifications.set(normalizedPhone, {
+    code,
+    expiresAt: Date.now() + 10 * 60 * 1000,
+  });
+
+  return code;
+}
+
+function verifyParentWhatsAppCode(phone: string, code: string) {
+  const normalizedPhone = normalizePhone(phone);
+  const verification = parentWhatsAppVerifications.get(normalizedPhone);
+
+  if (!verification || verification.expiresAt < Date.now()) {
+    parentWhatsAppVerifications.delete(normalizedPhone);
+    return false;
+  }
+
+  if (verification.code !== code.trim()) {
+    return false;
+  }
+
+  parentWhatsAppVerifications.delete(normalizedPhone);
+  return true;
+}
+
+function normalizePhone(phone: string) {
+  return phone.replace(/[^\d]/g, "");
 }
 
 export function loginAccount(input: { email: string; password: string }) {
