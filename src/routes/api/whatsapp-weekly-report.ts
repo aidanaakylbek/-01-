@@ -12,10 +12,11 @@ export const Route = createFileRoute("/api/whatsapp-weekly-report")({
         }
 
         const dashboard = getDashboardAccount();
+        const recipientPhone = process.env.DEMO_PARENT_WHATSAPP || dashboard.account.parentWhatsApp;
         const reportText = buildParentWhatsAppReport(dashboard);
         const result = await sendWhatsAppText({
           body: reportText,
-          to: dashboard.account.parentWhatsApp,
+          to: recipientPhone,
         });
 
         if (!result.ok) {
@@ -31,7 +32,7 @@ export const Route = createFileRoute("/api/whatsapp-weekly-report")({
 
         return Response.json({
           status: "sent",
-          to: maskPhone(dashboard.account.parentWhatsApp),
+          to: maskPhone(recipientPhone),
           whatsappMessageId: result.whatsappMessageId,
         });
       },
