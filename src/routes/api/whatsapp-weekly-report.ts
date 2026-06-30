@@ -48,8 +48,9 @@ function isAuthorizedCronRequest(request: Request) {
 
   const authorization = request.headers.get("authorization");
   const headerSecret = request.headers.get("x-cron-secret");
+  const urlSecret = new URL(request.url).searchParams.get("secret");
 
-  return authorization === `Bearer ${secret}` || headerSecret === secret;
+  return authorization === `Bearer ${secret}` || headerSecret === secret || urlSecret === secret;
 }
 
 function buildParentWhatsAppReport(dashboard: ReturnType<typeof getDashboardAccount>) {
