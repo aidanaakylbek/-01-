@@ -51,8 +51,6 @@ const VOICE_UNSUPPORTED =
   "Voice input is not available in this browser yet. You can still type your question here.";
 const VOICE_ERROR =
   "I could not hear that clearly. Please try the microphone again or type your question.";
-const CLOUD_VOICE_ERROR =
-  "Cloud voice is not available right now, so I am using your device voice.";
 
 export function AIAssistant() {
   const { language } = useLanguage();
@@ -89,7 +87,7 @@ export function AIAssistant() {
 
   const playCloudVoice = async (text: string) => {
     try {
-      setVoiceStatus("Preparing a warmer AI-Sana voice...");
+      setVoiceStatus(getVoiceMessage(language, "preparing"));
       const response = await fetch("/api/tts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -101,7 +99,7 @@ export function AIAssistant() {
       };
 
       if (!response.ok || !data.audio) {
-        setVoiceStatus(CLOUD_VOICE_ERROR);
+        setVoiceStatus(getVoiceMessage(language, "deviceFallback"));
         return false;
       }
 
@@ -112,14 +110,14 @@ export function AIAssistant() {
       await audio.play();
       return true;
     } catch {
-      setVoiceStatus(CLOUD_VOICE_ERROR);
+      setVoiceStatus(getVoiceMessage(language, "deviceFallback"));
       return false;
     }
   };
 
   const speakWithDeviceVoice = (text: string) => {
     if (!("speechSynthesis" in window)) {
-      setVoiceStatus("Voice is not available in this browser. The answer is still on screen.");
+      setVoiceStatus(getVoiceMessage(language, "unavailable"));
       return;
     }
 
@@ -132,8 +130,8 @@ export function AIAssistant() {
     utterance.voice = chooseDeviceVoice(language);
     utterance.onend = () => setVoiceStatus("");
     utterance.onerror = () =>
-      setVoiceStatus("Voice could not play, but the full answer is on screen.");
-    setVoiceStatus(CLOUD_VOICE_ERROR);
+      setVoiceStatus(getVoiceMessage(language, "playError"));
+    setVoiceStatus(getVoiceMessage(language, "deviceFallback"));
     window.speechSynthesis.speak(utterance);
   };
 
@@ -432,4 +430,32 @@ function prepareTextForDeviceVoice(text: string) {
     .replace(/[`#>_-]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function getVoiceMessage(
+  language: "EN" | "KZ" | "RU",
+  key: "preparing" | "deviceFallback" | "unavailable" | "playError",
+) {
+  const messages = {
+    KZ: {
+      preparing: "AI-Sana дауысын дайындап жатыр...",
+      deviceFallback: "Қазір жауап құрылғыңыздың даусымен оқылады.",
+      unavailable: "Бұл браузерде дауыс қосылмады, жауап экранда тұр.",
+      playError: "Дауыс ойналмады, бірақ толық жауап экранда тұр.",
+    },
+    RU: {
+      preparing: "Готовлю голос AI-Sana...",
+      deviceFallback: "Сейчас ответ будет озвучен голосом вашего устройства.",
+      unavailable: "В этом браузере голос недоступен, ответ остается на экране.",
+      playError: "Голос не воспроизвелся, но полный ответ есть на экране.",
+    },
+    EN: {
+      preparing: "Preparing AI-Sana voice...",
+      deviceFallback: "Using your device voice for this answer.",
+      unavailable: "Voice is not available in this browser. The answer is still on screen.",
+      playError: "Voice could not play, but the full answer is on screen.",
+    },
+  };
+
+  return messages[language][key];
 }
