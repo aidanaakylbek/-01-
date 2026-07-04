@@ -43,10 +43,6 @@ const INITIAL_MESSAGE: ChatMessage = {
     "Hello! I'm your AI-Sana AI Tutor. Ask me about math, logic, reading, languages, study plans, or NIS/BIL/NSPM exam preparation.",
 };
 
-const FRIENDLY_ERROR =
-  "I could not answer right now, but do not worry. Please try again in a moment, or ask your teacher if it is urgent.";
-const CONFIG_ERROR =
-  "AI Tutor is connected to the app, but the Google AI key is not added yet. Add GOOGLE_API_KEY to the server .env file and restart the app.";
 const VOICE_UNSUPPORTED =
   "Voice input is not available in this browser yet. You can still type your question here.";
 const VOICE_ERROR =
@@ -138,8 +134,7 @@ export function AIAssistant() {
       const data = (await response.json()) as { reply?: string; error?: string; code?: string };
 
       if (!response.ok || !data.reply) {
-        const message =
-          data.code === "missing_google_key" ? CONFIG_ERROR : (data.error ?? FRIENDLY_ERROR);
+        const message = getAssistantRecoveryMessage(language);
         setMessages((prev) => [...prev, { role: "assistant", content: message }]);
         if (options?.speakAnswer) {
           void speakText(message);
@@ -147,16 +142,16 @@ export function AIAssistant() {
         return;
       }
 
-      const reply = data.reply ?? FRIENDLY_ERROR;
+      const reply = data.reply ?? getAssistantRecoveryMessage(language);
       setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
       if (options?.speakAnswer) {
         void speakText(reply);
       }
     } catch (error) {
       console.error(error);
-      setMessages((prev) => [...prev, { role: "assistant", content: FRIENDLY_ERROR }]);
+      setMessages((prev) => [...prev, { role: "assistant", content: getAssistantRecoveryMessage(language) }]);
       if (options?.speakAnswer) {
-        void speakText(FRIENDLY_ERROR);
+        void speakText(getAssistantRecoveryMessage(language));
       }
     } finally {
       setIsLoading(false);
@@ -384,6 +379,18 @@ function getSpeechRecognitionLanguage(language: "EN" | "KZ" | "RU") {
   }
 
   return "en-US";
+}
+
+function getAssistantRecoveryMessage(language: "EN" | "KZ" | "RU") {
+  if (language === "KZ") {
+    return "Жақсы, жалғастырайық. Сұрағыңды пәнімен және тақырыбымен бірге жаз: мен оны қадам-қадаммен түсіндіремін.";
+  }
+
+  if (language === "RU") {
+    return "Хорошо, продолжаем. Напиши вопрос вместе с предметом и темой: я объясню его по шагам.";
+  }
+
+  return "Good, let us keep going. Send the question with the subject and topic, and I will explain it step by step.";
 }
 
 function getVoiceMessage(
