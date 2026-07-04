@@ -14,6 +14,16 @@ function isLogicQuestion(text: string) {
   return /логик|logic|заңдылық|закономер|sequence|pattern/.test(text);
 }
 
+function isTestRequest(text: string) {
+  return /тест|test|quiz|сұрақ бер|сурак бер|вопрос|проверь/.test(text);
+}
+
+function isRepeatedGenericRequest(previousAssistantReply: string) {
+  return /пришли условие задачи|есептің немесе сұрақтың шартын|send the full question/i.test(
+    previousAssistantReply,
+  );
+}
+
 const SYSTEM_PROMPT =
   "You are AI-Sana AI Tutor. You help pupils prepare for NIS, BIL, and NSPM entrance exams. Explain clearly, simply, and step by step. Do not only give the final answer; teach the pupil how to solve the problem. If the pupil asks a math or logic question, first explain the method, then give the answer. If the pupil makes a mistake, explain the mistake kindly. Use encouraging language. Keep answers age-appropriate for pupils aged 10-14. Help with math, logic, reading comprehension, English, Kazakh, Russian, study plans, exam preparation, and motivation. If the question is dangerous, medical, legal, or very personal, answer safely and suggest asking a parent, teacher, or trusted adult. Keep answers complete but compact: usually 4-8 short paragraphs or bullet points. Always finish with a clear final answer or next step.";
 
@@ -59,7 +69,7 @@ export const Route = createFileRoute("/api/chat")({
 
         if (!process.env.GOOGLE_API_KEY) {
           return Response.json({
-            reply: createTutorAnswer(answerLanguage.code, lastUserMessage(recentMessages)),
+            reply: createTutorAnswer(answerLanguage.code, recentMessages),
           });
         }
 
@@ -98,6 +108,9 @@ export const Route = createFileRoute("/api/chat")({
                   reply = `${reply} ${continuationText}`;
                 }
               }
+              if (reply) {
+                reply = normalizeTutorReply(reply, answerLanguage.code, recentMessages);
+              }
               if (reply) break;
             } catch (error) {
               lastError = error;
@@ -114,7 +127,7 @@ export const Route = createFileRoute("/api/chat")({
               console.error("AI-Sana Gemini Tutor model layer failed", lastError);
             }
             return Response.json({
-              reply: createTutorAnswer(answerLanguage.code, lastUserMessage(recentMessages)),
+              reply: createTutorAnswer(answerLanguage.code, recentMessages),
             });
           }
 
@@ -122,7 +135,7 @@ export const Route = createFileRoute("/api/chat")({
         } catch (error) {
           console.error("AI-Sana Gemini Tutor error", error);
           return Response.json({
-            reply: createTutorAnswer(answerLanguage.code, lastUserMessage(recentMessages)),
+            reply: createTutorAnswer(answerLanguage.code, recentMessages),
           });
         }
       },
@@ -164,6 +177,30 @@ function lastUserMessage(messages: Array<{ role: "user" | "assistant"; content: 
   return [...messages].reverse().find((message) => message.role === "user")?.content ?? "";
 }
 
+function lastAssistantMessage(messages: Array<{ role: "user" | "assistant"; content: string }>) {
+  return [...messages].reverse().find((message) => message.role === "assistant")?.content ?? "";
+}
+
+function normalizeTutorReply(
+  reply: string,
+  language: "EN" | "KZ" | "RU",
+  messages: Array<{ role: "user" | "assistant"; content: string }>,
+) {
+  const previousAssistantReply = lastAssistantMessage(messages);
+
+  if (reply.trim() === previousAssistantReply.trim()) {
+    return createTutorAnswer(language, messages);
+  }
+
+  const detectedReplyLanguage = detectTextLanguage(reply, language);
+
+  if (detectedReplyLanguage !== language) {
+    return createTutorAnswer(language, messages);
+  }
+
+  return reply;
+}
+
 function detectTextLanguage(text: string, defaultLanguage?: "EN" | "KZ" | "RU"): "EN" | "KZ" | "RU" {
   const normalizedText = text.toLowerCase();
 
@@ -198,12 +235,22 @@ function detectTextLanguage(text: string, defaultLanguage?: "EN" | "KZ" | "RU"):
   return defaultLanguage ?? "EN";
 }
 
-function createTutorAnswer(language: "EN" | "KZ" | "RU", question: string) {
+function createTutorAnswer(
+  language: "EN" | "KZ" | "RU",
+  messages: Array<{ role: "user" | "assistant"; content: string }>,
+) {
+  const question = lastUserMessage(messages);
+  const previousAssistantReply = lastAssistantMessage(messages);
   const lowerQuestion = question.toLowerCase();
+  const repeatedGenericRequest = isRepeatedGenericRequest(previousAssistantReply);
 
   if (language === "KZ") {
     if (isGreeting(question)) {
       return "Сәлем! Жақсымын, рахмет. Сен қалайсың? Қай пәннен дайындаламыз: математика, логика, ағылшын, қазақ тілі немесе оқу сауаттылығы?";
+    }
+
+    if (isTestRequest(lowerQuestion)) {
+      return "Жақсы, шағын тест бастайық. 1-сұрақ: 80 санының 25%-ы нешеге тең? A) 15 B) 20 C) 25 D) 40. Жауабыңды бір әріппен немесе санмен жаз. Жауап берген соң мен толық разбор жасаймын.";
     }
 
     if (isPercentageQuestion(lowerQuestion)) {
@@ -218,12 +265,20 @@ function createTutorAnswer(language: "EN" | "KZ" | "RU", question: string) {
       return "Логикалық есепте алдымен заңдылықты іздейміз, кейін сол заңдылық келесі қадамда да сақтала ма тексереміз. Мысалы: 2, 4, 8, 16, ? Мұнда әр сан 2-ге көбейеді, сондықтан келесі сан 32. Нақты есебіңді жіберсең, бірге қадам-қадаммен шығарамыз.";
     }
 
+    if (repeatedGenericRequest) {
+      return "Түсіндім, бір орында тұрып қалмаймыз. Қазір өзім мысал беремін: 36 санының 50%-ын тап. Әдіс: 50% дегеніміз жартысы, сондықтан 36 ÷ 2 = 18. Енді сен шығар: 60 санының 10%-ы қанша?";
+    }
+
     return "Жақсы, бірге қарайық. Есептің немесе сұрақтың шартын толық жаз. Мен оны 3 қадаммен түсіндіремін: 1) не берілгенін табамыз, 2) қандай әдіс керек екенін таңдаймыз, 3) жауапты тексереміз.";
   }
 
   if (language === "RU") {
     if (isGreeting(question)) {
       return "Привет! У меня все хорошо, спасибо. Как ты? С какого предмета начнем: математика, логика, английский, русский или чтение?";
+    }
+
+    if (isTestRequest(lowerQuestion)) {
+      return "Хорошо, начнем короткий тест. Вопрос 1: чему равно 25% от 80? A) 15 B) 20 C) 25 D) 40. Ответь буквой или числом. После ответа я дам полный разбор.";
     }
 
     if (isPercentageQuestion(lowerQuestion)) {
@@ -238,11 +293,19 @@ function createTutorAnswer(language: "EN" | "KZ" | "RU", question: string) {
       return "Логическую задачу решаем так: сначала ищем закономерность, потом проверяем, повторяется ли она. Например: 2, 4, 8, 16, ? Здесь каждое число умножается на 2, значит следующий ответ 32. Отправь свою задачу, и я разберу ее по шагам.";
     }
 
+    if (repeatedGenericRequest) {
+      return "Поняла, не будем стоять на месте. Дам пример сама: найди 50% от 36. Метод: 50% — это половина, значит 36 ÷ 2 = 18. Теперь попробуй ты: сколько будет 10% от 60?";
+    }
+
     return "Хорошо, давай разберем вместе. Пришли условие задачи полностью. Я помогу по шагам: 1) что дано, 2) какой способ выбрать, 3) как проверить ответ.";
   }
 
   if (isGreeting(question)) {
     return "Hi! I am doing well, thank you. How are you? Which subject should we start with: math, logic, English, reading, or an exam plan?";
+  }
+
+  if (isTestRequest(lowerQuestion)) {
+    return "Great, let us start a short test. Question 1: what is 25% of 80? A) 15 B) 20 C) 25 D) 40. Reply with a letter or number, and I will explain the solution.";
   }
 
   if (isPercentageQuestion(lowerQuestion)) {
@@ -255,6 +318,10 @@ function createTutorAnswer(language: "EN" | "KZ" | "RU", question: string) {
 
   if (isLogicQuestion(lowerQuestion)) {
     return "For logic questions, first look for the pattern, then test if the pattern continues. Example: 2, 4, 8, 16, ? Each number is multiplied by 2, so the next number is 32. Send me your exact question and I will solve it step by step.";
+  }
+
+  if (repeatedGenericRequest) {
+    return "Let us move forward with an example. Find 50% of 36. Method: 50% means half, so 36 ÷ 2 = 18. Now try this: what is 10% of 60?";
   }
 
   return "Good, let us work on it together. Send the full question or the part you do not understand. I will explain it in 3 steps: what is given, which method to use, and how to check the answer.";
