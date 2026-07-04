@@ -165,12 +165,30 @@ function lastUserMessage(messages: Array<{ role: "user" | "assistant"; content: 
 }
 
 function detectTextLanguage(text: string, defaultLanguage?: "EN" | "KZ" | "RU"): "EN" | "KZ" | "RU" {
+  const normalizedText = text.toLowerCase();
+
   if (/[әғқңөұүһі]/i.test(text)) {
     return "KZ";
   }
 
-  if (/[а-яё]/i.test(text)) {
+  if (
+    /\b(пайыз|деген|қалай|калай|маған|маган|түсіндір|тусиндир|есеп|шығар|шыгар|дайындал|жауап|сұрақ|сурак|қазақ|казак|ағылшын|агылшын)\b/i.test(
+      normalizedText,
+    )
+  ) {
+    return "KZ";
+  }
+
+  if (
+    /\b(привет|здравствуй|как|что|почему|объясни|реши|задача|процент|подготов|русский|английский)\b/i.test(
+      normalizedText,
+    )
+  ) {
     return "RU";
+  }
+
+  if (/[а-яё]/i.test(text)) {
+    return defaultLanguage === "KZ" ? "KZ" : "RU";
   }
 
   if (/[a-z]/i.test(text)) {
