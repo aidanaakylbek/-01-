@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { getDashboardAccount } from "@/lib/account-store.server";
-import { maskPhone, sendWhatsAppText } from "@/lib/whatsapp.server";
+import { maskPhone, sendWhatsAppTemplate, sendWhatsAppText } from "@/lib/whatsapp.server";
 
 export const Route = createFileRoute("/api/whatsapp-weekly-report")({
   server: {
@@ -13,11 +13,21 @@ export const Route = createFileRoute("/api/whatsapp-weekly-report")({
 
         const dashboard = getDashboardAccount();
         const recipientPhone = process.env.DEMO_PARENT_WHATSAPP || dashboard.account.parentWhatsApp;
+        const useTemplate = new URL(request.url).searchParams.get("template") === "1";
+        const templateName =
+          process.env.WHATSAPP_TEST_TEMPLATE_NAME || "3p_direct_integration_test_template";
+        const templateLanguage = process.env.WHATSAPP_TEST_TEMPLATE_LANGUAGE || "en_US";
         const reportText = buildParentWhatsAppReport(dashboard);
-        const result = await sendWhatsAppText({
-          body: reportText,
-          to: recipientPhone,
-        });
+        const result = useTemplate
+          ? await sendWhatsAppTemplate({
+              languageCode: templateLanguage,
+              name: templateName,
+              to: recipientPhone,
+            })
+          : await sendWhatsAppText({
+              body: reportText,
+              to: recipientPhone,
+            });
 
         if (!result.ok) {
           return Response.json(
@@ -32,6 +42,7 @@ export const Route = createFileRoute("/api/whatsapp-weekly-report")({
 
         return Response.json({
           status: "sent",
+          mode: useTemplate ? "template" : "text",
           to: maskPhone(recipientPhone),
           whatsappMessageId: result.whatsappMessageId,
         });
