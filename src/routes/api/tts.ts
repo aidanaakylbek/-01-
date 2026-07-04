@@ -61,7 +61,7 @@ export const Route = createFileRoute("/api/tts")({
           }
 
           return Response.json({
-            audio,
+            audio: pcmBase64ToWavBase64(audio),
             mimeType: "audio/wav",
           });
         } catch (error) {
@@ -86,4 +86,36 @@ function prepareSpeechText(text: string) {
     .replace(/[`#>_-]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function pcmBase64ToWavBase64(base64Pcm: string) {
+  const pcm = Buffer.from(base64Pcm, "base64");
+  const header = createWavHeader(pcm.length);
+
+  return Buffer.concat([header, pcm]).toString("base64");
+}
+
+function createWavHeader(dataLength: number) {
+  const sampleRate = 24000;
+  const channelCount = 1;
+  const bitsPerSample = 16;
+  const blockAlign = (channelCount * bitsPerSample) / 8;
+  const byteRate = sampleRate * blockAlign;
+  const header = Buffer.alloc(44);
+
+  header.write("RIFF", 0);
+  header.writeUInt32LE(36 + dataLength, 4);
+  header.write("WAVE", 8);
+  header.write("fmt ", 12);
+  header.writeUInt32LE(16, 16);
+  header.writeUInt16LE(1, 20);
+  header.writeUInt16LE(channelCount, 22);
+  header.writeUInt32LE(sampleRate, 24);
+  header.writeUInt32LE(byteRate, 28);
+  header.writeUInt16LE(blockAlign, 32);
+  header.writeUInt16LE(bitsPerSample, 34);
+  header.write("data", 36);
+  header.writeUInt32LE(dataLength, 40);
+
+  return header;
 }
