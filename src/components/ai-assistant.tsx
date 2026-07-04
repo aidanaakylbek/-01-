@@ -82,7 +82,7 @@ export function AIAssistant() {
       return;
     }
 
-    speakWithDeviceVoice(text);
+    setVoiceStatus(getVoiceMessage(language, "unavailable"));
   };
 
   const playCloudVoice = async (text: string) => {
@@ -113,26 +113,6 @@ export function AIAssistant() {
       setVoiceStatus(getVoiceMessage(language, "deviceFallback"));
       return false;
     }
-  };
-
-  const speakWithDeviceVoice = (text: string) => {
-    if (!("speechSynthesis" in window)) {
-      setVoiceStatus(getVoiceMessage(language, "unavailable"));
-      return;
-    }
-
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(prepareTextForDeviceVoice(text));
-    utterance.lang = getSpeechRecognitionLanguage(language);
-    utterance.rate = language === "KZ" ? 0.86 : 0.9;
-    utterance.pitch = 1.04;
-    utterance.volume = 0.95;
-    utterance.voice = chooseDeviceVoice(language);
-    utterance.onend = () => setVoiceStatus("");
-    utterance.onerror = () =>
-      setVoiceStatus(getVoiceMessage(language, "playError"));
-    setVoiceStatus(getVoiceMessage(language, "deviceFallback"));
-    window.speechSynthesis.speak(utterance);
   };
 
   const sendMessage = async (messageText: string, options?: { speakAnswer?: boolean }) => {
@@ -406,32 +386,6 @@ function getSpeechRecognitionLanguage(language: "EN" | "KZ" | "RU") {
   return "en-US";
 }
 
-function chooseDeviceVoice(language: "EN" | "KZ" | "RU") {
-  const voices = window.speechSynthesis.getVoices();
-  const locale = getSpeechRecognitionLanguage(language).toLowerCase();
-  const baseLanguage = locale.split("-")[0];
-  const preferredNames = ["siri", "google", "microsoft", "female", "zira", "irina", "milena"];
-
-  return (
-    voices.find((voice) => voice.lang.toLowerCase() === locale) ??
-    voices.find((voice) => voice.lang.toLowerCase().startsWith(baseLanguage)) ??
-    voices.find((voice) =>
-      preferredNames.some((name) => voice.name.toLowerCase().includes(name)),
-    ) ??
-    voices[0] ??
-    null
-  );
-}
-
-function prepareTextForDeviceVoice(text: string) {
-  return text
-    .replace(/[😀-🙏🌀-🗿🚀-🛿]/gu, "")
-    .replace(/\*\*/g, "")
-    .replace(/[`#>_-]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
 function getVoiceMessage(
   language: "EN" | "KZ" | "RU",
   key: "preparing" | "deviceFallback" | "unavailable" | "playError",
@@ -440,19 +394,19 @@ function getVoiceMessage(
     KZ: {
       preparing: "AI-Sana дауысын дайындап жатыр...",
       deviceFallback: "Қазір жауап құрылғыңыздың даусымен оқылады.",
-      unavailable: "Бұл браузерде дауыс қосылмады, жауап экранда тұр.",
+      unavailable: "AI-Sana дауысы қазір қосылмады, жауап экранда тұр.",
       playError: "Дауыс ойналмады, бірақ толық жауап экранда тұр.",
     },
     RU: {
       preparing: "Готовлю голос AI-Sana...",
       deviceFallback: "Сейчас ответ будет озвучен голосом вашего устройства.",
-      unavailable: "В этом браузере голос недоступен, ответ остается на экране.",
+      unavailable: "Голос AI-Sana сейчас недоступен, ответ остается на экране.",
       playError: "Голос не воспроизвелся, но полный ответ есть на экране.",
     },
     EN: {
       preparing: "Preparing AI-Sana voice...",
       deviceFallback: "Using your device voice for this answer.",
-      unavailable: "Voice is not available in this browser. The answer is still on screen.",
+      unavailable: "AI-Sana voice is not available right now. The answer is still on screen.",
       playError: "Voice could not play, but the full answer is on screen.",
     },
   };
