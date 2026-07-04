@@ -29,7 +29,7 @@ export const Route = createFileRoute("/api/tts")({
         try {
           const text = prepareSpeechText(parsed.data.text);
           const speechLanguage = getSpeechLanguage(parsed.data.language, text);
-          const edgeAudio = await generateEdgeVoice(text, speechLanguage.edgeVoice);
+          const edgeAudio = await generateEdgeVoice(text, speechLanguage);
 
           if (edgeAudio) {
             return Response.json(edgeAudio);
@@ -121,6 +121,15 @@ type AudioPart = {
   mimeType?: string;
 };
 
+type SpeechLanguage = {
+  code: string;
+  translateCode: string;
+  edgeVoice: string;
+  edgeRate: number;
+  edgePitch: string;
+  instruction: string;
+};
+
 function getTtsModels() {
   return [
     process.env.GEMINI_TTS_MODEL,
@@ -203,16 +212,18 @@ function prepareSpeechText(text: string) {
     .trim();
 }
 
-function getSpeechLanguage(language: "EN" | "KZ" | "RU" | undefined, text: string) {
-  const detectedLanguage = language ?? detectTextLanguage(text);
+function getSpeechLanguage(language: "EN" | "KZ" | "RU" | undefined, text: string): SpeechLanguage {
+  const detectedLanguage = detectTextLanguage(text, language);
 
   if (detectedLanguage === "KZ") {
     return {
       code: "kk-KZ",
       translateCode: "kk",
       edgeVoice: "kk-KZ-AigulNeural",
+      edgeRate: 4,
+      edgePitch: "+36Hz",
       instruction:
-        "Мәтінді AI-Sana атынан қазақ тілінде оқы. Дауысың жылы, мейірімді, сабырлы репетитор сияқты болсын. Сөздерді қазақша дұрыс айт, орысша немесе ағылшынша акцентпен оқыма. Робот сияқты сөйлеме.",
+        "Мәтінді AI-Sana атынан қазақ тілінде оқы. Дауысың көңілді, жылы, балаға түсінікті, мейірімді жас репетитор сияқты болсын. Сөздерді қазақша табиғи айт. Робот сияқты сөйлеме.",
     };
   }
 
@@ -221,8 +232,10 @@ function getSpeechLanguage(language: "EN" | "KZ" | "RU" | undefined, text: strin
       code: "ru-RU",
       translateCode: "ru",
       edgeVoice: "ru-RU-SvetlanaNeural",
+      edgeRate: 3,
+      edgePitch: "+28Hz",
       instruction:
-        "Прочитай текст от имени AI-Sana на русском языке. Голос должен быть теплым, дружелюбным, спокойным, как у доброго репетитора. Произноси русские слова естественно, без английского акцента. Не говори как робот.",
+        "Прочитай текст от имени AI-Sana на русском языке. Голос должен быть живым, добрым, дружелюбным и подходящим для детей. Произноси русские слова естественно, без казахского или английского акцента. Не говори как робот.",
     };
   }
 
@@ -230,18 +243,20 @@ function getSpeechLanguage(language: "EN" | "KZ" | "RU" | undefined, text: strin
     code: "en-US",
     translateCode: "en",
     edgeVoice: "en-US-AvaNeural",
+    edgeRate: 2,
+    edgePitch: "+24Hz",
     instruction:
-      "Read this as AI-Sana in English: a warm, friendly, calm tutor for a 10-14 year old pupil. Speak naturally, softly, and clearly. Do not sound robotic.",
+      "Read this as AI-Sana in English: a cheerful, warm, friendly tutor for a 10-14 year old pupil. Speak naturally, brightly, and clearly. Do not sound robotic.",
   };
 }
 
-async function generateEdgeVoice(text: string, voice: string) {
+async function generateEdgeVoice(text: string, speechLanguage: SpeechLanguage) {
   try {
     const tts = new MsEdgeTTS();
-    await tts.setMetadata(voice, OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3);
+    await tts.setMetadata(speechLanguage.edgeVoice, OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3);
     const { audioStream } = await tts.toStream(escapeSsmlText(text), {
-      rate: -8,
-      pitch: "+12Hz",
+      rate: speechLanguage.edgeRate,
+      pitch: speechLanguage.edgePitch,
     });
     const chunks = await readStreamChunks(audioStream);
 
@@ -371,16 +386,24 @@ function splitSpeechText(text: string, maxLength: number) {
   return chunks;
 }
 
-function detectTextLanguage(text: string): "EN" | "KZ" | "RU" {
-  if (/[әғқңөұүһі]/i.test(text)) {
+function detectTextLanguage(text: string, fallbackLanguage?: "EN" | "KZ" | "RU"): "EN" | "KZ" | "RU" {
+  const kazakhSpecificLetters = (text.match(/[әғқңөұүһі]/gi) ?? []).length;
+  const cyrillicLetters = (text.match(/[а-яёәғқңөұүһі]/gi) ?? []).length;
+  const latinLetters = (text.match(/[a-z]/gi) ?? []).length;
+
+  if (kazakhSpecificLetters > 0) {
     return "KZ";
   }
 
-  if (/[а-яё]/i.test(text)) {
+  if (cyrillicLetters > 0) {
     return "RU";
   }
 
-  return "EN";
+  if (latinLetters > 0) {
+    return "EN";
+  }
+
+  return fallbackLanguage ?? "EN";
 }
 
 function pcmBase64ToWavBase64(base64Pcm: string) {
