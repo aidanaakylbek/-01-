@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { AibiMark } from "@/components/aibi-mark";
+import { useLanguage } from "@/hooks/use-language";
 
 type SpeechRecognitionEventResult = {
   isFinal: boolean;
@@ -54,6 +55,7 @@ const CLOUD_VOICE_ERROR =
   "AI-Sana voice is not ready yet. I will keep the answer on screen instead of using the robotic browser voice.";
 
 export function AIAssistant() {
+  const { language } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([INITIAL_MESSAGE]);
   const [input, setInput] = useState("");
@@ -91,7 +93,7 @@ export function AIAssistant() {
       const response = await fetch("/api/tts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ language, text }),
       });
       const data = (await response.json()) as {
         audio?: string;
@@ -186,7 +188,7 @@ export function AIAssistant() {
     recognitionRef.current = recognition;
     recognition.continuous = false;
     recognition.interimResults = true;
-    recognition.lang = "kk-KZ";
+    recognition.lang = getSpeechRecognitionLanguage(language);
     setIsListening(true);
     setVoiceStatus("Listening...");
 
@@ -371,4 +373,16 @@ export function AIAssistant() {
       )}
     </>
   );
+}
+
+function getSpeechRecognitionLanguage(language: "EN" | "KZ" | "RU") {
+  if (language === "KZ") {
+    return "kk-KZ";
+  }
+
+  if (language === "RU") {
+    return "ru-RU";
+  }
+
+  return "en-US";
 }

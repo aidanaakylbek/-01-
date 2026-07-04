@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 
 const ttsRequestSchema = z.object({
+  language: z.enum(["EN", "KZ", "RU"]).optional(),
   text: z.string().trim().min(1).max(2400),
 });
 
@@ -37,12 +38,14 @@ export const Route = createFileRoute("/api/tts")({
         try {
           const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_API_KEY });
           const text = prepareSpeechText(parsed.data.text);
+          const speechLanguage = getSpeechLanguage(parsed.data.language, text);
           const response = await ai.models.generateContent({
             model: process.env.GEMINI_TTS_MODEL || "gemini-2.5-flash-preview-tts",
-            contents: `Read this as AI-Sana: a warm, friendly, calm tutor for a 10-14 year old pupil. Speak naturally, softly, and clearly. Do not sound robotic. Text: ${text}`,
+            contents: `${speechLanguage.instruction} Text: ${text}`,
             config: {
               responseModalities: ["AUDIO"],
               speechConfig: {
+                languageCode: speechLanguage.code,
                 voiceConfig: {
                   prebuiltVoiceConfig: {
                     voiceName: process.env.GEMINI_TTS_VOICE || "Kore",
@@ -86,6 +89,44 @@ function prepareSpeechText(text: string) {
     .replace(/[`#>_-]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function getSpeechLanguage(language: "EN" | "KZ" | "RU" | undefined, text: string) {
+  const detectedLanguage = language ?? detectTextLanguage(text);
+
+  if (detectedLanguage === "KZ") {
+    return {
+      code: "kk-KZ",
+      instruction:
+        "Мәтінді AI-Sana атынан қазақ тілінде оқы. Дауысың жылы, мейірімді, сабырлы репетитор сияқты болсын. Сөздерді қазақша дұрыс айт, орысша немесе ағылшынша акцентпен оқыма. Робот сияқты сөйлеме.",
+    };
+  }
+
+  if (detectedLanguage === "RU") {
+    return {
+      code: "ru-RU",
+      instruction:
+        "Прочитай текст от имени AI-Sana на русском языке. Голос должен быть теплым, дружелюбным, спокойным, как у доброго репетитора. Произноси русские слова естественно, без английского акцента. Не говори как робот.",
+    };
+  }
+
+  return {
+    code: "en-US",
+    instruction:
+      "Read this as AI-Sana in English: a warm, friendly, calm tutor for a 10-14 year old pupil. Speak naturally, softly, and clearly. Do not sound robotic.",
+  };
+}
+
+function detectTextLanguage(text: string): "EN" | "KZ" | "RU" {
+  if (/[әғқңөұүһі]/i.test(text)) {
+    return "KZ";
+  }
+
+  if (/[а-яё]/i.test(text)) {
+    return "RU";
+  }
+
+  return "EN";
 }
 
 function pcmBase64ToWavBase64(base64Pcm: string) {
