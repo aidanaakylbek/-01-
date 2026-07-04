@@ -6,6 +6,7 @@ const SYSTEM_PROMPT =
   "You are AI-Sana AI Tutor. You help pupils prepare for NIS, BIL, and NSPM entrance exams. Explain clearly, simply, and step by step. Do not only give the final answer; teach the pupil how to solve the problem. If the pupil asks a math or logic question, first explain the method, then give the answer. If the pupil makes a mistake, explain the mistake kindly. Use encouraging language. Keep answers age-appropriate for pupils aged 10-14. Help with math, logic, reading comprehension, English, Kazakh, Russian, study plans, exam preparation, and motivation. If the question is dangerous, medical, legal, or very personal, answer safely and suggest asking a parent, teacher, or trusted adult. Keep answers complete but compact: usually 4-8 short paragraphs or bullet points. Always finish with a clear final answer or next step.";
 
 const chatRequestSchema = z.object({
+  language: z.enum(["EN", "KZ", "RU"]).optional(),
   messages: z
     .array(
       z.object({
@@ -55,6 +56,7 @@ export const Route = createFileRoute("/api/chat")({
         try {
           const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_API_KEY });
           const recentMessages = parsed.data.messages.slice(-12);
+          const answerLanguage = getAnswerLanguage(parsed.data.language, recentMessages);
           const conversation = recentMessages
             .map((message) => `${message.role === "user" ? "Pupil" : "Tutor"}: ${message.content}`)
             .join("\n\n");
@@ -69,7 +71,7 @@ export const Route = createFileRoute("/api/chat")({
                 config: {
                   maxOutputTokens: 3000,
                   temperature: 0.4,
-                  systemInstruction: SYSTEM_PROMPT,
+                  systemInstruction: `${SYSTEM_PROMPT}\n\n${answerLanguage.instruction}`,
                 },
               });
               reply = response.text?.trim() ?? "";
@@ -80,7 +82,7 @@ export const Route = createFileRoute("/api/chat")({
                   config: {
                     maxOutputTokens: 900,
                     temperature: 0.3,
-                    systemInstruction: SYSTEM_PROMPT,
+                    systemInstruction: `${SYSTEM_PROMPT}\n\n${answerLanguage.instruction}`,
                   },
                 });
                 const continuationText = continuation.text?.trim();
@@ -125,3 +127,43 @@ export const Route = createFileRoute("/api/chat")({
     },
   },
 });
+
+function getAnswerLanguage(
+  language: "EN" | "KZ" | "RU" | undefined,
+  messages: Array<{ role: "user" | "assistant"; content: string }>,
+) {
+  const lastUserMessage =
+    [...messages].reverse().find((message) => message.role === "user")?.content ?? "";
+  const detectedLanguage = language ?? detectTextLanguage(lastUserMessage);
+
+  if (detectedLanguage === "KZ") {
+    return {
+      instruction:
+        "IMPORTANT: Reply only in Kazakh. If the pupil writes Kazakh in Cyrillic, answer in natural Kazakh Cyrillic. Do not switch to English or Russian unless the pupil explicitly asks for translation or language comparison.",
+    };
+  }
+
+  if (detectedLanguage === "RU") {
+    return {
+      instruction:
+        "IMPORTANT: Reply only in Russian. Do not switch to English or Kazakh unless the pupil explicitly asks for translation or language comparison.",
+    };
+  }
+
+  return {
+    instruction:
+      "IMPORTANT: Reply only in English. Do not switch to Kazakh or Russian unless the pupil explicitly asks for translation or language comparison.",
+  };
+}
+
+function detectTextLanguage(text: string): "EN" | "KZ" | "RU" {
+  if (/[әғқңөұүһі]/i.test(text)) {
+    return "KZ";
+  }
+
+  if (/[а-яё]/i.test(text)) {
+    return "RU";
+  }
+
+  return "EN";
+}
