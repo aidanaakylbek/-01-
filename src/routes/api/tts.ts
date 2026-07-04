@@ -220,8 +220,8 @@ function getSpeechLanguage(language: "EN" | "KZ" | "RU" | undefined, text: strin
       code: "kk-KZ",
       translateCode: "kk",
       edgeVoice: "kk-KZ-AigulNeural",
-      edgeRate: 4,
-      edgePitch: "+36Hz",
+      edgeRate: -12,
+      edgePitch: "+22Hz",
       instruction:
         "Мәтінді AI-Sana атынан қазақ тілінде оқы. Дауысың көңілді, жылы, балаға түсінікті, мейірімді жас репетитор сияқты болсын. Сөздерді қазақша табиғи айт. Робот сияқты сөйлеме.",
     };
@@ -232,8 +232,8 @@ function getSpeechLanguage(language: "EN" | "KZ" | "RU" | undefined, text: strin
       code: "ru-RU",
       translateCode: "ru",
       edgeVoice: "ru-RU-SvetlanaNeural",
-      edgeRate: 3,
-      edgePitch: "+28Hz",
+      edgeRate: -10,
+      edgePitch: "+18Hz",
       instruction:
         "Прочитай текст от имени AI-Sana на русском языке. Голос должен быть живым, добрым, дружелюбным и подходящим для детей. Произноси русские слова естественно, без казахского или английского акцента. Не говори как робот.",
     };
@@ -243,8 +243,8 @@ function getSpeechLanguage(language: "EN" | "KZ" | "RU" | undefined, text: strin
     code: "en-US",
     translateCode: "en",
     edgeVoice: "en-US-AvaNeural",
-    edgeRate: 2,
-    edgePitch: "+24Hz",
+    edgeRate: -8,
+    edgePitch: "+16Hz",
     instruction:
       "Read this as AI-Sana in English: a cheerful, warm, friendly tutor for a 10-14 year old pupil. Speak naturally, brightly, and clearly. Do not sound robotic.",
   };
