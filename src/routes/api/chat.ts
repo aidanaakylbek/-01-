@@ -44,7 +44,7 @@ export const Route = createFileRoute("/api/chat")({
         const recentMessages = parsed.data.messages.slice(-12);
         const answerLanguage = getAnswerLanguage(parsed.data.language, recentMessages);
 
-        if (!process.env.GOOGLE_API_KEY) {
+        if (!getGoogleApiKey()) {
           return Response.json({
             reply: getServiceMessage(answerLanguage.code),
           });
@@ -196,7 +196,7 @@ async function generateGeminiContent({
   systemInstruction: string;
   temperature: number;
 }) {
-  const apiKey = process.env.GOOGLE_API_KEY;
+  const apiKey = getGoogleApiKey();
 
   if (!apiKey) {
     return "";
@@ -331,4 +331,8 @@ function getServiceMessage(language: "EN" | "KZ" | "RU") {
   }
 
   return "AI-Sana could not prepare the answer in time. Send the same question again in a second, and I will answer directly.";
+}
+
+function getGoogleApiKey() {
+  return process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY || "";
 }
