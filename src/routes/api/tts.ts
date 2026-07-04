@@ -78,6 +78,12 @@ export const Route = createFileRoute("/api/tts")({
             if (lastError) {
               console.error("AI-Sana TTS model fallback failed", lastError);
             }
+            const fallbackAudio = await generateTranslateVoice(text, speechLanguage.translateCode);
+
+            if (fallbackAudio) {
+              return Response.json(fallbackAudio);
+            }
+
             return Response.json(
               { error: "Voice could not be generated. Please try again." },
               { status: 502 },
@@ -196,6 +202,7 @@ function getSpeechLanguage(language: "EN" | "KZ" | "RU" | undefined, text: strin
   if (detectedLanguage === "KZ") {
     return {
       code: "kk-KZ",
+      translateCode: "kk",
       instruction:
         "Мәтінді AI-Sana атынан қазақ тілінде оқы. Дауысың жылы, мейірімді, сабырлы репетитор сияқты болсын. Сөздерді қазақша дұрыс айт, орысша немесе ағылшынша акцентпен оқыма. Робот сияқты сөйлеме.",
     };
@@ -204,6 +211,7 @@ function getSpeechLanguage(language: "EN" | "KZ" | "RU" | undefined, text: strin
   if (detectedLanguage === "RU") {
     return {
       code: "ru-RU",
+      translateCode: "ru",
       instruction:
         "Прочитай текст от имени AI-Sana на русском языке. Голос должен быть теплым, дружелюбным, спокойным, как у доброго репетитора. Произноси русские слова естественно, без английского акцента. Не говори как робот.",
     };
@@ -211,9 +219,78 @@ function getSpeechLanguage(language: "EN" | "KZ" | "RU" | undefined, text: strin
 
   return {
     code: "en-US",
+    translateCode: "en",
     instruction:
       "Read this as AI-Sana in English: a warm, friendly, calm tutor for a 10-14 year old pupil. Speak naturally, softly, and clearly. Do not sound robotic.",
   };
+}
+
+async function generateTranslateVoice(text: string, languageCode: string) {
+  const chunks = splitSpeechText(text, 180);
+  const audioBuffers: Buffer[] = [];
+  let mimeType = "audio/mpeg";
+
+  for (const chunk of chunks) {
+    const url = new URL("https://translate.google.com/translate_tts");
+    url.searchParams.set("ie", "UTF-8");
+    url.searchParams.set("client", "tw-ob");
+    url.searchParams.set("tl", languageCode);
+    url.searchParams.set("q", chunk);
+
+    const response = await fetch(url, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/126 Safari/537.36",
+      },
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const contentType = response.headers.get("content-type");
+    if (!contentType?.startsWith("audio/")) {
+      return null;
+    }
+
+    mimeType = contentType.split(";")[0] || mimeType;
+    audioBuffers.push(Buffer.from(await response.arrayBuffer()));
+  }
+
+  if (!audioBuffers.length) {
+    return null;
+  }
+
+  return {
+    audio: Buffer.concat(audioBuffers).toString("base64"),
+    mimeType,
+  };
+}
+
+function splitSpeechText(text: string, maxLength: number) {
+  const sentences = text.match(/[^.!?。؟…]+[.!?。؟…]*/g) ?? [text];
+  const chunks: string[] = [];
+  let current = "";
+
+  for (const sentence of sentences) {
+    const next = `${current} ${sentence}`.trim();
+    if (next.length <= maxLength) {
+      current = next;
+      continue;
+    }
+
+    if (current) {
+      chunks.push(current);
+    }
+
+    current = sentence.trim();
+  }
+
+  if (current) {
+    chunks.push(current.slice(0, maxLength));
+  }
+
+  return chunks;
 }
 
 function detectTextLanguage(text: string): "EN" | "KZ" | "RU" {
