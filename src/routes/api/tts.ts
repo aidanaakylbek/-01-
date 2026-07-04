@@ -45,7 +45,6 @@ export const Route = createFileRoute("/api/tts")({
             config: {
               responseModalities: ["AUDIO"],
               speechConfig: {
-                languageCode: speechLanguage.code,
                 voiceConfig: {
                   prebuiltVoiceConfig: {
                     voiceName: process.env.GEMINI_TTS_VOICE || "Kore",
@@ -54,9 +53,9 @@ export const Route = createFileRoute("/api/tts")({
               },
             },
           });
-          const audio = response.data;
+          const audio = extractAudio(response);
 
-          if (!audio) {
+          if (!audio?.data) {
             return Response.json(
               { error: "Voice could not be generated. Please try again." },
               { status: 502 },
@@ -64,8 +63,8 @@ export const Route = createFileRoute("/api/tts")({
           }
 
           return Response.json({
-            audio: pcmBase64ToWavBase64(audio),
-            mimeType: "audio/wav",
+            audio: normalizeAudioBase64(audio.data, audio.mimeType),
+            mimeType: audio.mimeType?.includes("wav") ? audio.mimeType : "audio/wav",
           });
         } catch (error) {
           console.error("AI-Sana TTS error", error);
@@ -81,6 +80,66 @@ export const Route = createFileRoute("/api/tts")({
     },
   },
 });
+
+type AudioPart = {
+  data: string;
+  mimeType?: string;
+};
+
+function extractAudio(response: unknown): AudioPart | null {
+  if (!response || typeof response !== "object") {
+    return null;
+  }
+
+  const candidates = (response as { candidates?: unknown }).candidates;
+
+  if (!Array.isArray(candidates)) {
+    return null;
+  }
+
+  for (const candidate of candidates) {
+    const content = candidate && typeof candidate === "object"
+      ? (candidate as { content?: unknown }).content
+      : null;
+    const parts = content && typeof content === "object"
+      ? (content as { parts?: unknown }).parts
+      : null;
+
+    if (!Array.isArray(parts)) {
+      continue;
+    }
+
+    for (const part of parts) {
+      const inlineData = part && typeof part === "object"
+        ? (part as { inlineData?: unknown }).inlineData
+        : null;
+
+      if (!inlineData || typeof inlineData !== "object") {
+        continue;
+      }
+
+      const data = (inlineData as { data?: unknown }).data;
+      const mimeType = (inlineData as { mimeType?: unknown }).mimeType;
+
+      if (typeof data === "string" && data.length > 0) {
+        return {
+          data,
+          mimeType: typeof mimeType === "string" ? mimeType : undefined,
+        };
+      }
+    }
+  }
+
+  return null;
+}
+
+function normalizeAudioBase64(audio: string, mimeType?: string) {
+  if (mimeType?.includes("wav")) {
+    return audio;
+  }
+
+  return pcmBase64ToWavBase64(audio);
+}
 
 function prepareSpeechText(text: string) {
   return text
