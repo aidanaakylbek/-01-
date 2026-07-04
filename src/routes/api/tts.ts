@@ -1,5 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 import { createFileRoute } from "@tanstack/react-router";
+import { MsEdgeTTS, OUTPUT_FORMAT } from "msedge-tts";
 import { z } from "zod";
 
 const ttsRequestSchema = z.object({
@@ -25,20 +26,26 @@ export const Route = createFileRoute("/api/tts")({
           return Response.json({ error: "Please send valid text." }, { status: 400 });
         }
 
-        if (!process.env.GOOGLE_API_KEY) {
-          return Response.json(
-            {
-              code: "missing_google_key",
-              error: "Voice is not configured yet. Add GOOGLE_API_KEY to the server.",
-            },
-            { status: 500 },
-          );
-        }
-
         try {
-          const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_API_KEY });
           const text = prepareSpeechText(parsed.data.text);
           const speechLanguage = getSpeechLanguage(parsed.data.language, text);
+          const edgeAudio = await generateEdgeVoice(text, speechLanguage.edgeVoice);
+
+          if (edgeAudio) {
+            return Response.json(edgeAudio);
+          }
+
+          if (!process.env.GOOGLE_API_KEY) {
+            return Response.json(
+              {
+                code: "missing_google_key",
+                error: "Voice fallback is not configured yet.",
+              },
+              { status: 500 },
+            );
+          }
+
+          const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_API_KEY });
           let audio: AudioPart | null = null;
           let lastError: unknown;
 
@@ -203,6 +210,7 @@ function getSpeechLanguage(language: "EN" | "KZ" | "RU" | undefined, text: strin
     return {
       code: "kk-KZ",
       translateCode: "kk",
+      edgeVoice: "kk-KZ-AigulNeural",
       instruction:
         "Мәтінді AI-Sana атынан қазақ тілінде оқы. Дауысың жылы, мейірімді, сабырлы репетитор сияқты болсын. Сөздерді қазақша дұрыс айт, орысша немесе ағылшынша акцентпен оқыма. Робот сияқты сөйлеме.",
     };
@@ -212,6 +220,7 @@ function getSpeechLanguage(language: "EN" | "KZ" | "RU" | undefined, text: strin
     return {
       code: "ru-RU",
       translateCode: "ru",
+      edgeVoice: "ru-RU-SvetlanaNeural",
       instruction:
         "Прочитай текст от имени AI-Sana на русском языке. Голос должен быть теплым, дружелюбным, спокойным, как у доброго репетитора. Произноси русские слова естественно, без английского акцента. Не говори как робот.",
     };
@@ -220,9 +229,78 @@ function getSpeechLanguage(language: "EN" | "KZ" | "RU" | undefined, text: strin
   return {
     code: "en-US",
     translateCode: "en",
+    edgeVoice: "en-US-AvaNeural",
     instruction:
       "Read this as AI-Sana in English: a warm, friendly, calm tutor for a 10-14 year old pupil. Speak naturally, softly, and clearly. Do not sound robotic.",
   };
+}
+
+async function generateEdgeVoice(text: string, voice: string) {
+  try {
+    const tts = new MsEdgeTTS();
+    await tts.setMetadata(voice, OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3);
+    const { audioStream } = await tts.toStream(escapeSsmlText(text), {
+      rate: -8,
+      pitch: "+12Hz",
+    });
+    const chunks = await readStreamChunks(audioStream);
+
+    if (!chunks.length) {
+      return null;
+    }
+
+    return {
+      audio: Buffer.concat(chunks).toString("base64"),
+      mimeType: "audio/mpeg",
+    };
+  } catch (error) {
+    console.error("AI-Sana Edge TTS fallback failed", error);
+    return null;
+  }
+}
+
+function readStreamChunks(stream: NodeJS.ReadableStream) {
+  return new Promise<Buffer[]>((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    let settled = false;
+    let idleTimer: NodeJS.Timeout | null = null;
+    const maxTimer = setTimeout(() => finish(), 15_000);
+    const finish = () => {
+      if (!settled) {
+        settled = true;
+        if (idleTimer) {
+          clearTimeout(idleTimer);
+        }
+        clearTimeout(maxTimer);
+        resolve(chunks);
+      }
+    };
+
+    stream.on("data", (chunk) => {
+      chunks.push(Buffer.from(chunk));
+      if (idleTimer) {
+        clearTimeout(idleTimer);
+      }
+      idleTimer = setTimeout(() => finish(), 800);
+    });
+    stream.on("end", finish);
+    stream.on("close", finish);
+    stream.on("error", (error) => {
+      if (!settled) {
+        settled = true;
+        reject(error);
+      }
+    });
+  });
+}
+
+function escapeSsmlText(text: string) {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
 }
 
 async function generateTranslateVoice(text: string, languageCode: string) {
