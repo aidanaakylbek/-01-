@@ -52,7 +52,7 @@ const VOICE_UNSUPPORTED =
 const VOICE_ERROR =
   "I could not hear that clearly. Please try the microphone again or type your question.";
 const CLOUD_VOICE_ERROR =
-  "AI-Sana voice is not ready yet. I will keep the answer on screen instead of using the robotic browser voice.";
+  "Cloud voice is not available right now, so I am using your device voice.";
 
 export function AIAssistant() {
   const { language } = useLanguage();
@@ -84,7 +84,7 @@ export function AIAssistant() {
       return;
     }
 
-    setVoiceStatus(CLOUD_VOICE_ERROR);
+    speakWithDeviceVoice(text);
   };
 
   const playCloudVoice = async (text: string) => {
@@ -115,6 +115,26 @@ export function AIAssistant() {
       setVoiceStatus(CLOUD_VOICE_ERROR);
       return false;
     }
+  };
+
+  const speakWithDeviceVoice = (text: string) => {
+    if (!("speechSynthesis" in window)) {
+      setVoiceStatus("Voice is not available in this browser. The answer is still on screen.");
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(prepareTextForDeviceVoice(text));
+    utterance.lang = getSpeechRecognitionLanguage(language);
+    utterance.rate = language === "KZ" ? 0.86 : 0.9;
+    utterance.pitch = 1.04;
+    utterance.volume = 0.95;
+    utterance.voice = chooseDeviceVoice(language);
+    utterance.onend = () => setVoiceStatus("");
+    utterance.onerror = () =>
+      setVoiceStatus("Voice could not play, but the full answer is on screen.");
+    setVoiceStatus(CLOUD_VOICE_ERROR);
+    window.speechSynthesis.speak(utterance);
   };
 
   const sendMessage = async (messageText: string, options?: { speakAnswer?: boolean }) => {
@@ -386,4 +406,30 @@ function getSpeechRecognitionLanguage(language: "EN" | "KZ" | "RU") {
   }
 
   return "en-US";
+}
+
+function chooseDeviceVoice(language: "EN" | "KZ" | "RU") {
+  const voices = window.speechSynthesis.getVoices();
+  const locale = getSpeechRecognitionLanguage(language).toLowerCase();
+  const baseLanguage = locale.split("-")[0];
+  const preferredNames = ["siri", "google", "microsoft", "female", "zira", "irina", "milena"];
+
+  return (
+    voices.find((voice) => voice.lang.toLowerCase() === locale) ??
+    voices.find((voice) => voice.lang.toLowerCase().startsWith(baseLanguage)) ??
+    voices.find((voice) =>
+      preferredNames.some((name) => voice.name.toLowerCase().includes(name)),
+    ) ??
+    voices[0] ??
+    null
+  );
+}
+
+function prepareTextForDeviceVoice(text: string) {
+  return text
+    .replace(/[😀-🙏🌀-🗿🚀-🛿]/gu, "")
+    .replace(/\*\*/g, "")
+    .replace(/[`#>_-]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }

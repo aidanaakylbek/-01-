@@ -39,23 +39,45 @@ export const Route = createFileRoute("/api/tts")({
           const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_API_KEY });
           const text = prepareSpeechText(parsed.data.text);
           const speechLanguage = getSpeechLanguage(parsed.data.language, text);
-          const response = await ai.models.generateContent({
-            model: process.env.GEMINI_TTS_MODEL || "gemini-2.5-flash-preview-tts",
-            contents: `${speechLanguage.instruction} Text: ${text}`,
-            config: {
-              responseModalities: ["AUDIO"],
-              speechConfig: {
-                voiceConfig: {
-                  prebuiltVoiceConfig: {
-                    voiceName: process.env.GEMINI_TTS_VOICE || "Kore",
+          let audio: AudioPart | null = null;
+          let lastError: unknown;
+
+          for (const model of getTtsModels()) {
+            for (const voiceName of getTtsVoices()) {
+              try {
+                const response = await ai.models.generateContent({
+                  model,
+                  contents: `${speechLanguage.instruction} Text: ${text}`,
+                  config: {
+                    responseModalities: ["AUDIO"],
+                    speechConfig: {
+                      voiceConfig: {
+                        prebuiltVoiceConfig: {
+                          voiceName,
+                        },
+                      },
+                    },
                   },
-                },
-              },
-            },
-          });
-          const audio = extractAudio(response);
+                });
+                audio = extractAudio(response);
+
+                if (audio?.data) {
+                  break;
+                }
+              } catch (error) {
+                lastError = error;
+              }
+            }
+
+            if (audio?.data) {
+              break;
+            }
+          }
 
           if (!audio?.data) {
+            if (lastError) {
+              console.error("AI-Sana TTS model fallback failed", lastError);
+            }
             return Response.json(
               { error: "Voice could not be generated. Please try again." },
               { status: 502 },
@@ -85,6 +107,24 @@ type AudioPart = {
   data: string;
   mimeType?: string;
 };
+
+function getTtsModels() {
+  return [
+    process.env.GEMINI_TTS_MODEL,
+    "gemini-2.5-flash-preview-tts",
+    "gemini-2.5-pro-preview-tts",
+  ].filter((model): model is string => Boolean(model));
+}
+
+function getTtsVoices() {
+  return [
+    process.env.GEMINI_TTS_VOICE,
+    "Kore",
+    "Zephyr",
+    "Puck",
+    "Leda",
+  ].filter((voice): voice is string => Boolean(voice));
+}
 
 function extractAudio(response: unknown): AudioPart | null {
   if (!response || typeof response !== "object") {
