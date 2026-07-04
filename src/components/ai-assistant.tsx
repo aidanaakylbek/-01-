@@ -61,6 +61,7 @@ export function AIAssistant() {
   const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -69,6 +70,7 @@ export function AIAssistant() {
   useEffect(() => {
     return () => {
       recognitionRef.current?.stop();
+      audioRef.current?.pause();
       window.speechSynthesis?.cancel();
     };
   }, []);
@@ -90,7 +92,13 @@ export function AIAssistant() {
     };
   }, []);
 
-  const speakText = (text: string) => {
+  const speakText = async (text: string) => {
+    const playedCloudVoice = await playCloudVoice(text);
+
+    if (playedCloudVoice) {
+      return;
+    }
+
     if (!("speechSynthesis" in window)) {
       return;
     }
@@ -111,6 +119,36 @@ export function AIAssistant() {
       utterance.volume = 0.92;
       window.speechSynthesis.speak(utterance);
     });
+  };
+
+  const playCloudVoice = async (text: string) => {
+    try {
+      setVoiceStatus("Preparing a warmer AI-Sana voice...");
+      const response = await fetch("/api/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
+      const data = (await response.json()) as {
+        audio?: string;
+        mimeType?: string;
+      };
+
+      if (!response.ok || !data.audio) {
+        setVoiceStatus("");
+        return false;
+      }
+
+      audioRef.current?.pause();
+      const audio = new Audio(`data:${data.mimeType ?? "audio/wav"};base64,${data.audio}`);
+      audioRef.current = audio;
+      audio.onended = () => setVoiceStatus("");
+      await audio.play();
+      return true;
+    } catch {
+      setVoiceStatus("");
+      return false;
+    }
   };
 
   const sendMessage = async (messageText: string, options?: { speakAnswer?: boolean }) => {
@@ -139,7 +177,7 @@ export function AIAssistant() {
           data.code === "missing_google_key" ? CONFIG_ERROR : (data.error ?? FRIENDLY_ERROR);
         setMessages((prev) => [...prev, { role: "assistant", content: message }]);
         if (options?.speakAnswer) {
-          speakText(message);
+          void speakText(message);
         }
         return;
       }
@@ -147,13 +185,13 @@ export function AIAssistant() {
       const reply = data.reply ?? FRIENDLY_ERROR;
       setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
       if (options?.speakAnswer) {
-        speakText(reply);
+        void speakText(reply);
       }
     } catch (error) {
       console.error(error);
       setMessages((prev) => [...prev, { role: "assistant", content: FRIENDLY_ERROR }]);
       if (options?.speakAnswer) {
-        speakText(FRIENDLY_ERROR);
+        void speakText(FRIENDLY_ERROR);
       }
     } finally {
       setIsLoading(false);
@@ -297,7 +335,7 @@ export function AIAssistant() {
                       <button
                         aria-label="Read AI-Sana answer aloud"
                         className="mt-2 inline-flex h-8 w-8 items-center justify-center rounded-full border border-outline-variant text-secondary hover:bg-secondary hover:text-on-secondary transition-colors"
-                        onClick={() => speakText(msg.content)}
+                        onClick={() => void speakText(msg.content)}
                         type="button"
                       >
                         <span className="material-symbols-outlined text-base">volume_up</span>
