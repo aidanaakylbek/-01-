@@ -1,4 +1,3 @@
-import { GoogleGenAI } from "@google/genai";
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 
@@ -52,15 +51,14 @@ export const Route = createFileRoute("/api/chat")({
         }
 
         try {
-          const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_API_KEY });
           const conversation = buildConversation(recentMessages);
           let reply = "";
           let lastError: unknown;
 
           for (const model of GEMINI_MODELS) {
             try {
-              reply = await generateTutorReply(ai, model, conversation, answerLanguage.instruction);
-              reply = await fixReplyIfNeeded(ai, model, {
+              reply = await generateTutorReply(model, conversation, answerLanguage.instruction);
+              reply = await fixReplyIfNeeded(model, {
                 conversation,
                 language: answerLanguage.code,
                 reply,
@@ -125,36 +123,30 @@ function buildConversation(messages: Array<{ role: "user" | "assistant"; content
 }
 
 async function generateTutorReply(
-  ai: GoogleGenAI,
   model: string,
   conversation: string,
   languageInstruction: string,
 ) {
-  const response = await ai.models.generateContent({
+  const response = await generateGeminiContent({
     model,
-    contents: conversation,
-    config: {
-      maxOutputTokens: 3500,
-      temperature: 0.65,
-      systemInstruction: `${SYSTEM_PROMPT}\n\n${languageInstruction}`,
-    },
+    prompt: conversation,
+    systemInstruction: `${SYSTEM_PROMPT}\n\n${languageInstruction}`,
+    temperature: 0.65,
+    maxOutputTokens: 3500,
   });
-  let reply = response.text?.trim() ?? "";
+  let reply = response.trim();
 
   if (reply && !COMPLETE_ENDING_PATTERN.test(reply)) {
-    const continuation = await ai.models.generateContent({
+    const continuationText = await generateGeminiContent({
       model,
-      contents: `${conversation}\n\nAI-Sana: ${reply}\n\nPupil: Continue from exactly where you stopped and finish the answer. Do not repeat previous text.`,
-      config: {
-        maxOutputTokens: 1200,
-        temperature: 0.45,
-        systemInstruction: `${SYSTEM_PROMPT}\n\n${languageInstruction}`,
-      },
+      prompt: `${conversation}\n\nAI-Sana: ${reply}\n\nPupil: Continue from exactly where you stopped and finish the answer. Do not repeat previous text.`,
+      systemInstruction: `${SYSTEM_PROMPT}\n\n${languageInstruction}`,
+      temperature: 0.45,
+      maxOutputTokens: 1200,
     });
-    const continuationText = continuation.text?.trim();
 
     if (continuationText) {
-      reply = `${reply} ${continuationText}`;
+      reply = `${reply} ${continuationText.trim()}`;
     }
   }
 
@@ -162,7 +154,6 @@ async function generateTutorReply(
 }
 
 async function fixReplyIfNeeded(
-  ai: GoogleGenAI,
   model: string,
   options: ReplyFixOptions,
 ) {
@@ -181,17 +172,75 @@ async function fixReplyIfNeeded(
     return trimmedReply;
   }
 
-  const response = await ai.models.generateContent({
+  const response = await generateGeminiContent({
     model,
-    contents: `${options.conversation}\n\nYour previous draft was not useful enough or was in the wrong language:\n${trimmedReply}\n\nWrite a fresh answer now. Understand the pupil's intent, answer directly, do not ask them to rewrite the question, and do not repeat your previous answer.`,
-    config: {
-      maxOutputTokens: 2500,
-      temperature: 0.75,
-      systemInstruction: `${SYSTEM_PROMPT}\n\n${options.instruction}`,
-    },
+    prompt: `${options.conversation}\n\nYour previous draft was not useful enough or was in the wrong language:\n${trimmedReply}\n\nWrite a fresh answer now. Understand the pupil's intent, answer directly, do not ask them to rewrite the question, and do not repeat your previous answer.`,
+    systemInstruction: `${SYSTEM_PROMPT}\n\n${options.instruction}`,
+    temperature: 0.75,
+    maxOutputTokens: 2500,
   });
 
-  return response.text?.trim() || trimmedReply;
+  return response.trim() || trimmedReply;
+}
+
+async function generateGeminiContent({
+  maxOutputTokens,
+  model,
+  prompt,
+  systemInstruction,
+  temperature,
+}: {
+  maxOutputTokens: number;
+  model: string;
+  prompt: string;
+  systemInstruction: string;
+  temperature: number;
+}) {
+  const apiKey = process.env.GOOGLE_API_KEY;
+
+  if (!apiKey) {
+    return "";
+  }
+
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: {
+          maxOutputTokens,
+          temperature,
+        },
+        systemInstruction: {
+          parts: [{ text: systemInstruction }],
+        },
+      }),
+    },
+  );
+
+  if (!response.ok) {
+    const error = new Error(`Gemini REST request failed: ${response.status}`);
+    (error as { status?: number }).status = response.status;
+    throw error;
+  }
+
+  const data = (await response.json()) as {
+    candidates?: Array<{
+      content?: {
+        parts?: Array<{ text?: string }>;
+      };
+    }>;
+  };
+
+  return (
+    data.candidates
+      ?.flatMap((candidate) => candidate.content?.parts ?? [])
+      .map((part) => part.text ?? "")
+      .join("")
+      .trim() ?? ""
+  );
 }
 
 function getAnswerLanguage(
