@@ -2,36 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { AibiMark } from "@/components/aibi-mark";
 import { useLanguage } from "@/hooks/use-language";
 
-type SpeechRecognitionEventResult = {
-  isFinal: boolean;
-  0: {
-    transcript: string;
-  };
-};
-
-type SpeechRecognitionEventLike = {
-  results: ArrayLike<SpeechRecognitionEventResult>;
-};
-
-type SpeechRecognitionLike = {
-  continuous: boolean;
-  interimResults: boolean;
-  lang: string;
-  onend: (() => void) | null;
-  onerror: (() => void) | null;
-  onresult: ((event: SpeechRecognitionEventLike) => void) | null;
-  start: () => void;
-  stop: () => void;
-};
-
-type SpeechRecognitionConstructor = new () => SpeechRecognitionLike;
-
-type SpeechWindow = Window &
-  typeof globalThis & {
-    SpeechRecognition?: SpeechRecognitionConstructor;
-    webkitSpeechRecognition?: SpeechRecognitionConstructor;
-  };
-
 type ChatMessage = {
   role: "user" | "assistant";
   content: string;
@@ -43,21 +13,14 @@ const INITIAL_MESSAGE: ChatMessage = {
     "Hello! I'm your AI-Sana AI Tutor. Ask me about math, logic, reading, languages, study plans, or NIS/BIL/NSPM exam preparation.",
 };
 
-const VOICE_UNSUPPORTED =
-  "Voice input is not available in this browser yet. You can still type your question here.";
-const VOICE_ERROR =
-  "I could not hear that clearly. Please try the microphone again or type your question.";
-
 export function AIAssistant() {
   const { language } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([INITIAL_MESSAGE]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isListening, setIsListening] = useState(false);
   const [voiceStatus, setVoiceStatus] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
@@ -66,7 +29,6 @@ export function AIAssistant() {
 
   useEffect(() => {
     return () => {
-      recognitionRef.current?.stop();
       audioRef.current?.pause();
     };
   }, []);
@@ -111,7 +73,7 @@ export function AIAssistant() {
     }
   };
 
-  const sendMessage = async (messageText: string, options?: { speakAnswer?: boolean }) => {
+  const sendMessage = async (messageText: string) => {
     const trimmedInput = messageText.trim();
 
     if (!trimmedInput || isLoading) return;
@@ -136,23 +98,14 @@ export function AIAssistant() {
       if (!response.ok || !data.reply) {
         const message = getAssistantRecoveryMessage(language);
         setMessages((prev) => [...prev, { role: "assistant", content: message }]);
-        if (options?.speakAnswer) {
-          void speakText(message);
-        }
         return;
       }
 
       const reply = data.reply ?? getAssistantRecoveryMessage(language);
       setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
-      if (options?.speakAnswer) {
-        void speakText(reply);
-      }
     } catch (error) {
       console.error(error);
       setMessages((prev) => [...prev, { role: "assistant", content: getAssistantRecoveryMessage(language) }]);
-      if (options?.speakAnswer) {
-        void speakText(getAssistantRecoveryMessage(language));
-      }
     } finally {
       setIsLoading(false);
     }
@@ -161,72 +114,6 @@ export function AIAssistant() {
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     void sendMessage(input);
-  };
-
-  const startVoiceInput = () => {
-    if (isLoading || isListening) {
-      return;
-    }
-
-    const speechWindow = window as SpeechWindow;
-    const Recognition = speechWindow.SpeechRecognition ?? speechWindow.webkitSpeechRecognition;
-
-    if (!Recognition) {
-      setVoiceStatus(VOICE_UNSUPPORTED);
-      return;
-    }
-
-    const recognition = new Recognition();
-    let finalTranscript = "";
-
-    recognitionRef.current = recognition;
-    recognition.continuous = false;
-    recognition.interimResults = true;
-    recognition.lang = getSpeechRecognitionLanguage(language);
-    setIsListening(true);
-    setVoiceStatus("Listening...");
-
-    recognition.onresult = (event) => {
-      let interimTranscript = "";
-
-      for (let index = 0; index < event.results.length; index += 1) {
-        const result = event.results[index];
-        const transcript = result[0]?.transcript ?? "";
-
-        if (result.isFinal) {
-          finalTranscript += transcript;
-        } else {
-          interimTranscript += transcript;
-        }
-      }
-
-      setInput(`${finalTranscript} ${interimTranscript}`.trim());
-    };
-
-    recognition.onerror = () => {
-      setIsListening(false);
-      setVoiceStatus(VOICE_ERROR);
-    };
-
-    recognition.onend = () => {
-      setIsListening(false);
-      recognitionRef.current = null;
-
-      const question = finalTranscript.trim();
-      if (!question) {
-        setVoiceStatus((current) => current || VOICE_ERROR);
-        return;
-      }
-
-      void sendMessage(question, { speakAnswer: true });
-    };
-
-    recognition.start();
-  };
-
-  const stopVoiceInput = () => {
-    recognitionRef.current?.stop();
-    setIsListening(false);
   };
 
   return (
@@ -263,7 +150,7 @@ export function AIAssistant() {
                     AI-Sana AI Tutor
                   </h2>
                   <p className="text-xs text-on-surface-variant line-clamp-1">
-                    Voice and text help for exams and study plans
+                    Text help for exams and study plans
                   </p>
                 </div>
                 <button
@@ -328,7 +215,7 @@ export function AIAssistant() {
                   className="w-full px-4 py-2.5 bg-surface-container-low border border-outline-variant rounded-full font-body-md text-sm sm:text-body-md text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-secondary"
                   disabled={isLoading}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder={isListening ? "Speak now..." : "Ask by voice or text..."}
+                  placeholder="Ask about percentages, logic, English, or study plans..."
                   type="text"
                   value={input}
                 />
@@ -338,21 +225,6 @@ export function AIAssistant() {
                   </p>
                 ) : null}
               </div>
-              <button
-                aria-label={isListening ? "Stop voice input" : "Start voice input"}
-                className={`w-10 h-10 rounded-full transition-all flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed btn-squish border ${
-                  isListening
-                    ? "bg-error text-on-error border-error"
-                    : "bg-surface text-secondary border-secondary hover:bg-secondary hover:text-on-secondary"
-                }`}
-                disabled={isLoading}
-                onClick={isListening ? stopVoiceInput : startVoiceInput}
-                type="button"
-              >
-                <span className="material-symbols-outlined text-lg">
-                  {isListening ? "stop" : "mic"}
-                </span>
-              </button>
               <button
                 aria-label="Send message"
                 className="w-10 h-10 bg-secondary text-on-secondary rounded-full hover:bg-secondary-container hover:text-on-secondary-container transition-all flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed btn-squish border border-secondary"
@@ -367,18 +239,6 @@ export function AIAssistant() {
       )}
     </>
   );
-}
-
-function getSpeechRecognitionLanguage(language: "EN" | "KZ" | "RU") {
-  if (language === "KZ") {
-    return "kk-KZ";
-  }
-
-  if (language === "RU") {
-    return "ru-RU";
-  }
-
-  return "en-US";
 }
 
 function getAssistantRecoveryMessage(language: "EN" | "KZ" | "RU") {
