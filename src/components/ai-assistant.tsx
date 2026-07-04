@@ -1,5 +1,35 @@
-﻿import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AibiMark } from "@/components/aibi-mark";
+
+type SpeechRecognitionEventResult = {
+  isFinal: boolean;
+  0: {
+    transcript: string;
+  };
+};
+
+type SpeechRecognitionEventLike = {
+  results: ArrayLike<SpeechRecognitionEventResult>;
+};
+
+type SpeechRecognitionLike = {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  onend: (() => void) | null;
+  onerror: (() => void) | null;
+  onresult: ((event: SpeechRecognitionEventLike) => void) | null;
+  start: () => void;
+  stop: () => void;
+};
+
+type SpeechRecognitionConstructor = new () => SpeechRecognitionLike;
+
+type SpeechWindow = Window &
+  typeof globalThis & {
+    SpeechRecognition?: SpeechRecognitionConstructor;
+    webkitSpeechRecognition?: SpeechRecognitionConstructor;
+  };
 
 type ChatMessage = {
   role: "user" | "assistant";
@@ -16,21 +46,48 @@ const FRIENDLY_ERROR =
   "I could not answer right now, but do not worry. Please try again in a moment, or ask your teacher if it is urgent.";
 const CONFIG_ERROR =
   "AI Tutor is connected to the app, but the Google AI key is not added yet. Add GOOGLE_API_KEY to the server .env file and restart the app.";
+const VOICE_UNSUPPORTED =
+  "Voice input is not available in this browser yet. You can still type your question here.";
+const VOICE_ERROR =
+  "I could not hear that clearly. Please try the microphone again or type your question.";
 
 export function AIAssistant() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([INITIAL_MESSAGE]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [voiceStatus, setVoiceStatus] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isLoading]);
 
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const trimmedInput = input.trim();
+  useEffect(() => {
+    return () => {
+      recognitionRef.current?.stop();
+      window.speechSynthesis?.cancel();
+    };
+  }, []);
+
+  const speakText = (text: string) => {
+    if (!("speechSynthesis" in window)) {
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = detectSpeechLanguage(text);
+    utterance.rate = 0.95;
+    utterance.pitch = 1.05;
+    window.speechSynthesis.speak(utterance);
+  };
+
+  const sendMessage = async (messageText: string, options?: { speakAnswer?: boolean }) => {
+    const trimmedInput = messageText.trim();
 
     if (!trimmedInput || isLoading) return;
 
@@ -38,6 +95,7 @@ export function AIAssistant() {
     setMessages(nextMessages);
     setInput("");
     setIsLoading(true);
+    setVoiceStatus("");
 
     try {
       const response = await fetch("/api/chat", {
@@ -53,19 +111,97 @@ export function AIAssistant() {
         const message =
           data.code === "missing_google_key" ? CONFIG_ERROR : (data.error ?? FRIENDLY_ERROR);
         setMessages((prev) => [...prev, { role: "assistant", content: message }]);
+        if (options?.speakAnswer) {
+          speakText(message);
+        }
         return;
       }
 
-      setMessages((prev) => [
-        ...prev,
-        { role: "assistant", content: data.reply ?? FRIENDLY_ERROR },
-      ]);
+      const reply = data.reply ?? FRIENDLY_ERROR;
+      setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
+      if (options?.speakAnswer) {
+        speakText(reply);
+      }
     } catch (error) {
       console.error(error);
       setMessages((prev) => [...prev, { role: "assistant", content: FRIENDLY_ERROR }]);
+      if (options?.speakAnswer) {
+        speakText(FRIENDLY_ERROR);
+      }
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSendMessage = (e: React.FormEvent) => {
+    e.preventDefault();
+    void sendMessage(input);
+  };
+
+  const startVoiceInput = () => {
+    if (isLoading || isListening) {
+      return;
+    }
+
+    const speechWindow = window as SpeechWindow;
+    const Recognition = speechWindow.SpeechRecognition ?? speechWindow.webkitSpeechRecognition;
+
+    if (!Recognition) {
+      setVoiceStatus(VOICE_UNSUPPORTED);
+      return;
+    }
+
+    const recognition = new Recognition();
+    let finalTranscript = "";
+
+    recognitionRef.current = recognition;
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.lang = "kk-KZ";
+    setIsListening(true);
+    setVoiceStatus("Listening...");
+
+    recognition.onresult = (event) => {
+      let interimTranscript = "";
+
+      for (let index = 0; index < event.results.length; index += 1) {
+        const result = event.results[index];
+        const transcript = result[0]?.transcript ?? "";
+
+        if (result.isFinal) {
+          finalTranscript += transcript;
+        } else {
+          interimTranscript += transcript;
+        }
+      }
+
+      setInput(`${finalTranscript} ${interimTranscript}`.trim());
+    };
+
+    recognition.onerror = () => {
+      setIsListening(false);
+      setVoiceStatus(VOICE_ERROR);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+      recognitionRef.current = null;
+
+      const question = finalTranscript.trim();
+      if (!question) {
+        setVoiceStatus((current) => current || VOICE_ERROR);
+        return;
+      }
+
+      void sendMessage(question, { speakAnswer: true });
+    };
+
+    recognition.start();
+  };
+
+  const stopVoiceInput = () => {
+    recognitionRef.current?.stop();
+    setIsListening(false);
   };
 
   return (
@@ -102,7 +238,7 @@ export function AIAssistant() {
                     AI-Sana AI Tutor
                   </h2>
                   <p className="text-xs text-on-surface-variant line-clamp-1">
-                    Step-by-step help for exams and study plans
+                    Voice and text help for exams and study plans
                   </p>
                 </div>
                 <button
@@ -130,6 +266,16 @@ export function AIAssistant() {
                     }`}
                   >
                     <p className="whitespace-pre-wrap">{msg.content}</p>
+                    {msg.role === "assistant" && (
+                      <button
+                        aria-label="Read AI-Sana answer aloud"
+                        className="mt-2 inline-flex h-8 w-8 items-center justify-center rounded-full border border-outline-variant text-secondary hover:bg-secondary hover:text-on-secondary transition-colors"
+                        onClick={() => speakText(msg.content)}
+                        type="button"
+                      >
+                        <span className="material-symbols-outlined text-base">volume_up</span>
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
@@ -152,14 +298,36 @@ export function AIAssistant() {
               className="shrink-0 border-t border-outline-variant bg-surface px-3 sm:px-4 py-3 sm:py-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] flex gap-2"
               onSubmit={handleSendMessage}
             >
-              <input
-                className="min-w-0 flex-1 px-4 py-2.5 bg-surface-container-low border border-outline-variant rounded-full font-body-md text-sm sm:text-body-md text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-secondary"
+              <div className="min-w-0 flex-1">
+                <input
+                  className="w-full px-4 py-2.5 bg-surface-container-low border border-outline-variant rounded-full font-body-md text-sm sm:text-body-md text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-secondary"
+                  disabled={isLoading}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder={isListening ? "Speak now..." : "Ask by voice or text..."}
+                  type="text"
+                  value={input}
+                />
+                {voiceStatus ? (
+                  <p className="mt-1 px-3 text-xs text-on-surface-variant" aria-live="polite">
+                    {voiceStatus}
+                  </p>
+                ) : null}
+              </div>
+              <button
+                aria-label={isListening ? "Stop voice input" : "Start voice input"}
+                className={`w-10 h-10 rounded-full transition-all flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed btn-squish border ${
+                  isListening
+                    ? "bg-error text-on-error border-error"
+                    : "bg-surface text-secondary border-secondary hover:bg-secondary hover:text-on-secondary"
+                }`}
                 disabled={isLoading}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask about percentages, logic, English, or study plans..."
-                type="text"
-                value={input}
-              />
+                onClick={isListening ? stopVoiceInput : startVoiceInput}
+                type="button"
+              >
+                <span className="material-symbols-outlined text-lg">
+                  {isListening ? "stop" : "mic"}
+                </span>
+              </button>
               <button
                 aria-label="Send message"
                 className="w-10 h-10 bg-secondary text-on-secondary rounded-full hover:bg-secondary-container hover:text-on-secondary-container transition-all flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed btn-squish border border-secondary"
@@ -174,4 +342,16 @@ export function AIAssistant() {
       )}
     </>
   );
+}
+
+function detectSpeechLanguage(text: string) {
+  if (/[әғқңөұүһі]/i.test(text)) {
+    return "kk-KZ";
+  }
+
+  if (/[а-яё]/i.test(text)) {
+    return "ru-RU";
+  }
+
+  return "en-US";
 }
