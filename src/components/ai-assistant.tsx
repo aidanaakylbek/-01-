@@ -58,6 +58,7 @@ export function AIAssistant() {
   const [isLoading, setIsLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [voiceStatus, setVoiceStatus] = useState("");
+  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
 
@@ -72,6 +73,23 @@ export function AIAssistant() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!("speechSynthesis" in window)) {
+      return;
+    }
+
+    const loadVoices = () => {
+      setAvailableVoices(window.speechSynthesis.getVoices());
+    };
+
+    loadVoices();
+    window.speechSynthesis.addEventListener("voiceschanged", loadVoices);
+
+    return () => {
+      window.speechSynthesis.removeEventListener("voiceschanged", loadVoices);
+    };
+  }, []);
+
   const speakText = (text: string) => {
     if (!("speechSynthesis" in window)) {
       return;
@@ -79,11 +97,20 @@ export function AIAssistant() {
 
     window.speechSynthesis.cancel();
 
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = detectSpeechLanguage(text);
-    utterance.rate = 0.95;
-    utterance.pitch = 1.05;
-    window.speechSynthesis.speak(utterance);
+    const cleanText = prepareSpeechText(text);
+    const lang = detectSpeechLanguage(cleanText);
+    const voice = pickFriendlyVoice(availableVoices, lang);
+    const chunks = splitSpeechText(cleanText);
+
+    chunks.forEach((chunk) => {
+      const utterance = new SpeechSynthesisUtterance(chunk);
+      utterance.lang = voice?.lang ?? lang;
+      utterance.voice = voice ?? null;
+      utterance.rate = 0.86;
+      utterance.pitch = 1;
+      utterance.volume = 0.92;
+      window.speechSynthesis.speak(utterance);
+    });
   };
 
   const sendMessage = async (messageText: string, options?: { speakAnswer?: boolean }) => {
@@ -354,4 +381,79 @@ function detectSpeechLanguage(text: string) {
   }
 
   return "en-US";
+}
+
+function pickFriendlyVoice(voices: SpeechSynthesisVoice[], language: string) {
+  if (voices.length === 0) {
+    return null;
+  }
+
+  const languagePrefix = language.split("-")[0];
+  const preferredVoiceNames = [
+    "Google UK English Female",
+    "Google US English",
+    "Microsoft Aria",
+    "Microsoft Zira",
+    "Microsoft Irina",
+    "Microsoft Svetlana",
+    "Milena",
+    "Yuri",
+    "Google русский",
+    "Google русский Россия",
+  ];
+
+  const exactLanguageVoices = voices.filter((voice) =>
+    voice.lang.toLowerCase().startsWith(language.toLowerCase()),
+  );
+  const sameLanguageVoices = voices.filter((voice) =>
+    voice.lang.toLowerCase().startsWith(languagePrefix.toLowerCase()),
+  );
+  const fallbackVoices =
+    language === "kk-KZ"
+      ? voices.filter((voice) => /^ru|^en/i.test(voice.lang))
+      : voices.filter((voice) => /^en|^ru/i.test(voice.lang));
+  const candidates = [...exactLanguageVoices, ...sameLanguageVoices, ...fallbackVoices, ...voices];
+
+  return (
+    candidates.find((voice) =>
+      preferredVoiceNames.some((name) => voice.name.toLowerCase().includes(name.toLowerCase())),
+    ) ??
+    candidates.find((voice) => /google|microsoft|natural|online/i.test(voice.name)) ??
+    candidates.find((voice) => voice.localService) ??
+    candidates[0] ??
+    null
+  );
+}
+
+function prepareSpeechText(text: string) {
+  return text
+    .replace(/[😀-🙏🌀-🗿🚀-🛿]/gu, "")
+    .replace(/\*\*/g, "")
+    .replace(/[`#>_-]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function splitSpeechText(text: string) {
+  const sentences = text.match(/[^.!?。]+[.!?。]?/g) ?? [text];
+  const chunks: string[] = [];
+  let current = "";
+
+  sentences.forEach((sentence) => {
+    const next = `${current} ${sentence}`.trim();
+
+    if (next.length > 180 && current) {
+      chunks.push(current);
+      current = sentence.trim();
+      return;
+    }
+
+    current = next;
+  });
+
+  if (current) {
+    chunks.push(current);
+  }
+
+  return chunks;
 }
