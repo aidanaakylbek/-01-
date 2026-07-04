@@ -199,7 +199,7 @@ function createLocalTutorFallback(language: "EN" | "KZ" | "RU", question: string
 }
 
 function isGreeting(text: string) {
-  return /^(с[әəа]лем|сәлемет|қалың қалай|калың қалай|как дела|привет|здравствуй|hello|hi)\b/i.test(
+  return /^(с[әəа]лем|сәлемет|қалың қалай|калың қалай|как дела|привет|здравствуй|hello|hi)(\s|$|[.!?])/i.test(
     text.trim(),
   );
 }
