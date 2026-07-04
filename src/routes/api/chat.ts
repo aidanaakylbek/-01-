@@ -1,31 +1,9 @@
-﻿import { createFileRoute } from "@tanstack/react-router";
 import { GoogleGenAI } from "@google/genai";
+import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 
-function isPercentageQuestion(text: string) {
-  return /%|пайыз|процент|percentage|percent/.test(text);
-}
-
-function isStudyPlanQuestion(text: string) {
-  return /план|дайынд|подготов|study plan|nis|bil|nspm|ниш|бил|рфмш/.test(text);
-}
-
-function isLogicQuestion(text: string) {
-  return /логик|logic|заңдылық|закономер|sequence|pattern/.test(text);
-}
-
-function isTestRequest(text: string) {
-  return /тест|test|quiz|сұрақ бер|сурак бер|вопрос|проверь/.test(text);
-}
-
-function isRepeatedGenericRequest(previousAssistantReply: string) {
-  return /пришли условие задачи|есептің немесе сұрақтың шартын|send the full question/i.test(
-    previousAssistantReply,
-  );
-}
-
 const SYSTEM_PROMPT =
-  "You are AI-Sana AI Tutor. You help pupils prepare for NIS, BIL, and NSPM entrance exams. Explain clearly, simply, and step by step. Do not only give the final answer; teach the pupil how to solve the problem. If the pupil asks a math or logic question, first explain the method, then give the answer. If the pupil makes a mistake, explain the mistake kindly. Use encouraging language. Keep answers age-appropriate for pupils aged 10-14. Help with math, logic, reading comprehension, English, Kazakh, Russian, study plans, exam preparation, and motivation. If the question is dangerous, medical, legal, or very personal, answer safely and suggest asking a parent, teacher, or trusted adult. Keep answers complete but compact: usually 4-8 short paragraphs or bullet points. Always finish with a clear final answer or next step.";
+  "You are AI-Sana, a real AI tutor for pupils preparing for NIS, BIL, and NSPM entrance exams. Answer any normal study question naturally, like ChatGPT or Gemini, but in a warm tutor style for pupils aged 10-14. Understand short, misspelled, mixed Kazakh/Russian/English messages by context. Do not give canned template answers. Do not keep asking the pupil to rewrite the question. If the question is unclear, make the most helpful reasonable assumption, answer with an example, and ask only one focused follow-up question. For math and logic, explain the method first, then give the answer. If the pupil answers a test question, check it and give a full explanation whether it is right or wrong. Keep answers clear, compact, and useful.";
 
 const chatRequestSchema = z.object({
   language: z.enum(["EN", "KZ", "RU"]).optional(),
@@ -69,53 +47,37 @@ export const Route = createFileRoute("/api/chat")({
 
         if (!process.env.GOOGLE_API_KEY) {
           return Response.json({
-            reply: createTutorAnswer(answerLanguage.code, recentMessages),
+            reply: getServiceMessage(answerLanguage.code),
           });
         }
 
         try {
           const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_API_KEY });
-          const conversation = recentMessages
-            .map((message) => `${message.role === "user" ? "Pupil" : "Tutor"}: ${message.content}`)
-            .join("\n\n");
+          const conversation = buildConversation(recentMessages);
           let reply = "";
           let lastError: unknown;
 
           for (const model of GEMINI_MODELS) {
             try {
-              const response = await ai.models.generateContent({
-                model,
-                contents: conversation,
-                config: {
-                  maxOutputTokens: 3000,
-                  temperature: 0.4,
-                  systemInstruction: `${SYSTEM_PROMPT}\n\n${answerLanguage.instruction}`,
-                },
+              reply = await generateTutorReply(ai, model, conversation, answerLanguage.instruction);
+              reply = await fixReplyIfNeeded(ai, model, {
+                conversation,
+                language: answerLanguage.code,
+                reply,
+                previousReply: lastAssistantMessage(recentMessages),
+                instruction: answerLanguage.instruction,
               });
-              reply = response.text?.trim() ?? "";
-              if (reply && !COMPLETE_ENDING_PATTERN.test(reply)) {
-                const continuation = await ai.models.generateContent({
-                  model,
-                  contents: `${conversation}\n\nTutor: ${reply}\n\nPupil: Continue from exactly where you stopped and finish the answer in 3-5 short sentences. Do not repeat the previous text.`,
-                  config: {
-                    maxOutputTokens: 900,
-                    temperature: 0.3,
-                    systemInstruction: `${SYSTEM_PROMPT}\n\n${answerLanguage.instruction}`,
-                  },
-                });
-                const continuationText = continuation.text?.trim();
-                if (continuationText) {
-                  reply = `${reply} ${continuationText}`;
-                }
-              }
+
               if (reply) {
-                reply = normalizeTutorReply(reply, answerLanguage.code, recentMessages);
+                break;
               }
-              if (reply) break;
             } catch (error) {
               lastError = error;
-              const status = error != null && typeof error === "object" ? "status" in error : false;
-              const statusCode = status ? (error as { status?: number }).status : undefined;
+              const statusCode =
+                error != null && typeof error === "object" && "status" in error
+                  ? (error as { status?: number }).status
+                  : undefined;
+
               if (statusCode !== 429 && statusCode !== 503 && statusCode !== 404) {
                 throw error;
               }
@@ -127,7 +89,7 @@ export const Route = createFileRoute("/api/chat")({
               console.error("AI-Sana Gemini Tutor model layer failed", lastError);
             }
             return Response.json({
-              reply: createTutorAnswer(answerLanguage.code, recentMessages),
+              reply: getServiceMessage(answerLanguage.code),
             });
           }
 
@@ -135,7 +97,7 @@ export const Route = createFileRoute("/api/chat")({
         } catch (error) {
           console.error("AI-Sana Gemini Tutor error", error);
           return Response.json({
-            reply: createTutorAnswer(answerLanguage.code, recentMessages),
+            reply: getServiceMessage(answerLanguage.code),
           });
         }
       },
@@ -143,33 +105,122 @@ export const Route = createFileRoute("/api/chat")({
   },
 });
 
+type AnswerLanguage = {
+  code: "EN" | "KZ" | "RU";
+  instruction: string;
+};
+
+type ReplyFixOptions = {
+  conversation: string;
+  instruction: string;
+  language: "EN" | "KZ" | "RU";
+  previousReply: string;
+  reply: string;
+};
+
+function buildConversation(messages: Array<{ role: "user" | "assistant"; content: string }>) {
+  return messages
+    .map((message) => `${message.role === "user" ? "Pupil" : "AI-Sana"}: ${message.content}`)
+    .join("\n\n");
+}
+
+async function generateTutorReply(
+  ai: GoogleGenAI,
+  model: string,
+  conversation: string,
+  languageInstruction: string,
+) {
+  const response = await ai.models.generateContent({
+    model,
+    contents: conversation,
+    config: {
+      maxOutputTokens: 3500,
+      temperature: 0.65,
+      systemInstruction: `${SYSTEM_PROMPT}\n\n${languageInstruction}`,
+    },
+  });
+  let reply = response.text?.trim() ?? "";
+
+  if (reply && !COMPLETE_ENDING_PATTERN.test(reply)) {
+    const continuation = await ai.models.generateContent({
+      model,
+      contents: `${conversation}\n\nAI-Sana: ${reply}\n\nPupil: Continue from exactly where you stopped and finish the answer. Do not repeat previous text.`,
+      config: {
+        maxOutputTokens: 1200,
+        temperature: 0.45,
+        systemInstruction: `${SYSTEM_PROMPT}\n\n${languageInstruction}`,
+      },
+    });
+    const continuationText = continuation.text?.trim();
+
+    if (continuationText) {
+      reply = `${reply} ${continuationText}`;
+    }
+  }
+
+  return reply;
+}
+
+async function fixReplyIfNeeded(
+  ai: GoogleGenAI,
+  model: string,
+  options: ReplyFixOptions,
+) {
+  const trimmedReply = options.reply.trim();
+
+  if (!trimmedReply) {
+    return "";
+  }
+
+  const shouldRegenerate =
+    trimmedReply === options.previousReply.trim() ||
+    isUnhelpfulClarification(trimmedReply) ||
+    detectTextLanguage(trimmedReply, options.language) !== options.language;
+
+  if (!shouldRegenerate) {
+    return trimmedReply;
+  }
+
+  const response = await ai.models.generateContent({
+    model,
+    contents: `${options.conversation}\n\nYour previous draft was not useful enough or was in the wrong language:\n${trimmedReply}\n\nWrite a fresh answer now. Understand the pupil's intent, answer directly, do not ask them to rewrite the question, and do not repeat your previous answer.`,
+    config: {
+      maxOutputTokens: 2500,
+      temperature: 0.75,
+      systemInstruction: `${SYSTEM_PROMPT}\n\n${options.instruction}`,
+    },
+  });
+
+  return response.text?.trim() || trimmedReply;
+}
+
 function getAnswerLanguage(
   language: "EN" | "KZ" | "RU" | undefined,
   messages: Array<{ role: "user" | "assistant"; content: string }>,
-) {
+): AnswerLanguage {
   const userText = lastUserMessage(messages);
   const detectedLanguage = detectTextLanguage(userText, language);
 
   if (detectedLanguage === "KZ") {
     return {
-      code: "KZ" as const,
+      code: "KZ",
       instruction:
-        "IMPORTANT: Reply only in Kazakh. If the pupil writes Kazakh in Cyrillic, answer in natural Kazakh Cyrillic. Do not switch to English or Russian unless the pupil explicitly asks for translation or language comparison.",
+        "Reply only in natural Kazakh Cyrillic. If the pupil writes Kazakh without special Kazakh letters, still answer in Kazakh. Do not switch to Russian or English unless the pupil explicitly asks for translation.",
     };
   }
 
   if (detectedLanguage === "RU") {
     return {
-      code: "RU" as const,
+      code: "RU",
       instruction:
-        "IMPORTANT: Reply only in Russian. Do not switch to English or Kazakh unless the pupil explicitly asks for translation or language comparison.",
+        "Reply only in natural Russian. Do not switch to Kazakh or English unless the pupil explicitly asks for translation.",
     };
   }
 
   return {
-    code: "EN" as const,
+    code: "EN",
     instruction:
-      "IMPORTANT: Reply only in English. Do not switch to Kazakh or Russian unless the pupil explicitly asks for translation or language comparison.",
+      "Reply only in English. Do not switch to Kazakh or Russian unless the pupil explicitly asks for translation.",
   };
 }
 
@@ -181,26 +232,6 @@ function lastAssistantMessage(messages: Array<{ role: "user" | "assistant"; cont
   return [...messages].reverse().find((message) => message.role === "assistant")?.content ?? "";
 }
 
-function normalizeTutorReply(
-  reply: string,
-  language: "EN" | "KZ" | "RU",
-  messages: Array<{ role: "user" | "assistant"; content: string }>,
-) {
-  const previousAssistantReply = lastAssistantMessage(messages);
-
-  if (reply.trim() === previousAssistantReply.trim()) {
-    return createTutorAnswer(language, messages);
-  }
-
-  const detectedReplyLanguage = detectTextLanguage(reply, language);
-
-  if (detectedReplyLanguage !== language) {
-    return createTutorAnswer(language, messages);
-  }
-
-  return reply;
-}
-
 function detectTextLanguage(text: string, defaultLanguage?: "EN" | "KZ" | "RU"): "EN" | "KZ" | "RU" {
   const normalizedText = text.toLowerCase();
 
@@ -209,7 +240,7 @@ function detectTextLanguage(text: string, defaultLanguage?: "EN" | "KZ" | "RU"):
   }
 
   if (
-    /\b(пайыз|деген|қалай|калай|маған|маган|түсіндір|тусиндир|есеп|шығар|шыгар|дайындал|жауап|сұрақ|сурак|қазақ|казак|ағылшын|агылшын)\b/i.test(
+    /\b(пайыз|деген|қалай|калай|маған|маган|түсіндір|тусиндир|есеп|шығар|шыгар|дайындал|жауап|сұрақ|сурак|қазақ|казак|ағылшын|агылшын|маған|маган|жондеши|істе|исте|бер|керек|емес)\b/i.test(
       normalizedText,
     )
   ) {
@@ -217,7 +248,7 @@ function detectTextLanguage(text: string, defaultLanguage?: "EN" | "KZ" | "RU"):
   }
 
   if (
-    /\b(привет|здравствуй|как|что|почему|объясни|реши|задача|процент|подготов|русский|английский)\b/i.test(
+    /\b(привет|здравствуй|как|что|почему|объясни|реши|задача|процент|подготов|русский|английский|нужно|сделай|исправь)\b/i.test(
       normalizedText,
     )
   ) {
@@ -235,100 +266,20 @@ function detectTextLanguage(text: string, defaultLanguage?: "EN" | "KZ" | "RU"):
   return defaultLanguage ?? "EN";
 }
 
-function createTutorAnswer(
-  language: "EN" | "KZ" | "RU",
-  messages: Array<{ role: "user" | "assistant"; content: string }>,
-) {
-  const question = lastUserMessage(messages);
-  const previousAssistantReply = lastAssistantMessage(messages);
-  const lowerQuestion = question.toLowerCase();
-  const repeatedGenericRequest = isRepeatedGenericRequest(previousAssistantReply);
+function isUnhelpfulClarification(reply: string) {
+  return /пришли условие|жазып жібер|қайта жаз|send the full question|send the question again|напиши вопрос еще раз/i.test(
+    reply,
+  );
+}
 
+function getServiceMessage(language: "EN" | "KZ" | "RU") {
   if (language === "KZ") {
-    if (isGreeting(question)) {
-      return "Сәлем! Жақсымын, рахмет. Сен қалайсың? Қай пәннен дайындаламыз: математика, логика, ағылшын, қазақ тілі немесе оқу сауаттылығы?";
-    }
-
-    if (isTestRequest(lowerQuestion)) {
-      return "Жақсы, шағын тест бастайық. 1-сұрақ: 80 санының 25%-ы нешеге тең? A) 15 B) 20 C) 25 D) 40. Жауабыңды бір әріппен немесе санмен жаз. Жауап берген соң мен толық разбор жасаймын.";
-    }
-
-    if (isPercentageQuestion(lowerQuestion)) {
-      return "Пайыз дегеніміз 100-дің ішіндегі үлес. Мысалы, 25% = 25/100 = 0,25. Егер 80-нің 25%-ын тапсақ: 80 × 0,25 = 20. Жауап: 20. Ереже: санның p%-ын табу үшін санды p/100-ге көбейт.";
-    }
-
-    if (isStudyPlanQuestion(lowerQuestion)) {
-      return "Дайындықты 3 бөлікке бөлейік. 1) Күн сайын 25 минут математика немесе логика. 2) Күн сайын 15 минут оқу сауаттылығы немесе тіл. 3) Аптасына 1 рет пробный тест. Әр тесттен кейін 3 қатені таңдап, неге қате кеткенін жаз. Қай емтиханға дайындалып жатырсың: NIS, BIL әлде NSPM?";
-    }
-
-    if (isLogicQuestion(lowerQuestion)) {
-      return "Логикалық есепте алдымен заңдылықты іздейміз, кейін сол заңдылық келесі қадамда да сақтала ма тексереміз. Мысалы: 2, 4, 8, 16, ? Мұнда әр сан 2-ге көбейеді, сондықтан келесі сан 32. Нақты есебіңді жіберсең, бірге қадам-қадаммен шығарамыз.";
-    }
-
-    if (repeatedGenericRequest) {
-      return "Түсіндім, бір орында тұрып қалмаймыз. Қазір өзім мысал беремін: 36 санының 50%-ын тап. Әдіс: 50% дегеніміз жартысы, сондықтан 36 ÷ 2 = 18. Енді сен шығар: 60 санының 10%-ы қанша?";
-    }
-
-    return "Жақсы, бірге қарайық. Есептің немесе сұрақтың шартын толық жаз. Мен оны 3 қадаммен түсіндіремін: 1) не берілгенін табамыз, 2) қандай әдіс керек екенін таңдаймыз, 3) жауапты тексереміз.";
+    return "AI-Sana қазір жауапты дайындап үлгермеді. Бір секундтан кейін осы сұрақты қайта жіберсең, мен нақты түсіндіріп беремін.";
   }
 
   if (language === "RU") {
-    if (isGreeting(question)) {
-      return "Привет! У меня все хорошо, спасибо. Как ты? С какого предмета начнем: математика, логика, английский, русский или чтение?";
-    }
-
-    if (isTestRequest(lowerQuestion)) {
-      return "Хорошо, начнем короткий тест. Вопрос 1: чему равно 25% от 80? A) 15 B) 20 C) 25 D) 40. Ответь буквой или числом. После ответа я дам полный разбор.";
-    }
-
-    if (isPercentageQuestion(lowerQuestion)) {
-      return "Процент — это часть от 100. Например, 25% = 25/100 = 0,25. Чтобы найти 25% от 80, считаем: 80 × 0,25 = 20. Ответ: 20. Правило: чтобы найти p% от числа, умножь число на p/100.";
-    }
-
-    if (isStudyPlanQuestion(lowerQuestion)) {
-      return "Сделаем простой план. Каждый день: 25 минут математики или логики, 15 минут чтения или языка. Раз в неделю: один пробный тест. После теста выбери 3 ошибки и разбери: где был неверный шаг и как решить правильно. Ты готовишься к NIS, BIL или NSPM?";
-    }
-
-    if (isLogicQuestion(lowerQuestion)) {
-      return "Логическую задачу решаем так: сначала ищем закономерность, потом проверяем, повторяется ли она. Например: 2, 4, 8, 16, ? Здесь каждое число умножается на 2, значит следующий ответ 32. Отправь свою задачу, и я разберу ее по шагам.";
-    }
-
-    if (repeatedGenericRequest) {
-      return "Поняла, не будем стоять на месте. Дам пример сама: найди 50% от 36. Метод: 50% — это половина, значит 36 ÷ 2 = 18. Теперь попробуй ты: сколько будет 10% от 60?";
-    }
-
-    return "Хорошо, давай разберем вместе. Пришли условие задачи полностью. Я помогу по шагам: 1) что дано, 2) какой способ выбрать, 3) как проверить ответ.";
+    return "AI-Sana сейчас не успела подготовить ответ. Отправь этот же вопрос еще раз через секунду, и я отвечу по сути.";
   }
 
-  if (isGreeting(question)) {
-    return "Hi! I am doing well, thank you. How are you? Which subject should we start with: math, logic, English, reading, or an exam plan?";
-  }
-
-  if (isTestRequest(lowerQuestion)) {
-    return "Great, let us start a short test. Question 1: what is 25% of 80? A) 15 B) 20 C) 25 D) 40. Reply with a letter or number, and I will explain the solution.";
-  }
-
-  if (isPercentageQuestion(lowerQuestion)) {
-    return "A percent is a part out of 100. For example, 25% = 25/100 = 0.25. To find 25% of 80, calculate 80 × 0.25 = 20. Final answer: 20. Rule: to find p% of a number, multiply the number by p/100.";
-  }
-
-  if (isStudyPlanQuestion(lowerQuestion)) {
-    return "Here is a simple plan: every day, do 25 minutes of math or logic and 15 minutes of reading or language practice. Once a week, take one mock test. After each test, choose 3 mistakes and write why each mistake happened. Which exam are you preparing for: NIS, BIL, or NSPM?";
-  }
-
-  if (isLogicQuestion(lowerQuestion)) {
-    return "For logic questions, first look for the pattern, then test if the pattern continues. Example: 2, 4, 8, 16, ? Each number is multiplied by 2, so the next number is 32. Send me your exact question and I will solve it step by step.";
-  }
-
-  if (repeatedGenericRequest) {
-    return "Let us move forward with an example. Find 50% of 36. Method: 50% means half, so 36 ÷ 2 = 18. Now try this: what is 10% of 60?";
-  }
-
-  return "Good, let us work on it together. Send the full question or the part you do not understand. I will explain it in 3 steps: what is given, which method to use, and how to check the answer.";
-}
-
-function isGreeting(text: string) {
-  return /^(с[әəа]лем|сәлемет|қалың қалай|калың қалай|как дела|привет|здравствуй|hello|hi)(\s|$|[.!?])/i.test(
-    text.trim(),
-  );
+  return "AI-Sana could not prepare the answer in time. Send the same question again in a second, and I will answer directly.";
 }
