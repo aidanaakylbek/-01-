@@ -131,7 +131,7 @@ function SubjectPage() {
                           <Link
                             className="inline-flex items-center gap-2 bg-secondary text-on-secondary px-4 py-3 font-label-caps text-label-caps uppercase tracking-widest hover:bg-primary transition-colors"
                             params={{ subjectId: subject.id, topicId: topic.id }}
-                            to="/subjects/$subjectId/$topicId"
+                            to="/lesson/$subjectId/$topicId"
                           >
                             {copy.openLesson}
                             <span className="material-symbols-outlined text-sm">arrow_forward</span>

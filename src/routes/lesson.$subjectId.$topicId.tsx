@@ -4,7 +4,7 @@ import { Navbar } from "@/components/navbar";
 import { getTopic } from "@/data/subjects";
 import { useLanguage } from "@/hooks/use-language";
 
-export const Route = createFileRoute("/subjects/$subjectId/$topicId")({
+export const Route = createFileRoute("/lesson/$subjectId/$topicId")({
   loader: ({ params }) => {
     const data = getTopic(params.subjectId, params.topicId);
     if (!data || !data.topic.lesson) throw notFound();
