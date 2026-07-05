@@ -46,7 +46,7 @@ export const Route = createFileRoute("/api/chat")({
 
         if (!getGoogleApiKey()) {
           return Response.json({
-            reply: getServiceMessage(answerLanguage.code),
+            reply: getServiceMessage(answerLanguage.code, "missing_key"),
           });
         }
 
@@ -76,7 +76,13 @@ export const Route = createFileRoute("/api/chat")({
                   ? (error as { status?: number }).status
                   : undefined;
 
-              if (statusCode !== 429 && statusCode !== 503 && statusCode !== 404) {
+              if (statusCode === 429) {
+                return Response.json({
+                  reply: getServiceMessage(answerLanguage.code, "quota"),
+                });
+              }
+
+              if (statusCode !== 503 && statusCode !== 404) {
                 throw error;
               }
             }
@@ -87,7 +93,7 @@ export const Route = createFileRoute("/api/chat")({
               console.error("AI-Sana Gemini Tutor model layer failed", lastError);
             }
             return Response.json({
-              reply: getServiceMessage(answerLanguage.code),
+              reply: getServiceMessage(answerLanguage.code, "temporary"),
             });
           }
 
@@ -95,7 +101,7 @@ export const Route = createFileRoute("/api/chat")({
         } catch (error) {
           console.error("AI-Sana Gemini Tutor error", error);
           return Response.json({
-            reply: getServiceMessage(answerLanguage.code),
+            reply: getServiceMessage(answerLanguage.code, "temporary"),
           });
         }
       },
@@ -132,7 +138,7 @@ async function generateTutorReply(
     prompt: conversation,
     systemInstruction: `${SYSTEM_PROMPT}\n\n${languageInstruction}`,
     temperature: 0.65,
-    maxOutputTokens: 3500,
+    maxOutputTokens: 1800,
   });
   let reply = response.trim();
 
@@ -142,7 +148,7 @@ async function generateTutorReply(
       prompt: `${conversation}\n\nAI-Sana: ${reply}\n\nPupil: Continue from exactly where you stopped and finish the answer. Do not repeat previous text.`,
       systemInstruction: `${SYSTEM_PROMPT}\n\n${languageInstruction}`,
       temperature: 0.45,
-      maxOutputTokens: 1200,
+      maxOutputTokens: 700,
     });
 
     if (continuationText) {
@@ -177,7 +183,7 @@ async function fixReplyIfNeeded(
     prompt: `${options.conversation}\n\nYour previous draft was not useful enough or was in the wrong language:\n${trimmedReply}\n\nWrite a fresh answer now. Understand the pupil's intent, answer directly, do not ask them to rewrite the question, and do not repeat your previous answer.`,
     systemInstruction: `${SYSTEM_PROMPT}\n\n${options.instruction}`,
     temperature: 0.75,
-    maxOutputTokens: 2500,
+    maxOutputTokens: 1200,
   });
 
   return response.trim() || trimmedReply;
@@ -321,16 +327,40 @@ function isUnhelpfulClarification(reply: string) {
   );
 }
 
-function getServiceMessage(language: "EN" | "KZ" | "RU") {
+function getServiceMessage(language: "EN" | "KZ" | "RU", reason: "missing_key" | "quota" | "temporary") {
+  if (reason === "missing_key") {
+    if (language === "KZ") {
+      return "AI-Sana қосылмаған: Vercel-де GOOGLE_API_KEY немесе GEMINI_API_KEY жоқ. Environment Variables ішіне key қосып, қайта deploy жасау керек.";
+    }
+
+    if (language === "RU") {
+      return "AI-Sana не подключена: в Vercel нет GOOGLE_API_KEY или GEMINI_API_KEY. Добавьте ключ в Environment Variables и сделайте redeploy.";
+    }
+
+    return "AI-Sana is not connected: GOOGLE_API_KEY or GEMINI_API_KEY is missing in Vercel. Add the key to Environment Variables and redeploy.";
+  }
+
+  if (reason === "quota") {
+    if (language === "KZ") {
+      return "Google AI лимиті бітті немесе billing қосылмаған. AI-Sana нақты жауап беруі үшін Google AI Studio/Cloud-та quota немесе billing-ті қосу керек.";
+    }
+
+    if (language === "RU") {
+      return "Лимит Google AI закончился или billing не включен. Чтобы AI-Sana отвечала на вопросы, нужно включить quota/billing в Google AI Studio или Google Cloud.";
+    }
+
+    return "The Google AI quota is exhausted or billing is not enabled. Enable quota/billing in Google AI Studio or Google Cloud so AI-Sana can answer.";
+  }
+
   if (language === "KZ") {
-    return "AI-Sana қазір жауапты дайындап үлгермеді. Бір секундтан кейін осы сұрақты қайта жіберсең, мен нақты түсіндіріп беремін.";
+    return "AI-Sana сервері Google AI-ға уақытша қосыла алмай тұр. Key және quota дұрыс болса, бұл хабарлама жоғалады.";
   }
 
   if (language === "RU") {
-    return "AI-Sana сейчас не успела подготовить ответ. Отправь этот же вопрос еще раз через секунду, и я отвечу по сути.";
+    return "Сервер AI-Sana временно не может подключиться к Google AI. Если ключ и quota настроены правильно, это сообщение исчезнет.";
   }
 
-  return "AI-Sana could not prepare the answer in time. Send the same question again in a second, and I will answer directly.";
+  return "AI-Sana cannot connect to Google AI right now. If the key and quota are configured correctly, this message will disappear.";
 }
 
 function getGoogleApiKey() {
