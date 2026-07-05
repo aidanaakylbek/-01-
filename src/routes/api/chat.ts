@@ -28,9 +28,9 @@ const chatRequestSchema = z.object({
     .max(20),
 });
 
-const OPENAI_DEFAULT_MODELS = ["gpt-5-mini", "gpt-5-nano"];
-const OPENAI_EASY_MODELS = ["gpt-5-nano", "gpt-5-mini"];
-const OPENAI_HARD_MODELS = ["gpt-5", "gpt-5-mini"];
+const OPENAI_DEFAULT_MODELS = ["gpt-5.4-mini", "gpt-5.4-nano"];
+const OPENAI_EASY_MODELS = ["gpt-5.4-nano", "gpt-5.4-mini"];
+const OPENAI_HARD_MODELS = ["gpt-5.5", "gpt-5.4-mini"];
 const COMPLETE_ENDING_PATTERN = /[.!?。؟…)"'»\]]$/;
 
 export const Route = createFileRoute("/api/chat")({
@@ -237,7 +237,7 @@ async function generateOpenAiContent({
     return "";
   }
 
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+  const response = await fetch("https://api.openai.com/v1/responses", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
@@ -245,45 +245,46 @@ async function generateOpenAiContent({
     },
     body: JSON.stringify({
       model,
-      messages: [
-        { role: "system", content: systemInstruction },
+      instructions: systemInstruction,
+      input: [
         {
           role: "user",
           content: [
-            { type: "text", text: prompt },
+            { type: "input_text", text: prompt },
             ...(images ?? []).map((url) => ({
-              type: "image_url",
-              image_url: { url },
+              type: "input_image",
+              image_url: url,
             })),
           ],
         },
       ],
-      max_tokens: maxOutputTokens,
+      max_output_tokens: maxOutputTokens,
       temperature,
     }),
   });
 
   if (!response.ok) {
-    const error = new Error(`OpenAI chat request failed: ${response.status}`);
+    const error = new Error(`OpenAI responses request failed: ${response.status}`);
     (error as { status?: number }).status = response.status;
     throw error;
   }
 
   const data = (await response.json()) as {
-    choices?: Array<{
-      message?: {
-        content?: string | Array<{ text?: string }>;
-      };
+    output_text?: string;
+    output?: Array<{
+      content?: Array<{ text?: string; type?: string }>;
     }>;
   };
 
-  const content = data.choices?.[0]?.message?.content;
-
-  if (Array.isArray(content)) {
-    return content.map((part) => part.text ?? "").join("").trim();
-  }
-
-  return content?.trim() ?? "";
+  return (
+    data.output_text?.trim() ||
+    data.output
+      ?.flatMap((item) => item.content ?? [])
+      .map((part) => part.text ?? "")
+      .join("")
+      .trim() ||
+    ""
+  );
 }
 
 function getAnswerLanguage(
