@@ -8,19 +8,15 @@ type ChatMessage = {
   images?: string[];
 };
 
-const INITIAL_MESSAGE: ChatMessage = {
-  role: "assistant",
-  content:
-    "Hello! I'm your AI-Sana AI Tutor. Ask me about math, logic, reading, languages, study plans, or NIS/BIL/NSPM exam preparation.",
-};
-
 export function AIAssistant() {
   const { language } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([INITIAL_MESSAGE]);
+  const [messages, setMessages] = useState<ChatMessage[]>([getInitialMessage(language)]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<{ dataUrl: string; name: string } | null>(null);
+  const [selectedImage, setSelectedImage] = useState<{ dataUrl: string; name: string } | null>(
+    null,
+  );
   const [voiceStatus, setVoiceStatus] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -35,6 +31,16 @@ export function AIAssistant() {
       audioRef.current?.pause();
     };
   }, []);
+
+  useEffect(() => {
+    setMessages((prev) => {
+      if (prev.length === 1 && isInitialAssistantMessage(prev[0])) {
+        return [getInitialMessage(language)];
+      }
+
+      return prev;
+    });
+  }, [language]);
 
   const speakText = async (text: string) => {
     const playedCloudVoice = await playCloudVoice(text);
@@ -86,9 +92,7 @@ export function AIAssistant() {
       ...messages,
       {
         role: "user",
-        content:
-          trimmedInput ||
-          getImageOnlyPrompt(language),
+        content: trimmedInput || getImageOnlyPrompt(language),
         images: image ? [image.dataUrl] : undefined,
       },
     ];
@@ -104,7 +108,9 @@ export function AIAssistant() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           language,
-          messages: nextMessages.filter((message) => message !== INITIAL_MESSAGE).slice(-12),
+          messages: nextMessages
+            .filter((message) => !isInitialAssistantMessage(message))
+            .slice(-12),
         }),
       });
       const data = (await response.json()) as { reply?: string; error?: string; code?: string };
@@ -119,7 +125,10 @@ export function AIAssistant() {
       setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
     } catch (error) {
       console.error(error);
-      setMessages((prev) => [...prev, { role: "assistant", content: getAssistantRecoveryMessage(language) }]);
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: getAssistantRecoveryMessage(language) },
+      ]);
     } finally {
       setIsLoading(false);
     }
@@ -191,7 +200,7 @@ export function AIAssistant() {
                     AI-Sana AI Tutor
                   </h2>
                   <p className="text-xs text-on-surface-variant line-clamp-1">
-                    Text help for exams and study plans
+                    {getChatCopy(language).subtitle}
                   </p>
                 </div>
                 <button
@@ -248,7 +257,9 @@ export function AIAssistant() {
                 <div className="flex justify-start">
                   <div className="bg-surface-container-high text-on-surface rounded-2xl px-4 py-3 border border-outline-variant">
                     <div className="flex gap-2 items-center" aria-live="polite">
-                      <span className="text-sm text-on-surface-variant mr-1">Thinking...</span>
+                      <span className="text-sm text-on-surface-variant mr-1">
+                        {getChatCopy(language).thinking}
+                      </span>
                       <div className="w-2 h-2 bg-secondary rounded-full animate-bounce" />
                       <div className="w-2 h-2 bg-secondary rounded-full animate-bounce delay-100" />
                       <div className="w-2 h-2 bg-secondary rounded-full animate-bounce delay-200" />
@@ -293,7 +304,7 @@ export function AIAssistant() {
                   className="w-full px-4 py-2.5 bg-surface-container-low border border-outline-variant rounded-full font-body-md text-sm sm:text-body-md text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-secondary"
                   disabled={isLoading}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder="Ask about percentages, logic, English, or study plans..."
+                  placeholder={getChatCopy(language).placeholder}
                   type="text"
                   value={input}
                 />
@@ -334,6 +345,51 @@ export function AIAssistant() {
       )}
     </>
   );
+}
+
+function getInitialMessage(language: "EN" | "KZ" | "RU"): ChatMessage {
+  return {
+    role: "assistant",
+    content: getChatCopy(language).initial,
+  };
+}
+
+function isInitialAssistantMessage(message: ChatMessage) {
+  const initialMessages = [
+    getChatCopy("EN").initial,
+    getChatCopy("KZ").initial,
+    getChatCopy("RU").initial,
+  ];
+
+  return message.role === "assistant" && initialMessages.includes(message.content);
+}
+
+function getChatCopy(language: "EN" | "KZ" | "RU") {
+  const copy = {
+    KZ: {
+      initial:
+        "Сәлем! Мен AI-Sana AI көмекшісімін. Математика, логика, оқу сауаттылығы, тілдер, оқу жоспары немесе НЗМ/БИЛ/РФММ дайындығы туралы сұрай аласың.",
+      subtitle: "Емтихан мен оқу жоспарына мәтіндік көмек",
+      thinking: "Ойланып жатыр...",
+      placeholder: "Пайыз, логика, ағылшын немесе оқу жоспары туралы сұра...",
+    },
+    RU: {
+      initial:
+        "Привет! Я AI-Sana, твой AI-помощник. Спрашивай про математику, логику, чтение, языки, учебный план или подготовку к НИШ/БИЛ/РФМШ.",
+      subtitle: "Текстовая помощь для экзаменов и учебных планов",
+      thinking: "Думаю...",
+      placeholder: "Спроси про проценты, логику, английский или учебный план...",
+    },
+    EN: {
+      initial:
+        "Hello! I'm your AI-Sana AI Tutor. Ask me about math, logic, reading, languages, study plans, or NIS/BIL/NSPM exam preparation.",
+      subtitle: "Text help for exams and study plans",
+      thinking: "Thinking...",
+      placeholder: "Ask about percentages, logic, English, or study plans...",
+    },
+  };
+
+  return copy[language];
 }
 
 function getAssistantRecoveryMessage(language: "EN" | "KZ" | "RU") {

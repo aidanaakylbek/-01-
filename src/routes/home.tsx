@@ -226,12 +226,12 @@ function getHomeCopy(language: string) {
       accountLabel: "Оқушы аккаунты",
       open: "Ашу",
       nextExamDay: "Сенбі",
-      nextExamDescription: "НИШ/БИЛ/РФМШ бойынша толық форматтағы жаттығу тесті.",
+      nextExamDescription: "НЗМ/БИЛ/РФММ бойынша толық форматтағы жаттығу тесті.",
       focusTitle: "Логикалық есептер",
       focusDescription: "Соңғы тесттердегі дәлдік 50%-дан төмен.",
       tasks: {
         quantitative: {
-          title: "НИШ: Сандық сипаттамалар",
+          title: "НЗМ: Сандық сипаттамалар",
           subtitle: "Математикалық және логикалық талдау",
         },
         reading: {
@@ -239,7 +239,7 @@ function getHomeCopy(language: string) {
           subtitle: "Қазақ және орыс мәтіндерін түсіну",
         },
         functions: {
-          title: "РФМШ: Функциялар және графиктер",
+          title: "РФММ: Функциялар және графиктер",
           subtitle: "Күрделі есептерге дайындық",
         },
       } as Record<string, { title: string; subtitle: string }>,

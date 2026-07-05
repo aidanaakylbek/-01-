@@ -25,6 +25,7 @@ type AnswerMap = Record<string, string>;
 const copy = {
   EN: {
     back: "Go back",
+    tracksLabel: "NIS • BIL • NSPM",
     progress: "Diagnostic Progress",
     introTitle: "Find Your Level",
     introDesc:
@@ -47,6 +48,7 @@ const copy = {
   },
   KZ: {
     back: "Артқа оралу",
+    tracksLabel: "НЗМ • БИЛ • РФММ",
     progress: "Диагностика прогресі",
     introTitle: "Өз деңгейіңізді анықтаңыз",
     introDesc:
@@ -69,6 +71,7 @@ const copy = {
   },
   RU: {
     back: "Вернуться назад",
+    tracksLabel: "НИШ • БИЛ • РФМШ",
     progress: "Прогресс диагностики",
     introTitle: "Определите свой уровень",
     introDesc:
@@ -190,7 +193,7 @@ function Diagnostic() {
           <section className="grid gap-gutter lg:grid-cols-[1.1fr_0.9fr] items-stretch">
             <div className="bg-surface-container-highest border border-outline-variant rounded-tr-[48px] rounded-bl-[48px] p-8 md:p-10 flex flex-col justify-center">
               <p className="font-label-caps text-label-caps uppercase tracking-widest text-secondary mb-4">
-                NIS • BIL • NSPM
+                {c.tracksLabel}
               </p>
               <h1 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary">
                 {c.introTitle}

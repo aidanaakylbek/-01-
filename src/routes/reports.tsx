@@ -85,7 +85,7 @@ function ParentReport() {
             weeklySummary: "Апта қорытындысы",
             parentAction: "Ата-ана не істей алады",
             nextExam: "Келесі сынақ емтихан",
-            nextExamText: "Сенбі, 10:00. НИШ/БИЛ/РФМШ бойынша толық тест.",
+            nextExamText: "Сенбі, 10:00. НЗМ/БИЛ/РФММ бойынша толық тест.",
             openPlan: "Жоспарды ашу",
             openProgress: "Прогресті көру",
             risks: "Тәуекел аймақтары",
@@ -99,7 +99,7 @@ function ParentReport() {
             averageAccuracy: "Орташа дәлдік",
             hourShort: "сағ",
             gradeSuffix: "сынып",
-            nextExamLine: "Сенбі, 10:00. НИШ/БИЛ/РФМШ бойынша толық тест.",
+            nextExamLine: "Сенбі, 10:00. НЗМ/БИЛ/РФММ бойынша толық тест.",
             parentRecommendation:
               "Оқушыдан осы аптадағы ең қиын екі есепті көрсетіп, қатесін қалай түзеткенін түсіндіруін сұраңыз.",
             riskLevels: { High: "Жоғары", Medium: "Орташа" },

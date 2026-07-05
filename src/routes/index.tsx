@@ -109,10 +109,10 @@ function Landing() {
                 <div className="flex items-center justify-between border-b border-outline-variant px-4 py-3">
                   <div>
                     <p className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
-                      AI-Sana path
+                      {heroCopy.panelKicker}
                     </p>
                     <p className="font-title-md text-title-md text-primary">
-                      Today&apos;s learning route
+                      {heroCopy.panelTitle}
                     </p>
                   </div>
                   <div className="flex gap-1.5" aria-hidden="true">
@@ -131,18 +131,18 @@ function Landing() {
                       size="lg"
                     />
                     <p className="mt-3 font-label-caps text-label-caps uppercase tracking-widest text-secondary">
-                      AI review ready
+                      {heroCopy.reviewReady}
                     </p>
                     <p className="mt-2 font-body-md text-body-md text-on-surface-variant">
-                      Method, mistake, next step.
+                      {heroCopy.reviewNote}
                     </p>
                   </div>
 
                   <div className="space-y-3">
                     {[
-                      ["Diagnostic", "68%", "Find weak topics"],
-                      ["Plan", "Week 3", "Logic and percentages"],
-                      ["Practice", "12 tasks", "NIS, BIL, NSPM"],
+                      [heroCopy.panelDiagnostic, "68%", heroCopy.panelDiagnosticNote],
+                      [heroCopy.panelPlan, heroCopy.panelWeek, heroCopy.panelPlanNote],
+                      [heroCopy.panelPractice, heroCopy.panelTasks, heroCopy.panelPracticeNote],
                     ].map(([label, value, note]) => (
                       <div
                         className="motion-route-card grid grid-cols-[1fr_auto] gap-3 border border-outline-variant bg-surface px-4 py-3"
@@ -164,10 +164,10 @@ function Landing() {
                       <div className="flex items-center justify-between gap-4">
                         <div>
                           <p className="font-label-caps text-label-caps uppercase tracking-widest">
-                            Next move
+                            {heroCopy.nextMove}
                           </p>
                           <p className="mt-1 font-title-md text-title-md">
-                            Solve 5 logic questions
+                            {heroCopy.nextMoveNote}
                           </p>
                         </div>
                         <span className="material-symbols-outlined motion-arrow text-3xl">
@@ -296,7 +296,7 @@ function Landing() {
               >
                 <div className="mb-10 flex items-center justify-between">
                   <span className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
-                    Step {number}
+                    {heroCopy.stepLabel} {number}
                   </span>
                   <span className="material-symbols-outlined text-3xl text-primary" style={fill1}>
                     {icon}
@@ -316,18 +316,16 @@ function Landing() {
               <div className="mb-8 flex items-center justify-between border-b border-outline-variant pb-5">
                 <div>
                   <p className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
-                    AI-Sana review
+                    {heroCopy.visionReviewKicker}
                   </p>
-                  <p className="font-title-md text-title-md text-primary">After every task</p>
+                  <p className="font-title-md text-title-md text-primary">
+                    {heroCopy.visionReviewTitle}
+                  </p>
                 </div>
                 <AibiMark className="border-0 shadow-none" shape="circle" size="lg" />
               </div>
 
-              {[
-                ["Method", "Find the rule before choosing an answer."],
-                ["Mistake", "Show why the wrong option looks tempting."],
-                ["Next", "Give one small exercise for the same skill."],
-              ].map(([label, text]) => (
+              {heroCopy.visionReviewRows.map(([label, text]) => (
                 <div
                   className="grid grid-cols-[88px_1fr] border-t border-outline-variant py-4"
                   key={label}
@@ -408,13 +406,35 @@ function getHeroCopy(language: string) {
   if (language === "KZ") {
     return {
       badge: "Нақты мақсат. Жеке дайындық.",
-      title: "Сенің НИШ, БИЛ және РФМШ-ға дайындайтын AI көмекшің.",
+      title: "Сенің НЗМ, БИЛ және РФММ-ға дайындайтын AI көмекшің.",
       aibiLine:
         "AI-Sana жауапты ғана айтпайды: әдісін түсіндіреді, қатені көрсетеді және келесі қадамды ұсынады.",
+      panelKicker: "AI-Sana жолы",
+      panelTitle: "Бүгінгі оқу бағыты",
+      reviewReady: "AI талдау дайын",
+      reviewNote: "Әдіс, қате, келесі қадам.",
+      panelDiagnostic: "Диагностика",
+      panelDiagnosticNote: "Әлсіз тақырыптарды табу",
+      panelPlan: "Жоспар",
+      panelWeek: "3-апта",
+      panelPlanNote: "Логика және пайыздар",
+      panelPractice: "Тәжірибе",
+      panelTasks: "12 тапсырма",
+      panelPracticeNote: "НЗМ, БИЛ, РФММ",
+      nextMove: "Келесі қадам",
+      nextMoveNote: "5 логикалық есеп шығару",
+      stepLabel: "Қадам",
+      visionReviewKicker: "AI-Sana талдауы",
+      visionReviewTitle: "Әр тапсырмадан кейін",
+      visionReviewRows: [
+        ["Әдіс", "Жауапты таңдамас бұрын ережені тап."],
+        ["Қате", "Қате нұсқа неге дұрыс сияқты көрінетінін көрсет."],
+        ["Келесі", "Сол дағдыға арналған бір шағын жаттығу бер."],
+      ],
       tracks: [
-        { title: "НИШ", subtitle: "Логика және сандық талдау" },
+        { title: "НЗМ", subtitle: "Логика және сандық талдау" },
         { title: "БИЛ", subtitle: "Оқу сауаттылығы және тілдер" },
-        { title: "РФМШ", subtitle: "Математика және есептер" },
+        { title: "РФММ", subtitle: "Математика және есептер" },
       ],
     };
   }
@@ -425,6 +445,28 @@ function getHeroCopy(language: string) {
       title: "Твой AI-помощник для подготовки к НИШ, БИЛ и РФМШ.",
       aibiLine:
         "AI-Sana не просто дает ответ: объясняет метод, показывает ошибку и предлагает следующий шаг.",
+      panelKicker: "Маршрут AI-Sana",
+      panelTitle: "Сегодняшний учебный путь",
+      reviewReady: "AI-разбор готов",
+      reviewNote: "Метод, ошибка, следующий шаг.",
+      panelDiagnostic: "Диагностика",
+      panelDiagnosticNote: "Найти слабые темы",
+      panelPlan: "План",
+      panelWeek: "Неделя 3",
+      panelPlanNote: "Логика и проценты",
+      panelPractice: "Практика",
+      panelTasks: "12 заданий",
+      panelPracticeNote: "НИШ, БИЛ, РФМШ",
+      nextMove: "Следующий шаг",
+      nextMoveNote: "Решить 5 задач на логику",
+      stepLabel: "Шаг",
+      visionReviewKicker: "Разбор AI-Sana",
+      visionReviewTitle: "После каждого задания",
+      visionReviewRows: [
+        ["Метод", "Найти правило перед выбором ответа."],
+        ["Ошибка", "Показать, почему неверный вариант кажется похожим на правильный."],
+        ["Дальше", "Дать одно короткое упражнение на тот же навык."],
+      ],
       tracks: [
         { title: "НИШ", subtitle: "Логика и количественный анализ" },
         { title: "БИЛ", subtitle: "Чтение и языки" },
@@ -438,6 +480,28 @@ function getHeroCopy(language: string) {
     title: "Your AI study guide for NIS, BIL and NSPM entrance exams.",
     aibiLine:
       "AI-Sana does not just give answers: it explains the method, finds mistakes, and suggests the next step.",
+    panelKicker: "AI-Sana path",
+    panelTitle: "Today's learning route",
+    reviewReady: "AI review ready",
+    reviewNote: "Method, mistake, next step.",
+    panelDiagnostic: "Diagnostic",
+    panelDiagnosticNote: "Find weak topics",
+    panelPlan: "Plan",
+    panelWeek: "Week 3",
+    panelPlanNote: "Logic and percentages",
+    panelPractice: "Practice",
+    panelTasks: "12 tasks",
+    panelPracticeNote: "NIS, BIL, NSPM",
+    nextMove: "Next move",
+    nextMoveNote: "Solve 5 logic questions",
+    stepLabel: "Step",
+    visionReviewKicker: "AI-Sana review",
+    visionReviewTitle: "After every task",
+    visionReviewRows: [
+      ["Method", "Find the rule before choosing an answer."],
+      ["Mistake", "Show why the wrong option looks tempting."],
+      ["Next", "Give one small exercise for the same skill."],
+    ],
     tracks: [
       { title: "NIS", subtitle: "Logic and quantitative reasoning" },
       { title: "BIL", subtitle: "Reading literacy and languages" },
