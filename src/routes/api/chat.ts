@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 
 const SYSTEM_PROMPT =
-  "You are AI-Sana, a real AI tutor for pupils preparing for NIS, BIL, and NSPM entrance exams. Answer any normal study question naturally, like ChatGPT or Gemini, but in a warm tutor style for pupils aged 10-14. Understand short, misspelled, mixed Kazakh/Russian/English messages by context. Do not give canned template answers. Do not keep asking the pupil to rewrite the question. If the question is unclear, make the most helpful reasonable assumption, answer with an example, and ask only one focused follow-up question. For math and logic, explain the method first, then give the answer. If the pupil answers a test question, check it and give a full explanation whether it is right or wrong. Keep answers clear, compact, and useful.";
+  "You are AI-Sana, a real AI tutor for pupils preparing for NIS, BIL, and NSPM entrance exams. Answer any normal study question naturally, like ChatGPT, but in a warm tutor style for pupils aged 10-14. Understand short, misspelled, mixed Kazakh/Russian/English messages by context. Do not give canned template answers. Do not keep asking the pupil to rewrite the question. If the question is unclear, make the most helpful reasonable assumption, answer with an example, and ask only one focused follow-up question. For math and logic, explain the method first, then give the answer. If the pupil answers a test question, check it and give a full explanation whether it is right or wrong. Keep answers clear, compact, and useful.";
 
 const chatRequestSchema = z.object({
   language: z.enum(["EN", "KZ", "RU"]).optional(),
@@ -17,7 +17,7 @@ const chatRequestSchema = z.object({
     .max(20),
 });
 
-const GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash"];
+const OPENAI_MODELS = ["gpt-4o-mini", "gpt-4.1-mini"];
 const COMPLETE_ENDING_PATTERN = /[.!?。؟…)"'»\]]$/;
 
 export const Route = createFileRoute("/api/chat")({
@@ -44,7 +44,7 @@ export const Route = createFileRoute("/api/chat")({
         const recentMessages = parsed.data.messages.slice(-12);
         const answerLanguage = getAnswerLanguage(parsed.data.language, recentMessages);
 
-        if (!getGoogleApiKey()) {
+        if (!getOpenAiApiKey()) {
           return Response.json({
             reply: getServiceMessage(answerLanguage.code, "missing_key"),
           });
@@ -55,7 +55,7 @@ export const Route = createFileRoute("/api/chat")({
           let reply = "";
           let lastError: unknown;
 
-          for (const model of GEMINI_MODELS) {
+          for (const model of OPENAI_MODELS) {
             try {
               reply = await generateTutorReply(model, conversation, answerLanguage.instruction);
               reply = await fixReplyIfNeeded(model, {
@@ -90,7 +90,7 @@ export const Route = createFileRoute("/api/chat")({
 
           if (!reply) {
             if (lastError) {
-              console.error("AI-Sana Gemini Tutor model layer failed", lastError);
+              console.error("AI-Sana OpenAI Tutor model layer failed", lastError);
             }
             return Response.json({
               reply: getServiceMessage(answerLanguage.code, "temporary"),
@@ -99,7 +99,7 @@ export const Route = createFileRoute("/api/chat")({
 
           return Response.json({ reply });
         } catch (error) {
-          console.error("AI-Sana Gemini Tutor error", error);
+          console.error("AI-Sana OpenAI Tutor error", error);
           return Response.json({
             reply: getServiceMessage(answerLanguage.code, "temporary"),
           });
@@ -133,7 +133,7 @@ async function generateTutorReply(
   conversation: string,
   languageInstruction: string,
 ) {
-  const response = await generateGeminiContent({
+  const response = await generateOpenAiContent({
     model,
     prompt: conversation,
     systemInstruction: `${SYSTEM_PROMPT}\n\n${languageInstruction}`,
@@ -143,7 +143,7 @@ async function generateTutorReply(
   let reply = response.trim();
 
   if (reply && !COMPLETE_ENDING_PATTERN.test(reply)) {
-    const continuationText = await generateGeminiContent({
+    const continuationText = await generateOpenAiContent({
       model,
       prompt: `${conversation}\n\nAI-Sana: ${reply}\n\nPupil: Continue from exactly where you stopped and finish the answer. Do not repeat previous text.`,
       systemInstruction: `${SYSTEM_PROMPT}\n\n${languageInstruction}`,
@@ -178,7 +178,7 @@ async function fixReplyIfNeeded(
     return trimmedReply;
   }
 
-  const response = await generateGeminiContent({
+  const response = await generateOpenAiContent({
     model,
     prompt: `${options.conversation}\n\nYour previous draft was not useful enough or was in the wrong language:\n${trimmedReply}\n\nWrite a fresh answer now. Understand the pupil's intent, answer directly, do not ask them to rewrite the question, and do not repeat your previous answer.`,
     systemInstruction: `${SYSTEM_PROMPT}\n\n${options.instruction}`,
@@ -189,7 +189,7 @@ async function fixReplyIfNeeded(
   return response.trim() || trimmedReply;
 }
 
-async function generateGeminiContent({
+async function generateOpenAiContent({
   maxOutputTokens,
   model,
   prompt,
@@ -202,51 +202,50 @@ async function generateGeminiContent({
   systemInstruction: string;
   temperature: number;
 }) {
-  const apiKey = getGoogleApiKey();
+  const apiKey = getOpenAiApiKey();
 
   if (!apiKey) {
     return "";
   }
 
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ role: "user", parts: [{ text: prompt }] }],
-        generationConfig: {
-          maxOutputTokens,
-          temperature,
-        },
-        systemInstruction: {
-          parts: [{ text: systemInstruction }],
-        },
-      }),
+  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
     },
-  );
+    body: JSON.stringify({
+      model,
+      messages: [
+        { role: "system", content: systemInstruction },
+        { role: "user", content: prompt },
+      ],
+      max_tokens: maxOutputTokens,
+      temperature,
+    }),
+  });
 
   if (!response.ok) {
-    const error = new Error(`Gemini REST request failed: ${response.status}`);
+    const error = new Error(`OpenAI chat request failed: ${response.status}`);
     (error as { status?: number }).status = response.status;
     throw error;
   }
 
   const data = (await response.json()) as {
-    candidates?: Array<{
-      content?: {
-        parts?: Array<{ text?: string }>;
+    choices?: Array<{
+      message?: {
+        content?: string | Array<{ text?: string }>;
       };
     }>;
   };
 
-  return (
-    data.candidates
-      ?.flatMap((candidate) => candidate.content?.parts ?? [])
-      .map((part) => part.text ?? "")
-      .join("")
-      .trim() ?? ""
-  );
+  const content = data.choices?.[0]?.message?.content;
+
+  if (Array.isArray(content)) {
+    return content.map((part) => part.text ?? "").join("").trim();
+  }
+
+  return content?.trim() ?? "";
 }
 
 function getAnswerLanguage(
@@ -330,39 +329,39 @@ function isUnhelpfulClarification(reply: string) {
 function getServiceMessage(language: "EN" | "KZ" | "RU", reason: "missing_key" | "quota" | "temporary") {
   if (reason === "missing_key") {
     if (language === "KZ") {
-      return "AI-Sana қосылмаған: Vercel-де GOOGLE_API_KEY немесе GEMINI_API_KEY жоқ. Environment Variables ішіне key қосып, қайта deploy жасау керек.";
+      return "AI-Sana қосылмаған: Vercel-де OPENAI_API_KEY жоқ. Environment Variables ішіне OpenAI key қосып, қайта deploy жасау керек.";
     }
 
     if (language === "RU") {
-      return "AI-Sana не подключена: в Vercel нет GOOGLE_API_KEY или GEMINI_API_KEY. Добавьте ключ в Environment Variables и сделайте redeploy.";
+      return "AI-Sana не подключена: в Vercel нет OPENAI_API_KEY. Добавьте OpenAI key в Environment Variables и сделайте redeploy.";
     }
 
-    return "AI-Sana is not connected: GOOGLE_API_KEY or GEMINI_API_KEY is missing in Vercel. Add the key to Environment Variables and redeploy.";
+    return "AI-Sana is not connected: OPENAI_API_KEY is missing in Vercel. Add the OpenAI key to Environment Variables and redeploy.";
   }
 
   if (reason === "quota") {
     if (language === "KZ") {
-      return "Google AI лимиті бітті немесе billing қосылмаған. AI-Sana нақты жауап беруі үшін Google AI Studio/Cloud-та quota немесе billing-ті қосу керек.";
+      return "OpenAI API лимиті бітті немесе billing қосылмаған. AI-Sana нақты жауап беруі үшін OpenAI аккаунтында billing/credits қосу керек.";
     }
 
     if (language === "RU") {
-      return "Лимит Google AI закончился или billing не включен. Чтобы AI-Sana отвечала на вопросы, нужно включить quota/billing в Google AI Studio или Google Cloud.";
+      return "Лимит OpenAI API закончился или billing не включен. Чтобы AI-Sana отвечала на вопросы, нужно включить billing/credits в аккаунте OpenAI.";
     }
 
-    return "The Google AI quota is exhausted or billing is not enabled. Enable quota/billing in Google AI Studio or Google Cloud so AI-Sana can answer.";
+    return "The OpenAI API quota is exhausted or billing is not enabled. Enable billing/credits in your OpenAI account so AI-Sana can answer.";
   }
 
   if (language === "KZ") {
-    return "AI-Sana сервері Google AI-ға уақытша қосыла алмай тұр. Key және quota дұрыс болса, бұл хабарлама жоғалады.";
+    return "AI-Sana сервері OpenAI API-ға уақытша қосыла алмай тұр. Key және credits дұрыс болса, бұл хабарлама жоғалады.";
   }
 
   if (language === "RU") {
-    return "Сервер AI-Sana временно не может подключиться к Google AI. Если ключ и quota настроены правильно, это сообщение исчезнет.";
+    return "Сервер AI-Sana временно не может подключиться к OpenAI API. Если ключ и credits настроены правильно, это сообщение исчезнет.";
   }
 
-  return "AI-Sana cannot connect to Google AI right now. If the key and quota are configured correctly, this message will disappear.";
+  return "AI-Sana cannot connect to OpenAI API right now. If the key and credits are configured correctly, this message will disappear.";
 }
 
-function getGoogleApiKey() {
-  return process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY || "";
+function getOpenAiApiKey() {
+  return process.env.OPENAI_API_KEY || "";
 }
