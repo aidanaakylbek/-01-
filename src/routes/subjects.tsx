@@ -31,6 +31,7 @@ function SubjectsPage() {
           desc: "Пәнді таңдаңыз. Ішінде модульдер мен нақты тақырыптар бар.",
           modules: "модуль",
           topics: "тақырып",
+          subjectsUnit: "пән",
           open: "Пәнге кіру",
           tracks: [
             {
@@ -57,6 +58,7 @@ function SubjectsPage() {
             desc: "Выберите предмет. Внутри есть модули и конкретные темы.",
             modules: "модулей",
             topics: "тем",
+            subjectsUnit: "предметов",
             open: "Открыть предмет",
             tracks: [
               {
@@ -82,6 +84,7 @@ function SubjectsPage() {
             desc: "Choose a subject. Each subject has modules and focused topics.",
             modules: "modules",
             topics: "topics",
+            subjectsUnit: "subjects",
             open: "Open subject",
             tracks: [
               {
@@ -131,7 +134,7 @@ function SubjectsPage() {
               <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3 border-b border-outline-variant pb-5 mb-5">
                 <div>
                   <p className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
-                    {track.id === "NSPM" && language !== "EN" ? "RFMSH" : track.id}
+                    {track.title}
                   </p>
                   <h2 className="font-headline-md text-headline-md text-primary mt-2">
                     {track.title}
@@ -141,7 +144,7 @@ function SubjectsPage() {
                   </p>
                 </div>
                 <span className="border border-outline-variant px-3 py-2 font-label-md text-label-md text-on-surface-variant self-start md:self-auto">
-                  {getTrackSubjects(track.id as "NIS" | "BIL" | "NSPM").length} {copy.title}
+                  {getTrackSubjects(track.id as "NIS" | "BIL" | "NSPM").length} {copy.subjectsUnit}
                 </span>
               </div>
 
@@ -171,6 +174,7 @@ function SubjectCard({
   copy: {
     modules: string;
     topics: string;
+    subjectsUnit: string;
     open: string;
   };
   subject: Subject;

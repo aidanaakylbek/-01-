@@ -19,9 +19,9 @@ interface NavTab {
 
 const tabs: NavTab[] = [
   { id: "home", labelKey: "nav_home", icon: "home", to: "/home" },
-  { id: "nis", label: "NIS", icon: "school", href: "/subjects#nis" },
-  { id: "bil", label: "BIL", icon: "local_library", href: "/subjects#bil" },
-  { id: "nspm", label: "NSPM", icon: "functions", href: "/subjects#nspm" },
+  { id: "nis", labelKey: "nav_nis", icon: "school", href: "/subjects#nis" },
+  { id: "bil", labelKey: "nav_bil", icon: "local_library", href: "/subjects#bil" },
+  { id: "nspm", labelKey: "nav_nspm", icon: "functions", href: "/subjects#nspm" },
   { id: "practice", labelKey: "nav_practice", icon: "exercise", to: "/plan" },
   { id: "progress", labelKey: "nav_progress", icon: "analytics", to: "/progress" },
   { id: "reports", labelKey: "nav_reports", icon: "description", to: "/reports" },
