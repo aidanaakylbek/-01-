@@ -8,10 +8,21 @@ const chatRequestSchema = z.object({
   language: z.enum(["EN", "KZ", "RU"]).optional(),
   messages: z
     .array(
-      z.object({
-        role: z.enum(["user", "assistant"]),
-        content: z.string().trim().min(1).max(4000),
-      }),
+      z
+        .object({
+          role: z.enum(["user", "assistant"]),
+          content: z.string().trim().max(4000),
+          images: z
+            .array(
+              z
+                .string()
+                .max(8_000_000)
+                .regex(/^data:image\/(png|jpe?g|webp);base64,/i),
+            )
+            .max(3)
+            .optional(),
+        })
+        .refine((message) => message.content.length > 0 || (message.images?.length ?? 0) > 0),
     )
     .min(1)
     .max(20),
@@ -52,14 +63,16 @@ export const Route = createFileRoute("/api/chat")({
 
         try {
           const conversation = buildConversation(recentMessages);
+          const latestImages = lastUserImages(recentMessages);
           let reply = "";
           let lastError: unknown;
 
           for (const model of OPENAI_MODELS) {
             try {
-              reply = await generateTutorReply(model, conversation, answerLanguage.instruction);
+              reply = await generateTutorReply(model, conversation, answerLanguage.instruction, latestImages);
               reply = await fixReplyIfNeeded(model, {
                 conversation,
+                images: latestImages,
                 language: answerLanguage.code,
                 reply,
                 previousReply: lastAssistantMessage(recentMessages),
@@ -116,15 +129,22 @@ type AnswerLanguage = {
 
 type ReplyFixOptions = {
   conversation: string;
+  images: string[];
   instruction: string;
   language: "EN" | "KZ" | "RU";
   previousReply: string;
   reply: string;
 };
 
-function buildConversation(messages: Array<{ role: "user" | "assistant"; content: string }>) {
+function buildConversation(messages: Array<{ role: "user" | "assistant"; content: string; images?: string[] }>) {
   return messages
-    .map((message) => `${message.role === "user" ? "Pupil" : "AI-Sana"}: ${message.content}`)
+    .map((message) => {
+      const imageNote = message.images?.length
+        ? `\n[Attached task image${message.images.length > 1 ? "s" : ""}: ${message.images.length}]`
+        : "";
+
+      return `${message.role === "user" ? "Pupil" : "AI-Sana"}: ${message.content}${imageNote}`;
+    })
     .join("\n\n");
 }
 
@@ -132,8 +152,10 @@ async function generateTutorReply(
   model: string,
   conversation: string,
   languageInstruction: string,
+  images: string[],
 ) {
   const response = await generateOpenAiContent({
+    images,
     model,
     prompt: conversation,
     systemInstruction: `${SYSTEM_PROMPT}\n\n${languageInstruction}`,
@@ -144,6 +166,7 @@ async function generateTutorReply(
 
   if (reply && !COMPLETE_ENDING_PATTERN.test(reply)) {
     const continuationText = await generateOpenAiContent({
+      images,
       model,
       prompt: `${conversation}\n\nAI-Sana: ${reply}\n\nPupil: Continue from exactly where you stopped and finish the answer. Do not repeat previous text.`,
       systemInstruction: `${SYSTEM_PROMPT}\n\n${languageInstruction}`,
@@ -179,6 +202,7 @@ async function fixReplyIfNeeded(
   }
 
   const response = await generateOpenAiContent({
+    images: options.images,
     model,
     prompt: `${options.conversation}\n\nYour previous draft was not useful enough or was in the wrong language:\n${trimmedReply}\n\nWrite a fresh answer now. Understand the pupil's intent, answer directly, do not ask them to rewrite the question, and do not repeat your previous answer.`,
     systemInstruction: `${SYSTEM_PROMPT}\n\n${options.instruction}`,
@@ -190,12 +214,14 @@ async function fixReplyIfNeeded(
 }
 
 async function generateOpenAiContent({
+  images,
   maxOutputTokens,
   model,
   prompt,
   systemInstruction,
   temperature,
 }: {
+  images?: string[];
   maxOutputTokens: number;
   model: string;
   prompt: string;
@@ -218,7 +244,16 @@ async function generateOpenAiContent({
       model,
       messages: [
         { role: "system", content: systemInstruction },
-        { role: "user", content: prompt },
+        {
+          role: "user",
+          content: [
+            { type: "text", text: prompt },
+            ...(images ?? []).map((url) => ({
+              type: "image_url",
+              image_url: { url },
+            })),
+          ],
+        },
       ],
       max_tokens: maxOutputTokens,
       temperature,
@@ -284,6 +319,10 @@ function lastUserMessage(messages: Array<{ role: "user" | "assistant"; content: 
 
 function lastAssistantMessage(messages: Array<{ role: "user" | "assistant"; content: string }>) {
   return [...messages].reverse().find((message) => message.role === "assistant")?.content ?? "";
+}
+
+function lastUserImages(messages: Array<{ role: "user" | "assistant"; images?: string[] }>) {
+  return [...messages].reverse().find((message) => message.role === "user")?.images ?? [];
 }
 
 function detectTextLanguage(text: string, defaultLanguage?: "EN" | "KZ" | "RU"): "EN" | "KZ" | "RU" {

@@ -5,6 +5,7 @@ import { useLanguage } from "@/hooks/use-language";
 type ChatMessage = {
   role: "user" | "assistant";
   content: string;
+  images?: string[];
 };
 
 const INITIAL_MESSAGE: ChatMessage = {
@@ -19,9 +20,11 @@ export function AIAssistant() {
   const [messages, setMessages] = useState<ChatMessage[]>([INITIAL_MESSAGE]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<{ dataUrl: string; name: string } | null>(null);
   const [voiceStatus, setVoiceStatus] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -75,12 +78,23 @@ export function AIAssistant() {
 
   const sendMessage = async (messageText: string) => {
     const trimmedInput = messageText.trim();
+    const image = selectedImage;
 
-    if (!trimmedInput || isLoading) return;
+    if ((!trimmedInput && !image) || isLoading) return;
 
-    const nextMessages: ChatMessage[] = [...messages, { role: "user", content: trimmedInput }];
+    const nextMessages: ChatMessage[] = [
+      ...messages,
+      {
+        role: "user",
+        content:
+          trimmedInput ||
+          getImageOnlyPrompt(language),
+        images: image ? [image.dataUrl] : undefined,
+      },
+    ];
     setMessages(nextMessages);
     setInput("");
+    setSelectedImage(null);
     setIsLoading(true);
     setVoiceStatus("");
 
@@ -114,6 +128,33 @@ export function AIAssistant() {
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     void sendMessage(input);
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setVoiceStatus(getUploadMessage(language, "invalid"));
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setVoiceStatus(getUploadMessage(language, "large"));
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = typeof reader.result === "string" ? reader.result : "";
+      if (result) {
+        setSelectedImage({ dataUrl: result, name: file.name });
+        setVoiceStatus("");
+      }
+    };
+    reader.readAsDataURL(file);
+    e.currentTarget.value = "";
   };
 
   return (
@@ -177,6 +218,18 @@ export function AIAssistant() {
                         : "bg-surface-container-high text-on-surface border border-outline-variant"
                     }`}
                   >
+                    {msg.images?.length ? (
+                      <div className="mb-2 grid gap-2">
+                        {msg.images.map((image, imageIdx) => (
+                          <img
+                            alt="Attached task"
+                            className="max-h-56 w-full rounded-xl border border-outline-variant object-contain bg-surface"
+                            key={`${idx}-image-${imageIdx}`}
+                            src={image}
+                          />
+                        ))}
+                      </div>
+                    ) : null}
                     <p className="whitespace-pre-wrap">{msg.content}</p>
                     {msg.role === "assistant" && (
                       <button
@@ -211,6 +264,31 @@ export function AIAssistant() {
               onSubmit={handleSendMessage}
             >
               <div className="min-w-0 flex-1">
+                {selectedImage ? (
+                  <div className="mb-2 flex items-center gap-3 rounded-2xl border border-outline-variant bg-surface-container-low p-2">
+                    <img
+                      alt={selectedImage.name}
+                      className="h-14 w-14 rounded-xl object-cover border border-outline-variant"
+                      src={selectedImage.dataUrl}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-on-surface">
+                        {selectedImage.name}
+                      </p>
+                      <p className="text-xs text-on-surface-variant">
+                        {getUploadMessage(language, "ready")}
+                      </p>
+                    </div>
+                    <button
+                      aria-label="Remove attached image"
+                      className="h-9 w-9 rounded-full border border-outline-variant bg-surface hover:bg-surface-container transition-colors"
+                      onClick={() => setSelectedImage(null)}
+                      type="button"
+                    >
+                      <span className="material-symbols-outlined text-base">close</span>
+                    </button>
+                  </div>
+                ) : null}
                 <input
                   className="w-full px-4 py-2.5 bg-surface-container-low border border-outline-variant rounded-full font-body-md text-sm sm:text-body-md text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-secondary"
                   disabled={isLoading}
@@ -219,6 +297,14 @@ export function AIAssistant() {
                   type="text"
                   value={input}
                 />
+                <input
+                  accept="image/png,image/jpeg,image/webp"
+                  className="hidden"
+                  disabled={isLoading}
+                  onChange={handleImageChange}
+                  ref={fileInputRef}
+                  type="file"
+                />
                 {voiceStatus ? (
                   <p className="mt-1 px-3 text-xs text-on-surface-variant" aria-live="polite">
                     {voiceStatus}
@@ -226,9 +312,18 @@ export function AIAssistant() {
                 ) : null}
               </div>
               <button
+                aria-label="Attach task image"
+                className="w-10 h-10 border border-outline-variant text-secondary bg-surface rounded-full hover:bg-secondary hover:text-on-secondary transition-all flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed btn-squish"
+                disabled={isLoading}
+                onClick={() => fileInputRef.current?.click()}
+                type="button"
+              >
+                <span className="material-symbols-outlined text-lg">add_photo_alternate</span>
+              </button>
+              <button
                 aria-label="Send message"
                 className="w-10 h-10 bg-secondary text-on-secondary rounded-full hover:bg-secondary-container hover:text-on-secondary-container transition-all flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed btn-squish border border-secondary"
-                disabled={isLoading || !input.trim()}
+                disabled={isLoading || (!input.trim() && !selectedImage)}
                 type="submit"
               >
                 <span className="material-symbols-outlined text-lg">send</span>
@@ -251,6 +346,40 @@ function getAssistantRecoveryMessage(language: "EN" | "KZ" | "RU") {
   }
 
   return "Good, let us keep going. Send the question with the subject and topic, and I will explain it step by step.";
+}
+
+function getImageOnlyPrompt(language: "EN" | "KZ" | "RU") {
+  if (language === "KZ") {
+    return "Мына суреттегі тапсырманы оқып, қадам-қадаммен түсіндіріп бер.";
+  }
+
+  if (language === "RU") {
+    return "Прочитай задание на изображении и объясни решение пошагово.";
+  }
+
+  return "Read the task in this image and explain the solution step by step.";
+}
+
+function getUploadMessage(language: "EN" | "KZ" | "RU", key: "invalid" | "large" | "ready") {
+  const messages = {
+    KZ: {
+      invalid: "Тек сурет файлын таңда.",
+      large: "Сурет тым үлкен. 5 MB-тан кіші сурет таңда.",
+      ready: "Сурет дайын. Жіберсең, AI-Sana тапсырманы оқиды.",
+    },
+    RU: {
+      invalid: "Выберите файл изображения.",
+      large: "Изображение слишком большое. Выберите файл меньше 5 MB.",
+      ready: "Изображение готово. Отправьте, и AI-Sana прочитает задание.",
+    },
+    EN: {
+      invalid: "Choose an image file.",
+      large: "The image is too large. Choose an image under 5 MB.",
+      ready: "Image ready. Send it, and AI-Sana will read the task.",
+    },
+  };
+
+  return messages[language][key];
 }
 
 function getVoiceMessage(
