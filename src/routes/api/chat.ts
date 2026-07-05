@@ -28,7 +28,9 @@ const chatRequestSchema = z.object({
     .max(20),
 });
 
-const OPENAI_MODELS = ["gpt-4o-mini", "gpt-4.1-mini"];
+const OPENAI_DEFAULT_MODELS = ["gpt-5-mini", "gpt-5-nano"];
+const OPENAI_EASY_MODELS = ["gpt-5-nano", "gpt-5-mini"];
+const OPENAI_HARD_MODELS = ["gpt-5", "gpt-5-mini"];
 const COMPLETE_ENDING_PATTERN = /[.!?。؟…)"'»\]]$/;
 
 export const Route = createFileRoute("/api/chat")({
@@ -64,10 +66,11 @@ export const Route = createFileRoute("/api/chat")({
         try {
           const conversation = buildConversation(recentMessages);
           const latestImages = lastUserImages(recentMessages);
+          const models = getOpenAiModels(recentMessages, latestImages);
           let reply = "";
           let lastError: unknown;
 
-          for (const model of OPENAI_MODELS) {
+          for (const model of models) {
             try {
               reply = await generateTutorReply(model, conversation, answerLanguage.instruction, latestImages);
               reply = await fixReplyIfNeeded(model, {
@@ -323,6 +326,35 @@ function lastAssistantMessage(messages: Array<{ role: "user" | "assistant"; cont
 
 function lastUserImages(messages: Array<{ role: "user" | "assistant"; images?: string[] }>) {
   return [...messages].reverse().find((message) => message.role === "user")?.images ?? [];
+}
+
+function getOpenAiModels(
+  messages: Array<{ role: "user" | "assistant"; content: string; images?: string[] }>,
+  images: string[],
+) {
+  const userText = lastUserMessage(messages).toLowerCase();
+
+  if (images.length > 0 || isHardStudyRequest(userText)) {
+    return OPENAI_HARD_MODELS;
+  }
+
+  if (isEasyRequest(userText)) {
+    return OPENAI_EASY_MODELS;
+  }
+
+  return OPENAI_DEFAULT_MODELS;
+}
+
+function isHardStudyRequest(text: string) {
+  return /разбор|талдау|түсіндіріп бер|тусиндирип бер|толық|толык|тест|есеп|задача|реши|шығар|шыгар|дәлел|доказ|логика|олимпиада|nis|ниш|bil|бил|nspm|рфмш|rfmsh/i.test(
+    text,
+  );
+}
+
+function isEasyRequest(text: string) {
+  return /^(сәлем|салем|привет|hello|hi|ой|ок|рахмет|спасибо|thanks|иә|ия|да|нет|жоқ|жок)[\s!.?]*$/i.test(
+    text,
+  );
 }
 
 function detectTextLanguage(text: string, defaultLanguage?: "EN" | "KZ" | "RU"): "EN" | "KZ" | "RU" {
