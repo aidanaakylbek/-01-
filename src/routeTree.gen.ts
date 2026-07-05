@@ -26,6 +26,7 @@ import { Route as ApiWhatsappWeeklyReportRouteImport } from './routes/api/whatsa
 import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as ApiReviewRouteImport } from './routes/api/review'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as SubjectsSubjectIdTopicIdRouteImport } from './routes/subjects.$subjectId.$topicId'
 
 const SubjectsRoute = SubjectsRouteImport.update({
   id: '/subjects',
@@ -112,6 +113,12 @@ const ApiChatRoute = ApiChatRouteImport.update({
   path: '/api/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SubjectsSubjectIdTopicIdRoute =
+  SubjectsSubjectIdTopicIdRouteImport.update({
+    id: '/$topicId',
+    path: '/$topicId',
+    getParentRoute: () => SubjectsSubjectIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -130,7 +137,8 @@ export interface FileRoutesByFullPath {
   '/api/review': typeof ApiReviewRoute
   '/api/tts': typeof ApiTtsRoute
   '/api/whatsapp-weekly-report': typeof ApiWhatsappWeeklyReportRoute
-  '/subjects/$subjectId': typeof SubjectsSubjectIdRoute
+  '/subjects/$subjectId': typeof SubjectsSubjectIdRouteWithChildren
+  '/subjects/$subjectId/$topicId': typeof SubjectsSubjectIdTopicIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -149,7 +157,8 @@ export interface FileRoutesByTo {
   '/api/review': typeof ApiReviewRoute
   '/api/tts': typeof ApiTtsRoute
   '/api/whatsapp-weekly-report': typeof ApiWhatsappWeeklyReportRoute
-  '/subjects/$subjectId': typeof SubjectsSubjectIdRoute
+  '/subjects/$subjectId': typeof SubjectsSubjectIdRouteWithChildren
+  '/subjects/$subjectId/$topicId': typeof SubjectsSubjectIdTopicIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -169,7 +178,8 @@ export interface FileRoutesById {
   '/api/review': typeof ApiReviewRoute
   '/api/tts': typeof ApiTtsRoute
   '/api/whatsapp-weekly-report': typeof ApiWhatsappWeeklyReportRoute
-  '/subjects/$subjectId': typeof SubjectsSubjectIdRoute
+  '/subjects/$subjectId': typeof SubjectsSubjectIdRouteWithChildren
+  '/subjects/$subjectId/$topicId': typeof SubjectsSubjectIdTopicIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -191,6 +201,7 @@ export interface FileRouteTypes {
     | '/api/tts'
     | '/api/whatsapp-weekly-report'
     | '/subjects/$subjectId'
+    | '/subjects/$subjectId/$topicId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -210,6 +221,7 @@ export interface FileRouteTypes {
     | '/api/tts'
     | '/api/whatsapp-weekly-report'
     | '/subjects/$subjectId'
+    | '/subjects/$subjectId/$topicId'
   id:
     | '__root__'
     | '/'
@@ -229,6 +241,7 @@ export interface FileRouteTypes {
     | '/api/tts'
     | '/api/whatsapp-weekly-report'
     | '/subjects/$subjectId'
+    | '/subjects/$subjectId/$topicId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -371,15 +384,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/subjects/$subjectId/$topicId': {
+      id: '/subjects/$subjectId/$topicId'
+      path: '/$topicId'
+      fullPath: '/subjects/$subjectId/$topicId'
+      preLoaderRoute: typeof SubjectsSubjectIdTopicIdRouteImport
+      parentRoute: typeof SubjectsSubjectIdRoute
+    }
   }
 }
 
+interface SubjectsSubjectIdRouteChildren {
+  SubjectsSubjectIdTopicIdRoute: typeof SubjectsSubjectIdTopicIdRoute
+}
+
+const SubjectsSubjectIdRouteChildren: SubjectsSubjectIdRouteChildren = {
+  SubjectsSubjectIdTopicIdRoute: SubjectsSubjectIdTopicIdRoute,
+}
+
+const SubjectsSubjectIdRouteWithChildren =
+  SubjectsSubjectIdRoute._addFileChildren(SubjectsSubjectIdRouteChildren)
+
 interface SubjectsRouteChildren {
-  SubjectsSubjectIdRoute: typeof SubjectsSubjectIdRoute
+  SubjectsSubjectIdRoute: typeof SubjectsSubjectIdRouteWithChildren
 }
 
 const SubjectsRouteChildren: SubjectsRouteChildren = {
-  SubjectsSubjectIdRoute: SubjectsSubjectIdRoute,
+  SubjectsSubjectIdRoute: SubjectsSubjectIdRouteWithChildren,
 }
 
 const SubjectsRouteWithChildren = SubjectsRoute._addFileChildren(

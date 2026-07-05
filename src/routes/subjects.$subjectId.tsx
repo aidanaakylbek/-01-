@@ -1,5 +1,4 @@
 ﻿import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useState } from "react";
 import { Navbar } from "@/components/navbar";
 import { getSubject } from "@/data/subjects";
 import { useLanguage } from "@/hooks/use-language";
@@ -31,10 +30,6 @@ const difficultyCopy = {
 function SubjectPage() {
   const { subject } = Route.useLoaderData();
   const { language } = useLanguage();
-  const [openTopicId, setOpenTopicId] = useState<string | null>(null);
-  const [activeQuizTopicId, setActiveQuizTopicId] = useState<string | null>(null);
-  const [answers, setAnswers] = useState<Record<string, number>>({});
-  const [submittedQuizId, setSubmittedQuizId] = useState<string | null>(null);
   const copy = getSubjectPageCopy(language);
 
   return (
@@ -49,11 +44,12 @@ function SubjectPage() {
           {copy.back}
         </Link>
 
-        <section className="border border-outline-variant bg-surface-container-highest rounded-tr-[48px] rounded-bl-[48px] p-8 md:p-10 mb-stack-lg">
-          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+        <section className="relative overflow-hidden border border-outline-variant bg-surface-container-lowest p-7 md:p-10 mb-stack-lg shadow-[12px_12px_0_var(--secondary-container)]">
+          <div className="absolute right-6 top-6 hidden h-20 w-20 border-r-2 border-t-2 border-secondary md:block" />
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6 relative z-10">
             <div>
               <p className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
-                {subject.exam}
+                {subject.exam} · {copy.learningPath}
               </p>
               <h1 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary mt-3">
                 {subject.title[language]}
@@ -70,7 +66,14 @@ function SubjectPage() {
 
         <section>
           <div className="flex items-end justify-between gap-4 mb-stack-md">
-            <h2 className="font-headline-md text-headline-md text-primary">{copy.modules}</h2>
+            <div>
+              <p className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
+                {copy.chooseTopic}
+              </p>
+              <h2 className="font-headline-md text-headline-md text-primary mt-2">
+                {copy.modules}
+              </h2>
+            </div>
             <Link
               className="hidden sm:inline-flex bg-primary text-on-primary px-5 py-3 font-label-caps text-label-caps uppercase tracking-widest hover:bg-secondary transition-colors"
               to="/plan"
@@ -103,226 +106,54 @@ function SubjectPage() {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  {module.topics.map((topic) => {
-                    const isOpen = openTopicId === topic.id;
-                    const isQuizOpen = activeQuizTopicId === topic.id;
-                    const isSubmitted = submittedQuizId === topic.id;
-                    const score =
-                      topic.lesson?.quiz.reduce((sum, question, questionIndex) => {
-                        const answerKey = `${topic.id}-${questionIndex}`;
-                        return answers[answerKey] === question.answerIndex ? sum + 1 : sum;
-                      }, 0) ?? 0;
-
-                    return (
-                      <div className="border border-outline-variant bg-surface p-5" key={topic.id}>
-                        <div className="flex items-start justify-between gap-3">
-                          <h4 className="font-title-lg text-title-lg text-primary">
-                            {topic.title[language]}
-                          </h4>
-                          <span className="bg-primary-container text-on-primary-container px-3 py-1 font-label-sm text-label-sm whitespace-nowrap">
-                            {difficultyCopy[topic.difficulty][language]}
-                          </span>
-                        </div>
-                        <p className="font-body-md text-body-md text-on-surface-variant mt-3">
+                  {module.topics.map((topic, topicIndex) => (
+                    <div
+                      className="group relative overflow-hidden border border-outline-variant bg-surface p-5 transition-all hover:-translate-y-1 hover:border-secondary hover:shadow-[8px_8px_0_var(--secondary-container)]"
+                      key={topic.id}
+                    >
+                      <div className="absolute right-4 top-4 flex h-11 w-11 items-center justify-center bg-surface-container-high font-title-md text-title-md text-primary">
+                        {topicIndex + 1}
+                      </div>
+                      <div className="pr-14">
+                        <span className="inline-flex bg-primary-container text-on-primary-container px-3 py-1 font-label-sm text-label-sm whitespace-nowrap">
+                          {difficultyCopy[topic.difficulty][language]}
+                        </span>
+                        <h4 className="font-title-lg text-title-lg text-primary mt-4">
+                          {topic.title[language]}
+                        </h4>
+                        <p className="font-body-md text-body-md text-on-surface-variant mt-3 min-h-[56px]">
                           {topic.description[language]}
                         </p>
+                      </div>
 
+                      <div className="mt-5 flex flex-wrap gap-3">
                         {topic.lesson ? (
-                          <>
-                            <button
-                              className="mt-5 inline-flex items-center gap-2 border border-primary text-primary px-4 py-3 font-label-caps text-label-caps uppercase tracking-widest hover:bg-primary hover:text-on-primary transition-colors"
-                              onClick={() => {
-                                setOpenTopicId(isOpen ? null : topic.id);
-                                if (!isOpen) setActiveQuizTopicId(null);
-                              }}
-                              type="button"
-                            >
-                              {isOpen ? copy.hideLesson : copy.openLesson}
-                              <span className="material-symbols-outlined text-sm">
-                                {isOpen ? "expand_less" : "arrow_forward"}
-                              </span>
-                            </button>
-
-                            {isOpen ? (
-                              <div className="mt-6 border-t border-outline-variant pt-6 lg:col-span-2">
-                                <div className="space-y-3">
-                                  {topic.lesson.intro[language].map((paragraph) => (
-                                    <p
-                                      className="font-body-md text-body-md text-on-surface-variant"
-                                      key={paragraph}
-                                    >
-                                      {paragraph}
-                                    </p>
-                                  ))}
-                                </div>
-
-                                <div className="mt-6 border border-outline-variant bg-surface-container-lowest p-4">
-                                  <p className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
-                                    {copy.lessonGoals}
-                                  </p>
-                                  <ul className="mt-3 space-y-2">
-                                    {topic.lesson.goals[language].map((goal) => (
-                                      <li
-                                        className="flex gap-2 font-body-sm text-body-sm text-on-surface-variant"
-                                        key={goal}
-                                      >
-                                        <span className="material-symbols-outlined text-secondary text-base">
-                                          check
-                                        </span>
-                                        {goal}
-                                      </li>
-                                    ))}
-                                  </ul>
-                                </div>
-
-                                <div className="mt-6 space-y-5">
-                                  {topic.lesson.blocks.map((block) => (
-                                    <section
-                                      className="border-l-4 border-secondary pl-4"
-                                      key={block.title[language]}
-                                    >
-                                      <h5 className="font-title-lg text-title-lg text-primary">
-                                        {block.title[language]}
-                                      </h5>
-                                      <div className="mt-2 space-y-2">
-                                        {block.body[language].map((paragraph) => (
-                                          <p
-                                            className="font-body-md text-body-md text-on-surface-variant"
-                                            key={paragraph}
-                                          >
-                                            {paragraph}
-                                          </p>
-                                        ))}
-                                      </div>
-                                    </section>
-                                  ))}
-                                </div>
-
-                                <div className="mt-7 border border-secondary bg-secondary/5 p-4">
-                                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                                    <div>
-                                      <p className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
-                                        {copy.testIntro}
-                                      </p>
-                                      {isSubmitted ? (
-                                        <p className="font-title-md text-title-md text-primary mt-1">
-                                          {copy.result}: {score}/{topic.lesson.quiz.length}{" "}
-                                          {copy.correct}
-                                        </p>
-                                      ) : null}
-                                    </div>
-                                    <button
-                                      className="bg-secondary text-on-secondary px-4 py-3 font-label-caps text-label-caps uppercase tracking-widest hover:bg-primary transition-colors"
-                                      onClick={() => {
-                                        setActiveQuizTopicId(isQuizOpen ? null : topic.id);
-                                        setSubmittedQuizId(null);
-                                      }}
-                                      type="button"
-                                    >
-                                      {isQuizOpen ? copy.hideTest : copy.startTest}
-                                    </button>
-                                  </div>
-
-                                  {isQuizOpen ? (
-                                    <div className="mt-5 space-y-4">
-                                      {topic.lesson.quiz.map((question, questionIndex) => {
-                                        const answerKey = `${topic.id}-${questionIndex}`;
-                                        const selected = answers[answerKey];
-
-                                        return (
-                                          <div
-                                            className="border border-outline-variant bg-surface p-4"
-                                            key={question.question[language]}
-                                          >
-                                            <p className="font-title-md text-title-md text-primary">
-                                              {questionIndex + 1}. {question.question[language]}
-                                            </p>
-                                            <div className="mt-3 grid gap-2">
-                                              {question.options[language].map(
-                                                (option, optionIndex) => {
-                                                  const isCorrect =
-                                                    isSubmitted &&
-                                                    optionIndex === question.answerIndex;
-                                                  const isWrong =
-                                                    isSubmitted &&
-                                                    selected === optionIndex &&
-                                                    optionIndex !== question.answerIndex;
-
-                                                  return (
-                                                    <button
-                                                      className={`border px-3 py-2 text-left font-body-md text-body-md transition-colors ${
-                                                        isCorrect
-                                                          ? "border-secondary bg-secondary/10 text-primary"
-                                                          : isWrong
-                                                            ? "border-error bg-error-container text-error"
-                                                            : selected === optionIndex
-                                                              ? "border-secondary text-primary"
-                                                              : "border-outline-variant text-on-surface-variant hover:border-primary"
-                                                      }`}
-                                                      key={option}
-                                                      onClick={() =>
-                                                        setAnswers((prev) => ({
-                                                          ...prev,
-                                                          [answerKey]: optionIndex,
-                                                        }))
-                                                      }
-                                                      type="button"
-                                                    >
-                                                      {String.fromCharCode(65 + optionIndex)}){" "}
-                                                      {option}
-                                                    </button>
-                                                  );
-                                                },
-                                              )}
-                                            </div>
-                                            {isSubmitted ? (
-                                              <p className="font-body-sm text-body-sm text-on-surface-variant mt-3">
-                                                {copy.answer}:{" "}
-                                                {String.fromCharCode(65 + question.answerIndex)}.{" "}
-                                                {question.explanation[language]}
-                                              </p>
-                                            ) : null}
-                                          </div>
-                                        );
-                                      })}
-
-                                      <button
-                                        className="w-full border border-primary bg-primary px-4 py-3 font-label-caps text-label-caps uppercase tracking-widest text-on-primary hover:bg-secondary transition-colors"
-                                        onClick={() => {
-                                          if (isSubmitted) {
-                                            const cleared = { ...answers };
-                                            topic.lesson?.quiz.forEach((_, questionIndex) => {
-                                              delete cleared[`${topic.id}-${questionIndex}`];
-                                            });
-                                            setAnswers(cleared);
-                                            setSubmittedQuizId(null);
-                                            return;
-                                          }
-
-                                          setSubmittedQuizId(topic.id);
-                                        }}
-                                        type="button"
-                                      >
-                                        {isSubmitted ? copy.retryTest : copy.checkTest}
-                                      </button>
-                                    </div>
-                                  ) : null}
-                                </div>
-                              </div>
-                            ) : null}
-                          </>
+                          <Link
+                            className="inline-flex items-center gap-2 bg-secondary text-on-secondary px-4 py-3 font-label-caps text-label-caps uppercase tracking-widest hover:bg-primary transition-colors"
+                            params={{ subjectId: subject.id, topicId: topic.id }}
+                            to="/subjects/$subjectId/$topicId"
+                          >
+                            {copy.openLesson}
+                            <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                          </Link>
                         ) : (
                           <Link
-                            className="mt-5 inline-flex items-center gap-2 border border-primary text-primary px-4 py-3 font-label-caps text-label-caps uppercase tracking-widest hover:bg-primary hover:text-on-primary transition-colors"
+                            className="inline-flex items-center gap-2 border border-primary text-primary px-4 py-3 font-label-caps text-label-caps uppercase tracking-widest hover:bg-primary hover:text-on-primary transition-colors"
                             to="/plan"
                           >
                             {copy.start}
                             <span className="material-symbols-outlined text-sm">arrow_forward</span>
                           </Link>
                         )}
+                        {topic.lesson ? (
+                          <span className="inline-flex items-center gap-2 border border-outline-variant px-4 py-3 font-label-caps text-label-caps uppercase tracking-widest text-on-surface-variant">
+                            <span className="material-symbols-outlined text-sm">quiz</span>
+                            {copy.hasTest}
+                          </span>
+                        ) : null}
                       </div>
-                    );
-                  })}
+                    </div>
+                  ))}
                 </div>
               </article>
             ))}
@@ -337,21 +168,14 @@ function getSubjectPageCopy(language: "EN" | "KZ" | "RU") {
   if (language === "KZ") {
     return {
       back: "Пәндерге оралу",
+      learningPath: "оқу жолы",
+      chooseTopic: "Тақырып таңда",
       modules: "Модульдер",
       module: "Модуль",
       topics: "тақырып",
       start: "Тақырыпқа кіру",
       openLesson: "Сабақты ашу",
-      hideLesson: "Сабақты жабу",
-      lessonGoals: "Сабақ соңында сен",
-      testIntro: "Тақырыпты түсінгеніңді тексер",
-      startTest: "Тестті бастау",
-      hideTest: "Тестті жабу",
-      checkTest: "Жауаптарды тексеру",
-      retryTest: "Қайта тапсыру",
-      result: "Нәтиже",
-      correct: "дұрыс",
-      answer: "Жауап",
+      hasTest: "тест бар",
       practice: "Жаттығу бастау",
     };
   }
@@ -359,42 +183,28 @@ function getSubjectPageCopy(language: "EN" | "KZ" | "RU") {
   if (language === "RU") {
     return {
       back: "Назад к предметам",
+      learningPath: "учебный путь",
+      chooseTopic: "Выберите тему",
       modules: "Модули",
       module: "Модуль",
       topics: "тем",
       start: "Открыть тему",
       openLesson: "Открыть урок",
-      hideLesson: "Закрыть урок",
-      lessonGoals: "После урока ты сможешь",
-      testIntro: "Проверь, понял ли ты тему",
-      startTest: "Начать тест",
-      hideTest: "Закрыть тест",
-      checkTest: "Проверить ответы",
-      retryTest: "Пройти снова",
-      result: "Результат",
-      correct: "правильно",
-      answer: "Ответ",
+      hasTest: "есть тест",
       practice: "Начать практику",
     };
   }
 
   return {
     back: "Back to subjects",
+    learningPath: "learning path",
+    chooseTopic: "Choose a topic",
     modules: "Modules",
     module: "Module",
     topics: "topics",
     start: "Open topic",
     openLesson: "Open lesson",
-    hideLesson: "Hide lesson",
-    lessonGoals: "By the end of this lesson",
-    testIntro: "Check your understanding",
-    startTest: "Start test",
-    hideTest: "Hide test",
-    checkTest: "Check answers",
-    retryTest: "Try again",
-    result: "Result",
-    correct: "correct",
-    answer: "Answer",
+    hasTest: "has test",
     practice: "Start practice",
   };
 }

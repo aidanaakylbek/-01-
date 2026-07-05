@@ -583,3 +583,13 @@ export const subjects: Subject[] = [
 export function getSubject(subjectId: string) {
   return subjects.find((subject) => subject.id === subjectId);
 }
+
+export function getTopic(subjectId: string, topicId: string) {
+  const subject = getSubject(subjectId);
+  const module = subject?.modules.find((item) => item.topics.some((topic) => topic.id === topicId));
+  const topic = module?.topics.find((item) => item.id === topicId);
+
+  if (!subject || !module || !topic) return null;
+
+  return { subject, module, topic };
+}
