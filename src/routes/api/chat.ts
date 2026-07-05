@@ -98,7 +98,7 @@ export const Route = createFileRoute("/api/chat")({
                 });
               }
 
-              if (statusCode !== 503 && statusCode !== 404) {
+              if (statusCode !== 400 && statusCode !== 403 && statusCode !== 404 && statusCode !== 503) {
                 throw error;
               }
             }
