@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TopicChallengeRouteImport } from './routes/topic-challenge'
 import { Route as SubjectsRouteImport } from './routes/subjects'
+import { Route as ShopRouteImport } from './routes/shop'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as RegisterRouteImport } from './routes/register'
@@ -41,6 +42,11 @@ const TopicChallengeRoute = TopicChallengeRouteImport.update({
 const SubjectsRoute = SubjectsRouteImport.update({
   id: '/subjects',
   path: '/subjects',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ShopRoute = ShopRouteImport.update({
+  id: '/shop',
+  path: '/shop',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsRoute = SettingsRouteImport.update({
@@ -164,6 +170,7 @@ export interface FileRoutesByFullPath {
   '/register': typeof RegisterRoute
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
+  '/shop': typeof ShopRoute
   '/subjects': typeof SubjectsRouteWithChildren
   '/topic-challenge': typeof TopicChallengeRoute
   '/api/chat': typeof ApiChatRoute
@@ -189,6 +196,7 @@ export interface FileRoutesByTo {
   '/register': typeof RegisterRoute
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
+  '/shop': typeof ShopRoute
   '/subjects': typeof SubjectsRouteWithChildren
   '/topic-challenge': typeof TopicChallengeRoute
   '/api/chat': typeof ApiChatRoute
@@ -215,6 +223,7 @@ export interface FileRoutesById {
   '/register': typeof RegisterRoute
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
+  '/shop': typeof ShopRoute
   '/subjects': typeof SubjectsRouteWithChildren
   '/topic-challenge': typeof TopicChallengeRoute
   '/api/chat': typeof ApiChatRoute
@@ -242,6 +251,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/reports'
     | '/settings'
+    | '/shop'
     | '/subjects'
     | '/topic-challenge'
     | '/api/chat'
@@ -267,6 +277,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/reports'
     | '/settings'
+    | '/shop'
     | '/subjects'
     | '/topic-challenge'
     | '/api/chat'
@@ -292,6 +303,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/reports'
     | '/settings'
+    | '/shop'
     | '/subjects'
     | '/topic-challenge'
     | '/api/chat'
@@ -318,6 +330,7 @@ export interface RootRouteChildren {
   RegisterRoute: typeof RegisterRoute
   ReportsRoute: typeof ReportsRoute
   SettingsRoute: typeof SettingsRoute
+  ShopRoute: typeof ShopRoute
   SubjectsRoute: typeof SubjectsRouteWithChildren
   TopicChallengeRoute: typeof TopicChallengeRoute
   ApiChatRoute: typeof ApiChatRoute
@@ -342,6 +355,13 @@ declare module '@tanstack/react-router' {
       path: '/subjects'
       fullPath: '/subjects'
       preLoaderRoute: typeof SubjectsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/shop': {
+      id: '/shop'
+      path: '/shop'
+      fullPath: '/shop'
+      preLoaderRoute: typeof ShopRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/settings': {
@@ -521,6 +541,7 @@ const rootRouteChildren: RootRouteChildren = {
   RegisterRoute: RegisterRoute,
   ReportsRoute: ReportsRoute,
   SettingsRoute: SettingsRoute,
+  ShopRoute: ShopRoute,
   SubjectsRoute: SubjectsRouteWithChildren,
   TopicChallengeRoute: TopicChallengeRoute,
   ApiChatRoute: ApiChatRoute,

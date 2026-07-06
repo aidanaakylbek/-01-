@@ -1,390 +1,115 @@
-﻿import { createFileRoute, Link } from "@tanstack/react-router";
-import { Navbar } from "@/components/navbar";
+import { createFileRoute } from "@tanstack/react-router";
+import { GameCard, GameLayout, MascotCoach, ProgressBar } from "@/components/gamified-platform";
 import { useLanguage } from "@/hooks/use-language";
-import { getAccountDashboard } from "@/lib/api/account.functions";
 
 export const Route = createFileRoute("/reports")({
-  loader: () => getAccountDashboard(),
-  head: () => ({
-    meta: [
-      { title: "Parent Report - AI-Sana" },
-      {
-        name: "description",
-        content: "Parent-facing report with student progress, risks, and next actions.",
-      },
-    ],
-  }),
-  component: ParentReport,
+  head: () => ({ meta: [{ title: "Parent Report — AI-Sana" }] }),
+  component: ParentReportPage,
 });
 
-function ParentReport() {
+function ParentReportPage() {
   const { language } = useLanguage();
-  const dashboard = Route.useLoaderData();
-  const copy =
+  const c =
     language === "RU"
       ? {
           title: "Отчет для родителей",
-          subtitle:
-            "Понятный отчет для родителей: как идет подготовка, где есть риск и что делать дальше.",
-          student: "Ученик",
-          grade: "7 класс",
-          readiness: "Готовность",
-          readinessText:
-            "Aidana идет по плану. Главный риск сейчас - логические задачи и количественные сравнения.",
-          weeklySummary: "Итоги недели",
-          parentAction: "Что сделать родителю",
-          nextExam: "Следующий пробный экзамен",
-          nextExamText: "Суббота, 10:00. Полноформатный тест по НИШ/БИЛ/РФМШ.",
-          openPlan: "Открыть план",
-          openProgress: "Посмотреть прогресс",
-          risks: "Зоны риска",
-          recommendations: "Рекомендации на неделю",
-          whatsappTitle: "WhatsApp-отчет",
-          whatsappText:
-            "Каждый понедельник AI-Sana автоматически отправляет родителю короткий отчет в WhatsApp.",
-          whatsappStatus: "Автоматически, 1 раз в неделю",
-          lessonsCompleted: "Уроки завершены",
-          studyTime: "Время обучения",
-          averageAccuracy: "Средняя точность",
-          hourShort: "ч",
-          gradeSuffix: "класс",
-          nextExamLine: "Суббота, 10:00. Полноформатный тест по НИШ/БИЛ/РФМШ.",
-          parentRecommendation:
-            "Попросите ученика показать две самые сложные задачи недели и объяснить, как он исправил ошибки.",
-          riskLevels: { High: "Высокий", Medium: "Средний" },
-          risksList: [
-            {
-              title: "Логические задачи",
-              detail: "Точность снизилась до 45%. Нужна короткая ежедневная практика.",
-            },
-            {
-              title: "Количественные сравнения",
-              detail: "Показатель нестабилен: 52%. Повторить стратегии сравнения.",
-            },
-            {
-              title: "Выносливость на пробном экзамене",
-              detail: "На этой неделе нужен один полный тест по времени.",
-            },
-          ],
-          recommendationsList: [
-            "Выделить 25 минут на логику в понедельник, среду и пятницу.",
-            "После каждой практики разобрать две ошибки вслух.",
-            "Оставить субботнее утро свободным для полного пробного экзамена.",
-          ],
+          subtitle: "Активность, сильные темы, слабые темы и совет AI-Sana.",
+          send: "Отправить через Telegram",
+          weekly: "Недельный отчет",
+          monthly: "Месячный отчет",
+          strong: "Сильные темы",
+          weak: "Слабые темы",
+          parentTip: "Попросите ребенка объяснить две ошибки недели своими словами.",
         }
-      : language === "KZ"
+      : language === "EN"
         ? {
-            title: "Ата-ана есебі",
-            subtitle:
-              "Ата-аналарға арналған түсінікті есеп: дайындық барысы, тәуекелдер және келесі қадамдар.",
-            student: "Оқушы",
-            grade: "7 сынып",
-            readiness: "Дайындық",
-            readinessText:
-              "Aidana жоспар бойынша келе жатыр. Негізгі тәуекел - логикалық есептер және сандық салыстыру.",
-            weeklySummary: "Апта қорытындысы",
-            parentAction: "Ата-ана не істей алады",
-            nextExam: "Келесі сынақ емтихан",
-            nextExamText: "Сенбі, 10:00. НЗМ/БИЛ/РФММ бойынша толық тест.",
-            openPlan: "Жоспарды ашу",
-            openProgress: "Прогресті көру",
-            risks: "Тәуекел аймақтары",
-            recommendations: "Аптаға ұсыныстар",
-            whatsappTitle: "WhatsApp есебі",
-            whatsappText:
-              "AI-Sana әр дүйсенбі ата-анаға WhatsApp арқылы қысқа есепті автоматты түрде жібереді.",
-            whatsappStatus: "Автоматты түрде, аптасына 1 рет",
-            lessonsCompleted: "Аяқталған сабақтар",
-            studyTime: "Оқу уақыты",
-            averageAccuracy: "Орташа дәлдік",
-            hourShort: "сағ",
-            gradeSuffix: "сынып",
-            nextExamLine: "Сенбі, 10:00. НЗМ/БИЛ/РФММ бойынша толық тест.",
-            parentRecommendation:
-              "Оқушыдан осы аптадағы ең қиын екі есепті көрсетіп, қатесін қалай түзеткенін түсіндіруін сұраңыз.",
-            riskLevels: { High: "Жоғары", Medium: "Орташа" },
-            risksList: [
-              {
-                title: "Логикалық есептер",
-                detail: "Дәлдік 45%-ға түсті. Күн сайын қысқа жаттығу қажет.",
-              },
-              {
-                title: "Сандық салыстырулар",
-                detail: "Көрсеткіш тұрақсыз: 52%. Салыстыру стратегияларын қайталау керек.",
-              },
-              {
-                title: "Сынақ емтиханға төзімділік",
-                detail: "Осы аптада уақытпен бір толық тест орындау қажет.",
-              },
-            ],
-            recommendationsList: [
-              "Дүйсенбі, сәрсенбі және жұма күндері логикаға 25 минут бөлу.",
-              "Әр жаттығудан кейін екі қатені дауыстап талдау.",
-              "Сенбі таңын толық сынақ емтиханға бос қалдыру.",
-            ],
+            title: "Parent Report",
+            subtitle: "Activity, strong topics, weak topics and AI-Sana advice.",
+            send: "Send via Telegram",
+            weekly: "Weekly report",
+            monthly: "Monthly report",
+            strong: "Strong topics",
+            weak: "Weak topics",
+            parentTip: "Ask the student to explain two weekly mistakes in their own words.",
           }
         : {
-            title: "Parent Report",
-            subtitle:
-              "A clear report for parents: how preparation is going, where risk exists, and what to do next.",
-            student: "Student",
-            grade: "Grade 7",
-            readiness: "Readiness",
-            readinessText:
-              "Aidana is on track. The main risk right now is logic problems and quantitative comparisons.",
-            weeklySummary: "Weekly Summary",
-            parentAction: "Parent Action",
-            nextExam: "Next Mock Exam",
-            nextExamText: "Saturday, 10:00. Full-length NIS/BIL/NSPM practice test.",
-            openPlan: "Open Plan",
-            openProgress: "View Progress",
-            risks: "Risk Areas",
-            recommendations: "Recommendations This Week",
-            whatsappTitle: "WhatsApp Report",
-            whatsappText:
-              "Every Monday, AI-Sana automatically sends a short parent report to WhatsApp.",
-            whatsappStatus: "Automatic, once per week",
-            lessonsCompleted: "Lessons completed",
-            studyTime: "Study time",
-            averageAccuracy: "Average accuracy",
-            hourShort: "h",
-            gradeSuffix: "Grade",
-            nextExamLine: "Saturday, 10:00. Full-length NIS/BIL/NSPM practice test.",
-            parentRecommendation:
-              "Ask the student to show the two hardest logic questions from this week and explain how they corrected them.",
-            riskLevels: { High: "High", Medium: "Medium" },
-            risksList: [
-              {
-                title: "Logic Problems",
-                detail: "Accuracy dropped to 45%. Needs short daily practice.",
-              },
-              {
-                title: "Quantitative Comparisons",
-                detail: "Still unstable at 52%. Review comparison strategies.",
-              },
-              {
-                title: "Mock Exam Stamina",
-                detail: "Student should practice one full timed test this week.",
-              },
-            ],
-            recommendationsList: [
-              "Set aside 25 minutes for logic practice on Monday, Wednesday, and Friday.",
-              "Ask the student to explain two mistakes after each practice session.",
-              "Keep Saturday morning free for the full mock exam.",
-            ],
+            title: "Ата-ана есебі",
+            subtitle: "Оқушы белсенділігі, мықты тақырыптар, әлсіз тақырыптар және AI-Sana кеңесі.",
+            send: "Telegram арқылы жіберу",
+            weekly: "Апталық есеп",
+            monthly: "Айлық есеп",
+            strong: "Мықты тақырыптар",
+            weak: "Әлсіз тақырыптар",
+            parentTip: "Балаңыздан аптадағы екі қатесін өз сөзімен түсіндіруін сұраңыз.",
           };
 
-  const weeklyStats = [
-    {
-      label: copy.lessonsCompleted,
-      value: `${dashboard.completedLessons}/${dashboard.weeklyGoal}`,
-      icon: "task_alt",
-    },
-    { label: copy.studyTime, value: `${dashboard.studyHours} ${copy.hourShort}`, icon: "timer" },
-    { label: copy.averageAccuracy, value: `${dashboard.averageAccuracy}%`, icon: "analytics" },
-  ];
-
   return (
-    <div className="min-h-screen game-shell text-on-background pb-safe">
-      <Navbar />
-      <main className="w-full max-w-7xl mx-auto px-container-padding-mobile md:px-container-padding-desktop py-stack-lg">
-        <header className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 mb-stack-lg">
-          <div>
-            <span className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
-              AI-Sana
-            </span>
-            <h1 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary mt-3">
-              {copy.title}
-            </h1>
-            <p className="font-body-md text-body-md text-on-surface-variant mt-2 max-w-2xl">
-              {copy.subtitle}
-            </p>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Link
-              to="/plan"
-              className="game-button bg-secondary text-on-secondary px-6 py-3 font-label-caps text-label-caps uppercase tracking-widest hover:bg-secondary-container hover:text-on-secondary-container transition-colors text-center"
-            >
-              {copy.openPlan}
-            </Link>
-            <Link
-              to="/progress"
-              className="bg-surface text-primary border border-primary px-6 py-3 font-label-caps text-label-caps uppercase tracking-widest hover:bg-surface-container-high transition-colors text-center"
-            >
-              {copy.openProgress}
-            </Link>
-          </div>
-        </header>
-
-        <section className="grid grid-cols-1 lg:grid-cols-12 gap-gutter mb-stack-lg">
-          <div className="lg:col-span-7 bg-surface-container-highest border border-outline-variant p-8 md:p-10 rounded-tr-[40px] rounded-bl-[40px]">
-            <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] gap-8 items-center">
-              <div className="relative w-44 h-44 flex items-center justify-center">
-                <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-                  <circle
-                    className="text-surface-container-low"
-                    cx="50"
-                    cy="50"
-                    fill="none"
-                    r="40"
-                    stroke="currentColor"
-                    strokeWidth="8"
-                  />
-                  <circle
-                    className="text-secondary"
-                    cx="50"
-                    cy="50"
-                    fill="none"
-                    r="40"
-                    stroke="currentColor"
-                    strokeDasharray="251.2"
-                    strokeDashoffset={251.2 - (251.2 * dashboard.readiness) / 100}
-                    strokeLinecap="round"
-                    strokeWidth="8"
-                  />
-                </svg>
-                <div className="absolute text-center">
-                  <span className="block font-headline-lg text-headline-lg text-primary">
-                    {dashboard.readiness}%
-                  </span>
-                  <span className="font-label-caps text-label-caps text-secondary uppercase tracking-widest">
-                    {copy.readiness}
-                  </span>
-                </div>
-              </div>
-              <div>
-                <span className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
-                  {copy.student}
-                </span>
-                <h2 className="font-headline-md text-headline-md text-primary mt-3">
-                  {dashboard.account.name}
-                </h2>
-                <p className="font-body-md text-body-md text-on-surface-variant mt-1">
-                  {language === "EN"
-                    ? `${copy.gradeSuffix} ${dashboard.account.grade}`
-                    : `${dashboard.account.grade} ${copy.gradeSuffix}`}
-                </p>
-                <p className="font-body-md text-body-md text-on-surface-variant mt-5">
-                  {copy.readinessText}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="lg:col-span-5 bg-surface-container-lowest border border-outline-variant p-8 rounded-tr-[40px]">
-            <span className="material-symbols-outlined text-secondary text-4xl">
-              family_restroom
-            </span>
-            <h2 className="font-headline-md text-headline-md text-primary mt-4">
-              {copy.parentAction}
-            </h2>
-            <p className="font-body-md text-body-md text-on-surface-variant mt-3">
-              {copy.parentRecommendation}
-            </p>
-            <div className="mt-6 border-t border-outline-variant pt-5">
-              <h3 className="font-label-caps text-label-caps uppercase tracking-widest text-primary">
-                {copy.nextExam}
-              </h3>
-              <p className="font-body-md text-body-md text-on-surface-variant mt-2">
-                {copy.nextExamLine}
+    <GameLayout>
+      <div className="space-y-5">
+        <GameCard className="bg-gradient-to-br from-white to-[#F5F3FF]">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-sm font-black uppercase tracking-[0.25em] text-[#8B5CF6]">
+                AI-Sana Parent Mode
               </p>
+              <h1 className="mt-2 text-4xl font-black md:text-6xl">{c.title}</h1>
+              <p className="mt-3 max-w-2xl font-semibold text-[#6B5E8F]">{c.subtitle}</p>
             </div>
-            <div className="mt-6 border-t border-outline-variant pt-5">
-              <h3 className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
-                {copy.whatsappTitle}
-              </h3>
-              <p className="font-body-md text-body-md text-on-surface-variant mt-2">
-                {copy.whatsappText}
-              </p>
-              <p className="font-label-md text-label-md text-primary mt-3">
-                {copy.whatsappStatus}
-                {dashboard.account.parentWhatsApp
-                  ? ` • ${maskWhatsAppPhone(dashboard.account.parentWhatsApp)}`
-                  : ""}
-              </p>
-            </div>
+            <button className="rounded-2xl bg-[#6D28D9] px-6 py-4 font-black text-white shadow-[0_6px_0_#4C1D95]">
+              {c.send}
+            </button>
           </div>
-        </section>
-
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-gutter mb-stack-lg">
-          {weeklyStats.map((item) => (
-            <div
-              key={item.label}
-              className="bg-surface-container-lowest border border-outline-variant p-6"
-            >
-              <span className="material-symbols-outlined text-secondary text-3xl">{item.icon}</span>
-              <p className="font-label-caps text-label-caps uppercase tracking-widest text-on-surface-variant mt-5">
-                {item.label}
-              </p>
-              <p className="font-headline-md text-headline-md text-primary mt-2">{item.value}</p>
+        </GameCard>
+        <MascotCoach text={c.parentTip} />
+        <section className="grid gap-5 lg:grid-cols-2">
+          <GameCard>
+            <h2 className="text-2xl font-black">{c.weekly}</h2>
+            <div className="mt-5 grid gap-3 md:grid-cols-3">
+              <MiniStat label="Lessons" value="18" />
+              <MiniStat label="Accuracy" value="82%" />
+              <MiniStat label="Activity" value="High" />
             </div>
-          ))}
-        </section>
-
-        <section className="grid grid-cols-1 md:grid-cols-2 gap-gutter">
-          <div className="bg-surface-container-lowest border border-outline-variant p-6 md:p-8">
-            <h2 className="font-headline-md text-headline-md text-primary mb-6">{copy.risks}</h2>
-            <div className="flex flex-col gap-4">
-              {dashboard.risks.map((risk, index) => {
-                const localizedRisk = copy.risksList[index] ?? risk;
-
-                return (
-                  <div key={risk.title} className="border border-outline-variant p-5">
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <h3 className="font-label-md text-label-md text-primary">
-                          {localizedRisk.title}
-                        </h3>
-                        <p className="font-body-md text-sm text-on-surface-variant mt-2">
-                          {localizedRisk.detail}
-                        </p>
-                      </div>
-                      <span
-                        className={`font-label-sm text-label-sm px-3 py-1 ${
-                          risk.level === "High"
-                            ? "bg-error-container text-error"
-                            : "bg-secondary-fixed text-on-secondary-fixed"
-                        }`}
-                      >
-                        {copy.riskLevels[risk.level]}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="bg-surface-container-lowest border border-outline-variant p-6 md:p-8">
-            <h2 className="font-headline-md text-headline-md text-primary mb-6">
-              {copy.recommendations}
-            </h2>
-            <div className="flex flex-col gap-4">
-              {copy.recommendationsList.map((item) => (
+            <ProgressBar value={82} />
+          </GameCard>
+          <GameCard>
+            <h2 className="text-2xl font-black">{c.monthly}</h2>
+            <div className="mt-4 flex h-32 items-end gap-2">
+              {[38, 50, 63, 82].map((h) => (
                 <div
-                  key={item}
-                  className="flex items-start gap-3 rounded-2xl border-2 border-outline-variant bg-surface p-4"
-                >
-                  <span className="material-symbols-outlined text-secondary">task_alt</span>
-                  <p className="font-body-md text-body-md text-on-surface-variant">{item}</p>
-                </div>
+                  key={h}
+                  className="flex-1 rounded-t-2xl bg-gradient-to-t from-[#6D28D9] to-[#C084FC]"
+                  style={{ height: `${h}%` }}
+                />
               ))}
             </div>
-          </div>
+          </GameCard>
+          <GameCard>
+            <h2 className="text-2xl font-black">{c.strong}</h2>
+            {["Натурал сандар", "Мәтінді түсіну", "Ағылшын сөздігі"].map((topic) => (
+              <div key={topic} className="mt-3 rounded-2xl bg-[#DCFCE7] p-4 font-black">
+                ✅ {topic}
+              </div>
+            ))}
+          </GameCard>
+          <GameCard>
+            <h2 className="text-2xl font-black">{c.weak}</h2>
+            {["Пайыздар", "Логикалық тізбек", "Сандық салыстыру"].map((topic) => (
+              <div key={topic} className="mt-3 rounded-2xl bg-[#FEE2E2] p-4 font-black">
+                ⚠️ {topic}
+              </div>
+            ))}
+          </GameCard>
         </section>
-      </main>
-    </div>
+      </div>
+    </GameLayout>
   );
 }
 
-function maskWhatsAppPhone(phone: string) {
-  const digits = phone.replace(/[^\d]/g, "");
-
-  if (digits.length < 5) {
-    return phone;
-  }
-
-  return `+${digits.slice(0, 3)} *** ** ${digits.slice(-2)}`;
+function MiniStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl bg-[#F5F3FF] p-4">
+      <p className="text-xs font-black uppercase tracking-widest text-[#8B5CF6]">{label}</p>
+      <p className="mt-1 text-2xl font-black">{value}</p>
+    </div>
+  );
 }
-
-
