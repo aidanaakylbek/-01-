@@ -1,8 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
+import { buildMentorSystemPrompt } from "@/lib/ai-mentor";
+import { getDashboardAccount } from "@/lib/account-store.server";
 
-const SYSTEM_PROMPT =
-  "You are AI-Sana, a real AI tutor for pupils preparing for NIS, BIL, and NSPM entrance exams. Answer any normal study question naturally, like ChatGPT, but in a warm tutor style for pupils aged 10-14. Understand short, misspelled, mixed Kazakh/Russian/English messages by context. Do not give canned template answers. Do not keep asking the pupil to rewrite the question. If the question is unclear, make the most helpful reasonable assumption, answer with an example, and ask only one focused follow-up question. For math and logic, explain the method first, then give the answer. If the pupil answers a test question, check it and give a full explanation whether it is right or wrong. Keep answers clear, compact, and useful.";
+const TUTOR_BEHAVIOR_PROMPT =
+  "Answer any normal study question naturally, like ChatGPT, but in a tutor style for pupils aged 10-14. Understand short, misspelled, mixed Kazakh/Russian/English messages by context. Do not give canned template answers. Do not keep asking the pupil to rewrite the question. If the question is unclear, make the most helpful reasonable assumption, answer with an example, and ask only one focused follow-up question. For math and logic, explain the method first, then give the answer. If the pupil answers a test question, check it and give a full explanation whether it is right or wrong. Keep answers clear, compact, and useful.";
 
 const chatRequestSchema = z.object({
   language: z.enum(["EN", "KZ", "RU"]).optional(),
@@ -64,6 +66,7 @@ export const Route = createFileRoute("/api/chat")({
         }
 
         try {
+          const mentorPrompt = `${buildMentorSystemPrompt(getDashboardAccount().account.mentorStyle)}\n\n${TUTOR_BEHAVIOR_PROMPT}`;
           const conversation = buildConversation(recentMessages);
           const latestImages = lastUserImages(recentMessages);
           const models = getOpenAiModels(recentMessages, latestImages);
@@ -72,7 +75,13 @@ export const Route = createFileRoute("/api/chat")({
 
           for (const model of models) {
             try {
-              reply = await generateTutorReply(model, conversation, answerLanguage.instruction, latestImages);
+              reply = await generateTutorReply(
+                model,
+                conversation,
+                answerLanguage.instruction,
+                latestImages,
+                mentorPrompt,
+              );
               reply = await fixReplyIfNeeded(model, {
                 conversation,
                 images: latestImages,
@@ -80,6 +89,7 @@ export const Route = createFileRoute("/api/chat")({
                 reply,
                 previousReply: lastAssistantMessage(recentMessages),
                 instruction: answerLanguage.instruction,
+                mentorPrompt,
               });
 
               if (reply) {
@@ -135,6 +145,7 @@ type ReplyFixOptions = {
   images: string[];
   instruction: string;
   language: "EN" | "KZ" | "RU";
+  mentorPrompt: string;
   previousReply: string;
   reply: string;
 };
@@ -156,12 +167,13 @@ async function generateTutorReply(
   conversation: string,
   languageInstruction: string,
   images: string[],
+  mentorPrompt: string,
 ) {
   const response = await generateOpenAiContent({
     images,
     model,
     prompt: conversation,
-    systemInstruction: `${SYSTEM_PROMPT}\n\n${languageInstruction}`,
+    systemInstruction: `${mentorPrompt}\n\n${languageInstruction}`,
     temperature: 0.65,
     maxOutputTokens: 1800,
   });
@@ -172,7 +184,7 @@ async function generateTutorReply(
       images,
       model,
       prompt: `${conversation}\n\nAI-Sana: ${reply}\n\nPupil: Continue from exactly where you stopped and finish the answer. Do not repeat previous text.`,
-      systemInstruction: `${SYSTEM_PROMPT}\n\n${languageInstruction}`,
+      systemInstruction: `${mentorPrompt}\n\n${languageInstruction}`,
       temperature: 0.45,
       maxOutputTokens: 700,
     });
@@ -208,7 +220,7 @@ async function fixReplyIfNeeded(
     images: options.images,
     model,
     prompt: `${options.conversation}\n\nYour previous draft was not useful enough or was in the wrong language:\n${trimmedReply}\n\nWrite a fresh answer now. Understand the pupil's intent, answer directly, do not ask them to rewrite the question, and do not repeat your previous answer.`,
-    systemInstruction: `${SYSTEM_PROMPT}\n\n${options.instruction}`,
+    systemInstruction: `${options.mentorPrompt}\n\n${options.instruction}`,
     temperature: 0.75,
     maxOutputTokens: 1200,
   });

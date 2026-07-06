@@ -9,7 +9,9 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TopicChallengeRouteImport } from './routes/topic-challenge'
 import { Route as SubjectsRouteImport } from './routes/subjects'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as ProgressRouteImport } from './routes/progress'
@@ -17,6 +19,8 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PlanRouteImport } from './routes/plan'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as HomeRouteImport } from './routes/home'
+import { Route as ExplainSolutionRouteImport } from './routes/explain-solution'
+import { Route as ExamRouteImport } from './routes/exam'
 import { Route as DiagnosticRouteImport } from './routes/diagnostic'
 import { Route as CareersRouteImport } from './routes/careers'
 import { Route as AboutRouteImport } from './routes/about'
@@ -25,12 +29,23 @@ import { Route as SubjectsSubjectIdRouteImport } from './routes/subjects.$subjec
 import { Route as ApiWhatsappWeeklyReportRouteImport } from './routes/api/whatsapp-weekly-report'
 import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as ApiReviewRouteImport } from './routes/api/review'
+import { Route as ApiExplainSolutionRouteImport } from './routes/api/explain-solution'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as LessonSubjectIdTopicIdRouteImport } from './routes/lesson.$subjectId.$topicId'
 
+const TopicChallengeRoute = TopicChallengeRouteImport.update({
+  id: '/topic-challenge',
+  path: '/topic-challenge',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SubjectsRoute = SubjectsRouteImport.update({
   id: '/subjects',
   path: '/subjects',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ReportsRoute = ReportsRouteImport.update({
@@ -66,6 +81,16 @@ const LoginRoute = LoginRouteImport.update({
 const HomeRoute = HomeRouteImport.update({
   id: '/home',
   path: '/home',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExplainSolutionRoute = ExplainSolutionRouteImport.update({
+  id: '/explain-solution',
+  path: '/explain-solution',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExamRoute = ExamRouteImport.update({
+  id: '/exam',
+  path: '/exam',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DiagnosticRoute = DiagnosticRouteImport.update({
@@ -108,6 +133,11 @@ const ApiReviewRoute = ApiReviewRouteImport.update({
   path: '/api/review',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiExplainSolutionRoute = ApiExplainSolutionRouteImport.update({
+  id: '/api/explain-solution',
+  path: '/api/explain-solution',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
@@ -124,6 +154,8 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/careers': typeof CareersRoute
   '/diagnostic': typeof DiagnosticRoute
+  '/exam': typeof ExamRoute
+  '/explain-solution': typeof ExplainSolutionRoute
   '/home': typeof HomeRoute
   '/login': typeof LoginRoute
   '/plan': typeof PlanRoute
@@ -131,8 +163,11 @@ export interface FileRoutesByFullPath {
   '/progress': typeof ProgressRoute
   '/register': typeof RegisterRoute
   '/reports': typeof ReportsRoute
+  '/settings': typeof SettingsRoute
   '/subjects': typeof SubjectsRouteWithChildren
+  '/topic-challenge': typeof TopicChallengeRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/explain-solution': typeof ApiExplainSolutionRoute
   '/api/review': typeof ApiReviewRoute
   '/api/tts': typeof ApiTtsRoute
   '/api/whatsapp-weekly-report': typeof ApiWhatsappWeeklyReportRoute
@@ -144,6 +179,8 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/careers': typeof CareersRoute
   '/diagnostic': typeof DiagnosticRoute
+  '/exam': typeof ExamRoute
+  '/explain-solution': typeof ExplainSolutionRoute
   '/home': typeof HomeRoute
   '/login': typeof LoginRoute
   '/plan': typeof PlanRoute
@@ -151,8 +188,11 @@ export interface FileRoutesByTo {
   '/progress': typeof ProgressRoute
   '/register': typeof RegisterRoute
   '/reports': typeof ReportsRoute
+  '/settings': typeof SettingsRoute
   '/subjects': typeof SubjectsRouteWithChildren
+  '/topic-challenge': typeof TopicChallengeRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/explain-solution': typeof ApiExplainSolutionRoute
   '/api/review': typeof ApiReviewRoute
   '/api/tts': typeof ApiTtsRoute
   '/api/whatsapp-weekly-report': typeof ApiWhatsappWeeklyReportRoute
@@ -165,6 +205,8 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/careers': typeof CareersRoute
   '/diagnostic': typeof DiagnosticRoute
+  '/exam': typeof ExamRoute
+  '/explain-solution': typeof ExplainSolutionRoute
   '/home': typeof HomeRoute
   '/login': typeof LoginRoute
   '/plan': typeof PlanRoute
@@ -172,8 +214,11 @@ export interface FileRoutesById {
   '/progress': typeof ProgressRoute
   '/register': typeof RegisterRoute
   '/reports': typeof ReportsRoute
+  '/settings': typeof SettingsRoute
   '/subjects': typeof SubjectsRouteWithChildren
+  '/topic-challenge': typeof TopicChallengeRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/explain-solution': typeof ApiExplainSolutionRoute
   '/api/review': typeof ApiReviewRoute
   '/api/tts': typeof ApiTtsRoute
   '/api/whatsapp-weekly-report': typeof ApiWhatsappWeeklyReportRoute
@@ -187,6 +232,8 @@ export interface FileRouteTypes {
     | '/about'
     | '/careers'
     | '/diagnostic'
+    | '/exam'
+    | '/explain-solution'
     | '/home'
     | '/login'
     | '/plan'
@@ -194,8 +241,11 @@ export interface FileRouteTypes {
     | '/progress'
     | '/register'
     | '/reports'
+    | '/settings'
     | '/subjects'
+    | '/topic-challenge'
     | '/api/chat'
+    | '/api/explain-solution'
     | '/api/review'
     | '/api/tts'
     | '/api/whatsapp-weekly-report'
@@ -207,6 +257,8 @@ export interface FileRouteTypes {
     | '/about'
     | '/careers'
     | '/diagnostic'
+    | '/exam'
+    | '/explain-solution'
     | '/home'
     | '/login'
     | '/plan'
@@ -214,8 +266,11 @@ export interface FileRouteTypes {
     | '/progress'
     | '/register'
     | '/reports'
+    | '/settings'
     | '/subjects'
+    | '/topic-challenge'
     | '/api/chat'
+    | '/api/explain-solution'
     | '/api/review'
     | '/api/tts'
     | '/api/whatsapp-weekly-report'
@@ -227,6 +282,8 @@ export interface FileRouteTypes {
     | '/about'
     | '/careers'
     | '/diagnostic'
+    | '/exam'
+    | '/explain-solution'
     | '/home'
     | '/login'
     | '/plan'
@@ -234,8 +291,11 @@ export interface FileRouteTypes {
     | '/progress'
     | '/register'
     | '/reports'
+    | '/settings'
     | '/subjects'
+    | '/topic-challenge'
     | '/api/chat'
+    | '/api/explain-solution'
     | '/api/review'
     | '/api/tts'
     | '/api/whatsapp-weekly-report'
@@ -248,6 +308,8 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   CareersRoute: typeof CareersRoute
   DiagnosticRoute: typeof DiagnosticRoute
+  ExamRoute: typeof ExamRoute
+  ExplainSolutionRoute: typeof ExplainSolutionRoute
   HomeRoute: typeof HomeRoute
   LoginRoute: typeof LoginRoute
   PlanRoute: typeof PlanRoute
@@ -255,8 +317,11 @@ export interface RootRouteChildren {
   ProgressRoute: typeof ProgressRoute
   RegisterRoute: typeof RegisterRoute
   ReportsRoute: typeof ReportsRoute
+  SettingsRoute: typeof SettingsRoute
   SubjectsRoute: typeof SubjectsRouteWithChildren
+  TopicChallengeRoute: typeof TopicChallengeRoute
   ApiChatRoute: typeof ApiChatRoute
+  ApiExplainSolutionRoute: typeof ApiExplainSolutionRoute
   ApiReviewRoute: typeof ApiReviewRoute
   ApiTtsRoute: typeof ApiTtsRoute
   ApiWhatsappWeeklyReportRoute: typeof ApiWhatsappWeeklyReportRoute
@@ -265,11 +330,25 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/topic-challenge': {
+      id: '/topic-challenge'
+      path: '/topic-challenge'
+      fullPath: '/topic-challenge'
+      preLoaderRoute: typeof TopicChallengeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/subjects': {
       id: '/subjects'
       path: '/subjects'
       fullPath: '/subjects'
       preLoaderRoute: typeof SubjectsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reports': {
@@ -319,6 +398,20 @@ declare module '@tanstack/react-router' {
       path: '/home'
       fullPath: '/home'
       preLoaderRoute: typeof HomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/explain-solution': {
+      id: '/explain-solution'
+      path: '/explain-solution'
+      fullPath: '/explain-solution'
+      preLoaderRoute: typeof ExplainSolutionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/exam': {
+      id: '/exam'
+      path: '/exam'
+      fullPath: '/exam'
+      preLoaderRoute: typeof ExamRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/diagnostic': {
@@ -377,6 +470,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiReviewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/explain-solution': {
+      id: '/api/explain-solution'
+      path: '/api/explain-solution'
+      fullPath: '/api/explain-solution'
+      preLoaderRoute: typeof ApiExplainSolutionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/chat': {
       id: '/api/chat'
       path: '/api/chat'
@@ -411,6 +511,8 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   CareersRoute: CareersRoute,
   DiagnosticRoute: DiagnosticRoute,
+  ExamRoute: ExamRoute,
+  ExplainSolutionRoute: ExplainSolutionRoute,
   HomeRoute: HomeRoute,
   LoginRoute: LoginRoute,
   PlanRoute: PlanRoute,
@@ -418,8 +520,11 @@ const rootRouteChildren: RootRouteChildren = {
   ProgressRoute: ProgressRoute,
   RegisterRoute: RegisterRoute,
   ReportsRoute: ReportsRoute,
+  SettingsRoute: SettingsRoute,
   SubjectsRoute: SubjectsRouteWithChildren,
+  TopicChallengeRoute: TopicChallengeRoute,
   ApiChatRoute: ApiChatRoute,
+  ApiExplainSolutionRoute: ApiExplainSolutionRoute,
   ApiReviewRoute: ApiReviewRoute,
   ApiTtsRoute: ApiTtsRoute,
   ApiWhatsappWeeklyReportRoute: ApiWhatsappWeeklyReportRoute,

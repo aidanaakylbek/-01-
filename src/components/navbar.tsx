@@ -5,14 +5,34 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useAccountDashboard } from "@/hooks/use-account-dashboard";
 import { AibiMark } from "@/components/aibi-mark";
 
-type Tab = "home" | "nis" | "bil" | "nspm" | "practice" | "progress" | "reports";
+type Tab =
+  | "home"
+  | "nis"
+  | "bil"
+  | "nspm"
+  | "practice"
+  | "exam"
+  | "challenge"
+  | "progress"
+  | "reports"
+  | "settings";
 
 interface NavTab {
   id: Tab;
   label?: string;
   labelKey?: string;
   icon: string;
-  to?: "/home" | "/subjects" | "/plan" | "/progress" | "/reports" | "/login" | "/register";
+  to?:
+    | "/home"
+    | "/subjects"
+    | "/plan"
+    | "/exam"
+    | "/topic-challenge"
+    | "/progress"
+    | "/reports"
+    | "/settings"
+    | "/login"
+    | "/register";
   href?: string;
   disabled?: boolean;
 }
@@ -23,8 +43,11 @@ const tabs: NavTab[] = [
   { id: "bil", labelKey: "nav_bil", icon: "local_library", href: "/subjects#bil" },
   { id: "nspm", labelKey: "nav_nspm", icon: "functions", href: "/subjects#nspm" },
   { id: "practice", labelKey: "nav_practice", icon: "exercise", to: "/plan" },
+  { id: "exam", labelKey: "nav_exam", icon: "timer", to: "/exam" },
+  { id: "challenge", labelKey: "nav_challenge", icon: "flag", to: "/topic-challenge" },
   { id: "progress", labelKey: "nav_progress", icon: "analytics", to: "/progress" },
   { id: "reports", labelKey: "nav_reports", icon: "description", to: "/reports" },
+  { id: "settings", labelKey: "nav_settings", icon: "tune", to: "/settings" },
 ];
 
 function useScrolled(threshold = 4): boolean {
@@ -115,8 +138,11 @@ export function Navbar() {
   const activeTab = (): Tab | "" => {
     if (currentPath === "/") return "home";
     if (currentPath.startsWith("/plan")) return "practice";
+    if (currentPath.startsWith("/exam")) return "exam";
+    if (currentPath.startsWith("/topic-challenge")) return "challenge";
     if (currentPath.startsWith("/progress")) return "progress";
     if (currentPath.startsWith("/reports")) return "reports";
+    if (currentPath.startsWith("/settings")) return "settings";
     if (currentPath.startsWith("/home")) return "home";
     return "";
   };

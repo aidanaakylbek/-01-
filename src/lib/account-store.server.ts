@@ -6,6 +6,56 @@ export type Account = {
   initials: string;
   parentWhatsApp: string;
   parentWhatsAppVerified: boolean;
+  mentorStyle: MentorStyle;
+};
+
+export type MentorStyle = "soft" | "strict" | "friendly" | "olympiad";
+
+export type ExamAttemptQuestion = {
+  id: string;
+  sectionId: string;
+  topic: string;
+  question: string;
+  userAnswer: string;
+  correctAnswer: string;
+  isCorrect: boolean;
+  timeSpentSeconds: number;
+};
+
+export type ExamAttempt = {
+  id: string;
+  createdAt: string;
+  examTrack: "NIS" | "BIL" | "NSPM" | "MIXED";
+  totalQuestions: number;
+  correctAnswers: number;
+  percent: number;
+  totalTimeSeconds: number;
+  slowQuestionIds: string[];
+  fastQuestionIds: string[];
+  questions: ExamAttemptQuestion[];
+};
+
+export type WeakTopicLevelProgress = {
+  level: number;
+  bestPercent: number;
+  unlocked: boolean;
+  completed: boolean;
+  lastFeedback?: string;
+};
+
+export type WeakTopicProgress = {
+  topicId: string;
+  currentLevel: number;
+  levels: WeakTopicLevelProgress[];
+};
+
+export type SolutionExplanationLog = {
+  id: string;
+  createdAt: string;
+  question: string;
+  correctSolution: string;
+  transcript: string;
+  feedback: string;
 };
 
 export type DashboardTask = {
@@ -54,10 +104,16 @@ export type DashboardAccount = {
   risks: RiskArea[];
   parentRecommendation: string;
   recommendations: string[];
+  examAttempts: ExamAttempt[];
+  weakTopicProgress: WeakTopicProgress[];
+  solutionExplanationLogs: SolutionExplanationLog[];
 };
 
 type StoredAccount = Account & {
+  examAttempts?: ExamAttempt[];
   password: string;
+  solutionExplanationLogs?: SolutionExplanationLog[];
+  weakTopicProgress?: WeakTopicProgress[];
 };
 
 type ParentWhatsAppVerification = {
@@ -73,6 +129,7 @@ const demoAccount: StoredAccount = {
   initials: "AA",
   parentWhatsApp: "+77001234567",
   parentWhatsAppVerified: true,
+  mentorStyle: "friendly",
   password: "demo123",
 };
 
@@ -196,6 +253,9 @@ export function getDashboardAccount(): DashboardAccount {
       "После каждой практики разобрать две ошибки вслух.",
       "Оставить субботнее утро свободным для полного пробного экзамена.",
     ],
+    examAttempts: account.examAttempts ?? [],
+    weakTopicProgress: account.weakTopicProgress ?? [],
+    solutionExplanationLogs: account.solutionExplanationLogs ?? [],
   };
 }
 
@@ -221,6 +281,7 @@ export function registerAccount(input: {
     initials: getInitials(input.name),
     parentWhatsApp,
     parentWhatsAppVerified: true,
+    mentorStyle: "friendly",
     password: input.password,
   };
 
@@ -228,6 +289,48 @@ export function registerAccount(input: {
   activeEmail = account.email;
 
   return toPublicAccount(account);
+}
+
+export function updateMentorStyle(style: MentorStyle) {
+  const account = accounts.get(activeEmail) ?? demoAccount;
+  account.mentorStyle = style;
+  accounts.set(account.email, account);
+  return toPublicAccount(account);
+}
+
+export function saveExamAttempt(attempt: Omit<ExamAttempt, "id" | "createdAt">) {
+  const account = accounts.get(activeEmail) ?? demoAccount;
+  const saved: ExamAttempt = {
+    ...attempt,
+    id: `exam-${Date.now()}`,
+    createdAt: new Date().toISOString(),
+  };
+  account.examAttempts = [saved, ...(account.examAttempts ?? [])].slice(0, 20);
+  accounts.set(account.email, account);
+  return saved;
+}
+
+export function saveWeakTopicProgress(progress: WeakTopicProgress) {
+  const account = accounts.get(activeEmail) ?? demoAccount;
+  const previous = account.weakTopicProgress ?? [];
+  account.weakTopicProgress = [
+    progress,
+    ...previous.filter((item) => item.topicId !== progress.topicId),
+  ];
+  accounts.set(account.email, account);
+  return progress;
+}
+
+export function saveSolutionExplanationLog(log: Omit<SolutionExplanationLog, "id" | "createdAt">) {
+  const account = accounts.get(activeEmail) ?? demoAccount;
+  const saved: SolutionExplanationLog = {
+    ...log,
+    id: `solution-${Date.now()}`,
+    createdAt: new Date().toISOString(),
+  };
+  account.solutionExplanationLogs = [saved, ...(account.solutionExplanationLogs ?? [])].slice(0, 30);
+  accounts.set(account.email, account);
+  return saved;
 }
 
 export function createParentWhatsAppCode(phone: string) {
