@@ -368,6 +368,85 @@
     animation: motion-pulse-dot 1.9s ease-in-out infinite;
   }
 
+  .game-shell {
+    background:
+      radial-gradient(circle at top left, rgba(167, 139, 250, 0.28), transparent 30%),
+      linear-gradient(180deg, #fffaff 0%, #fbf7ff 48%, #f5edff 100%);
+  }
+
+  .game-card {
+    border: 2px solid var(--outline-variant);
+    border-radius: 22px;
+    background: var(--surface-container-lowest);
+    box-shadow: 0 8px 0 rgba(124, 58, 237, 0.18);
+    transition:
+      transform 0.18s ease,
+      box-shadow 0.18s ease,
+      border-color 0.18s ease;
+  }
+
+  .game-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--secondary);
+    box-shadow: 0 12px 0 rgba(124, 58, 237, 0.24);
+  }
+
+  .game-button {
+    border-radius: 16px;
+    box-shadow: 0 6px 0 #5b21b6;
+    transition:
+      transform 0.12s ease,
+      box-shadow 0.12s ease,
+      filter 0.12s ease;
+  }
+
+  .game-button:hover {
+    filter: brightness(1.04);
+  }
+
+  .game-button:active {
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 #5b21b6;
+  }
+
+  .game-stat {
+    border: 2px solid var(--outline-variant);
+    border-radius: 999px;
+    background: white;
+    box-shadow: 0 4px 0 rgba(124, 58, 237, 0.12);
+  }
+
+  .path-node {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 72px;
+    height: 72px;
+    border-radius: 999px;
+    border: 3px solid var(--secondary);
+    background: linear-gradient(180deg, #a78bfa 0%, #7c3aed 100%);
+    color: white;
+    box-shadow: 0 8px 0 #5b21b6;
+  }
+
+  .path-node.locked {
+    border-color: var(--outline-variant);
+    background: var(--surface-container-high);
+    color: var(--on-surface-variant);
+    box-shadow: 0 8px 0 rgba(81, 70, 93, 0.16);
+  }
+
+  .path-rail {
+    position: absolute;
+    left: 36px;
+    top: 74px;
+    bottom: -34px;
+    width: 8px;
+    border-radius: 999px;
+    background: var(--secondary-container);
+    opacity: 0.55;
+  }
+
   .motion-arrow {
     transition: transform 0.2s ease;
   }

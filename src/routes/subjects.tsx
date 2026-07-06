@@ -109,10 +109,13 @@ function SubjectsPage() {
     subjects.filter((subject) => subject.exam === trackId || subject.exam === "ALL");
 
   return (
-    <div className="min-h-screen bg-background text-on-background pb-24">
+    <div className="game-shell min-h-screen text-on-background pb-24">
       <Navbar />
       <main className="w-full max-w-7xl mx-auto px-container-padding-mobile md:px-container-padding-desktop py-stack-lg">
-        <section className="mb-stack-lg">
+        <section className="game-card mb-stack-lg p-7 md:p-10 relative overflow-hidden">
+          <div className="absolute right-8 top-8 hidden md:flex h-20 w-20 rounded-full bg-secondary-container/60 items-center justify-center">
+            <span className="material-symbols-outlined text-secondary text-4xl">map</span>
+          </div>
           <p className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
             {copy.label}
           </p>
@@ -128,7 +131,7 @@ function SubjectsPage() {
           {copy.tracks.map((track) => (
             <div
               id={track.id.toLowerCase()}
-              className="scroll-mt-28 border border-outline-variant bg-surface-container-lowest p-5 md:p-6"
+              className="scroll-mt-28 game-card p-5 md:p-6"
               key={track.id}
             >
               <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3 border-b border-outline-variant pb-5 mb-5">
@@ -143,7 +146,7 @@ function SubjectsPage() {
                     {track.desc}
                   </p>
                 </div>
-                <span className="border border-outline-variant px-3 py-2 font-label-md text-label-md text-on-surface-variant self-start md:self-auto">
+                <span className="game-stat px-4 py-2 font-label-md text-label-md text-on-surface-variant self-start md:self-auto">
                   {getTrackSubjects(track.id as "NIS" | "BIL" | "NSPM").length} {copy.subjectsUnit}
                 </span>
               </div>
@@ -185,15 +188,15 @@ function SubjectCard({
 
   return (
     <Link
-      className="group border border-outline-variant bg-surface p-6 min-h-[260px] flex flex-col gap-5 hover:border-secondary hover:shadow-md transition-all"
+      className="group game-card p-6 min-h-[280px] flex flex-col gap-5"
       params={{ subjectId: subject.id }}
       to="/subjects/$subjectId"
     >
       <div className="flex items-start justify-between gap-4">
-        <div className="w-14 h-14 bg-secondary text-on-secondary flex items-center justify-center">
+        <div className="path-node !h-16 !w-16 !shadow-[0_6px_0_#5b21b6]">
           <span className="material-symbols-outlined text-3xl">{subject.icon}</span>
         </div>
-        <span className="border border-outline-variant px-3 py-1 font-label-caps text-label-caps uppercase tracking-widest text-on-surface-variant">
+        <span className="game-stat px-3 py-1 font-label-caps text-label-caps uppercase tracking-widest text-on-surface-variant">
           {trackTitle}
         </span>
       </div>
@@ -211,8 +214,8 @@ function SubjectCard({
         <p className="font-label-md text-label-md text-on-surface-variant">
           {subject.modules.length} {copy.modules} • {topicCount} {copy.topics}
         </p>
-        <span className="material-symbols-outlined text-secondary group-hover:translate-x-1 transition-transform">
-          arrow_forward
+        <span className="rounded-full bg-secondary px-4 py-2 text-on-secondary font-label-caps text-label-caps uppercase tracking-widest">
+          +{topicCount * 20} XP
         </span>
       </div>
       <span className="sr-only">{copy.open}</span>

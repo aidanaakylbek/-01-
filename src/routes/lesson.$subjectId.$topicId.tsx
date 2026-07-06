@@ -39,7 +39,7 @@ function TopicLessonPage() {
   );
 
   return (
-    <div className="min-h-screen bg-background text-on-background pb-24">
+    <div className="game-shell min-h-screen text-on-background pb-24">
       <Navbar />
       <main className="w-full max-w-7xl mx-auto px-container-padding-mobile md:px-container-padding-desktop py-stack-lg">
         <Link
@@ -51,8 +51,8 @@ function TopicLessonPage() {
           {copy.backToSubject}
         </Link>
 
-        <section className="relative overflow-hidden border border-outline-variant bg-surface-container-lowest p-6 md:p-10 shadow-[14px_14px_0_var(--secondary-container)]">
-          <div className="absolute right-6 top-6 hidden h-24 w-24 border-r-2 border-t-2 border-secondary md:block" />
+        <section className="game-card relative overflow-hidden p-6 md:p-10">
+          <div className="absolute -right-14 -top-14 hidden h-44 w-44 rounded-full bg-secondary-container/50 md:block" />
           <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-end">
             <div>
               <p className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
@@ -65,7 +65,7 @@ function TopicLessonPage() {
                 {topic.description[language]}
               </p>
             </div>
-            <div className="border border-outline-variant bg-surface p-5">
+            <div className="game-card p-5">
               <p className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
                 {copy.lessonMap}
               </p>
@@ -80,7 +80,7 @@ function TopicLessonPage() {
 
         <section className="mt-stack-lg grid gap-gutter lg:grid-cols-[minmax(0,1fr)_390px] lg:items-start">
           <article className="space-y-gutter">
-            <div className="border border-outline-variant bg-surface-container-lowest p-5 md:p-6">
+            <div className="game-card p-5 md:p-6">
               <p className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
                 AI-Sana
               </p>
@@ -93,7 +93,7 @@ function TopicLessonPage() {
               </div>
             </div>
 
-            <div className="border border-outline-variant bg-surface p-5 md:p-6">
+            <div className="game-card p-5 md:p-6">
               <div className="flex items-center gap-3">
                 <div className="flex h-11 w-11 items-center justify-center bg-secondary text-on-secondary">
                   <span className="material-symbols-outlined">checklist</span>
@@ -105,7 +105,7 @@ function TopicLessonPage() {
               <div className="mt-5 grid gap-3 md:grid-cols-2">
                 {lesson.goals[language].map((goal) => (
                   <div
-                    className="border border-outline-variant bg-surface-container-lowest p-4"
+                    className="rounded-2xl border-2 border-outline-variant bg-surface-container-lowest p-4"
                     key={goal}
                   >
                     <span className="material-symbols-outlined text-secondary text-lg">check</span>
@@ -117,11 +117,11 @@ function TopicLessonPage() {
 
             {lesson.blocks.map((block, index) => (
               <section
-                className="group border border-outline-variant bg-surface-container-lowest p-5 md:p-6 transition-all hover:border-secondary"
+                className="group game-card p-5 md:p-6"
                 key={block.title[language]}
               >
                 <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center bg-secondary-container font-title-lg text-title-lg text-secondary">
+                  <div className="path-node !h-12 !w-12 !text-base !shadow-[0_5px_0_#5b21b6] shrink-0">
                     {index + 1}
                   </div>
                   <div>
@@ -145,7 +145,7 @@ function TopicLessonPage() {
           </article>
 
           <aside className="lg:sticky lg:top-28">
-            <div className="border border-secondary bg-surface-container-lowest p-5 shadow-[10px_10px_0_var(--secondary-container)]">
+            <div className="game-card border-secondary p-5">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
@@ -161,7 +161,7 @@ function TopicLessonPage() {
               </div>
 
               {submitted ? (
-                <div className="mt-4 border border-outline-variant bg-surface p-4">
+                <div className="mt-4 rounded-2xl border-2 border-outline-variant bg-surface p-4">
                   <p className="font-label-md text-label-md text-on-surface-variant">
                     {copy.result}
                   </p>
@@ -177,7 +177,7 @@ function TopicLessonPage() {
 
                   return (
                     <div
-                      className="border border-outline-variant bg-surface p-4"
+                      className="rounded-2xl border-2 border-outline-variant bg-surface p-4"
                       key={question.question[language]}
                     >
                       <p className="font-title-md text-title-md text-primary">
@@ -193,7 +193,7 @@ function TopicLessonPage() {
 
                           return (
                             <button
-                              className={`border px-3 py-2 text-left font-body-md text-body-md transition-colors ${
+                              className={`rounded-2xl border-2 px-4 py-3 text-left font-body-md text-body-md transition-colors ${
                                 isCorrect
                                   ? "border-secondary bg-secondary/10 text-primary"
                                   : isWrong
@@ -225,7 +225,7 @@ function TopicLessonPage() {
               </div>
 
               <button
-                className="mt-5 w-full border border-primary bg-primary px-4 py-3 font-label-caps text-label-caps uppercase tracking-widest text-on-primary hover:bg-secondary transition-colors"
+                className="game-button mt-5 w-full bg-secondary px-4 py-3 font-label-caps text-label-caps uppercase tracking-widest text-on-secondary"
                 onClick={() => {
                   if (submitted) {
                     setAnswers({});
@@ -248,7 +248,7 @@ function TopicLessonPage() {
 
 function MiniStat({ icon, label, value }: { icon: string; label: string; value: number }) {
   return (
-    <div className="border border-outline-variant bg-surface-container-lowest p-3 text-center">
+    <div className="game-stat p-3 text-center">
       <span className="material-symbols-outlined text-secondary text-lg">{icon}</span>
       <p className="font-title-md text-title-md text-primary mt-1">{value}</p>
       <p className="font-label-sm text-label-sm text-on-surface-variant">{label}</p>

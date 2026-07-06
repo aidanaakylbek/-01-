@@ -33,7 +33,7 @@ function SubjectPage() {
   const copy = getSubjectPageCopy(language);
 
   return (
-    <div className="min-h-screen bg-background text-on-background pb-24">
+    <div className="game-shell min-h-screen text-on-background pb-24">
       <Navbar />
       <main className="w-full max-w-7xl mx-auto px-container-padding-mobile md:px-container-padding-desktop py-stack-lg">
         <Link
@@ -44,8 +44,10 @@ function SubjectPage() {
           {copy.back}
         </Link>
 
-        <section className="relative overflow-hidden border border-outline-variant bg-surface-container-lowest p-7 md:p-10 mb-stack-lg shadow-[12px_12px_0_var(--secondary-container)]">
-          <div className="absolute right-6 top-6 hidden h-20 w-20 border-r-2 border-t-2 border-secondary md:block" />
+        <section className="game-card relative overflow-hidden p-7 md:p-10 mb-stack-lg">
+          <div className="absolute right-8 top-8 hidden h-24 w-24 rounded-full bg-secondary-container/50 md:flex items-center justify-center">
+            <span className="material-symbols-outlined text-secondary text-5xl">{subject.icon}</span>
+          </div>
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6 relative z-10">
             <div>
               <p className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
@@ -58,7 +60,7 @@ function SubjectPage() {
                 {subject.description[language]}
               </p>
             </div>
-            <div className="w-16 h-16 bg-secondary text-on-secondary flex items-center justify-center shrink-0">
+            <div className="path-node shrink-0">
               <span className="material-symbols-outlined text-4xl">{subject.icon}</span>
             </div>
           </div>
@@ -85,7 +87,7 @@ function SubjectPage() {
           <div className="flex flex-col gap-stack-md">
             {subject.modules.map((module, moduleIndex) => (
               <article
-                className="border border-outline-variant bg-surface-container-lowest p-6 md:p-8"
+                className="game-card p-6 md:p-8"
                 key={module.id}
               >
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 border-b border-outline-variant pb-5 mb-5">
@@ -100,57 +102,69 @@ function SubjectPage() {
                       {module.description[language]}
                     </p>
                   </div>
-                  <span className="border border-outline-variant px-3 py-2 font-label-md text-label-md text-on-surface-variant shrink-0">
+                  <span className="game-stat px-4 py-2 font-label-md text-label-md text-on-surface-variant shrink-0">
                     {module.topics.length} {copy.topics}
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-5">
                   {module.topics.map((topic, topicIndex) => (
                     <div
-                      className="group relative overflow-hidden border border-outline-variant bg-surface p-5 transition-all hover:-translate-y-1 hover:border-secondary hover:shadow-[8px_8px_0_var(--secondary-container)]"
+                      className="group relative grid gap-5 md:grid-cols-[92px_1fr] md:items-start"
                       key={topic.id}
                     >
-                      <div className="absolute right-4 top-4 flex h-11 w-11 items-center justify-center bg-surface-container-high font-title-md text-title-md text-primary">
-                        {topicIndex + 1}
-                      </div>
-                      <div className="pr-14">
-                        <span className="inline-flex bg-primary-container text-on-primary-container px-3 py-1 font-label-sm text-label-sm whitespace-nowrap">
-                          {difficultyCopy[topic.difficulty][language]}
-                        </span>
-                        <h4 className="font-title-lg text-title-lg text-primary mt-4">
-                          {topic.title[language]}
-                        </h4>
-                        <p className="font-body-md text-body-md text-on-surface-variant mt-3 min-h-[56px]">
-                          {topic.description[language]}
-                        </p>
-                      </div>
-
-                      <div className="mt-5 flex flex-wrap gap-3">
-                        {topic.lesson ? (
-                          <Link
-                            className="inline-flex items-center gap-2 bg-secondary text-on-secondary px-4 py-3 font-label-caps text-label-caps uppercase tracking-widest hover:bg-primary transition-colors"
-                            params={{ subjectId: subject.id, topicId: topic.id }}
-                            to="/lesson/$subjectId/$topicId"
-                          >
-                            {copy.openLesson}
-                            <span className="material-symbols-outlined text-sm">arrow_forward</span>
-                          </Link>
-                        ) : (
-                          <Link
-                            className="inline-flex items-center gap-2 border border-primary text-primary px-4 py-3 font-label-caps text-label-caps uppercase tracking-widest hover:bg-primary hover:text-on-primary transition-colors"
-                            to="/plan"
-                          >
-                            {copy.start}
-                            <span className="material-symbols-outlined text-sm">arrow_forward</span>
-                          </Link>
-                        )}
-                        {topic.lesson ? (
-                          <span className="inline-flex items-center gap-2 border border-outline-variant px-4 py-3 font-label-caps text-label-caps uppercase tracking-widest text-on-surface-variant">
-                            <span className="material-symbols-outlined text-sm">quiz</span>
-                            {copy.hasTest}
+                      <div className="relative flex justify-center md:block">
+                        {topicIndex < module.topics.length - 1 ? <span className="path-rail" /> : null}
+                        <div className={`path-node ${topic.lesson || topicIndex < 2 ? "" : "locked"}`}>
+                          <span className="material-symbols-outlined">
+                            {topic.lesson ? "play_arrow" : topicIndex < 2 ? "star" : "lock"}
                           </span>
-                        ) : null}
+                        </div>
+                      </div>
+                      <div className="game-card p-5 md:p-6">
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <div>
+                            <span className="game-stat inline-flex px-3 py-1 font-label-sm text-label-sm whitespace-nowrap">
+                              {difficultyCopy[topic.difficulty][language]}
+                            </span>
+                            <h4 className="font-title-lg text-title-lg text-primary mt-4">
+                              {topic.title[language]}
+                            </h4>
+                            <p className="font-body-md text-body-md text-on-surface-variant mt-3">
+                              {topic.description[language]}
+                            </p>
+                          </div>
+                          <span className="rounded-full bg-secondary-container px-3 py-2 font-label-md text-label-md text-on-secondary-container">
+                            +20 XP
+                          </span>
+                        </div>
+
+                        <div className="mt-5 flex flex-wrap gap-3">
+                          {topic.lesson ? (
+                            <Link
+                              className="game-button inline-flex items-center gap-2 bg-secondary text-on-secondary px-5 py-3 font-label-caps text-label-caps uppercase tracking-widest"
+                              params={{ subjectId: subject.id, topicId: topic.id }}
+                              to="/lesson/$subjectId/$topicId"
+                            >
+                              {copy.openLesson}
+                              <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                            </Link>
+                          ) : (
+                            <Link
+                              className="inline-flex items-center gap-2 rounded-2xl border-2 border-primary text-primary px-5 py-3 font-label-caps text-label-caps uppercase tracking-widest hover:bg-primary hover:text-on-primary transition-colors"
+                              to="/plan"
+                            >
+                              {copy.start}
+                              <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                            </Link>
+                          )}
+                          {topic.lesson ? (
+                            <span className="inline-flex items-center gap-2 rounded-2xl border-2 border-outline-variant px-4 py-3 font-label-caps text-label-caps uppercase tracking-widest text-on-surface-variant">
+                              <span className="material-symbols-outlined text-sm">quiz</span>
+                              {copy.hasTest}
+                            </span>
+                          ) : null}
+                        </div>
                       </div>
                     </div>
                   ))}
