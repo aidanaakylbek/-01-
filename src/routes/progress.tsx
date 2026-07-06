@@ -35,7 +35,7 @@ function Progress() {
   const lessonPercent = Math.round((dashboard.completedLessons / dashboard.weeklyGoal) * 100);
 
   return (
-    <div className="bg-background text-on-background min-h-screen pb-safe">
+    <div className="game-shell text-on-background min-h-screen pb-safe">
       <Navbar />
       <main className="w-full max-w-7xl mx-auto px-container-padding-mobile md:px-container-padding-desktop pt-6 pb-[100px] md:pb-12">
         <header className="mt-4 mb-6">
@@ -81,7 +81,7 @@ function Progress() {
 
         <section className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_380px] gap-gutter">
           <div className="space-y-gutter">
-            <section className="border border-outline-variant bg-surface-container-lowest p-5 md:p-6">
+            <section className="game-card p-5 md:p-6">
               <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between mb-6">
                 <div>
                   <p className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
@@ -202,7 +202,7 @@ function Progress() {
               </div>
             </section>
 
-            <section className="border border-outline-variant bg-surface-container-lowest p-5 md:p-6">
+            <section className="game-card p-5 md:p-6">
               <div className="mb-5">
                 <p className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
                   {copy.subjectStatus}
@@ -225,7 +225,7 @@ function Progress() {
           </div>
 
           <aside className="space-y-gutter">
-            <section className="border border-outline-variant bg-surface-container-lowest p-5 md:p-6">
+            <section className="game-card p-5 md:p-6">
               <div className="flex items-start gap-3">
                 <div className="flex h-11 w-11 items-center justify-center bg-secondary text-on-secondary">
                   <span className="material-symbols-outlined">tips_and_updates</span>
@@ -245,7 +245,7 @@ function Progress() {
               <div className="mt-5 space-y-3">
                 {copy.nextSteps.map((step) => (
                   <div
-                    className="flex items-start gap-3 border border-outline-variant bg-surface px-3 py-3"
+                    className="flex items-start gap-3 rounded-2xl border-2 border-outline-variant bg-surface px-3 py-3"
                     key={step}
                   >
                     <span className="material-symbols-outlined text-secondary text-lg">check</span>
@@ -257,7 +257,7 @@ function Progress() {
               </div>
             </section>
 
-            <section className="border border-outline-variant bg-surface-container-lowest p-5 md:p-6">
+            <section className="game-card p-5 md:p-6">
               <div className="mb-4 flex items-center justify-between">
                 <div>
                   <p className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
@@ -483,7 +483,7 @@ function ProgressStat({
         : "bg-surface-container-high text-secondary";
 
   return (
-    <div className="border border-outline-variant bg-surface-container-lowest p-4">
+    <div className="game-card p-4">
       <div className="mb-5 flex items-center justify-between gap-3">
         <div className={`flex h-10 w-10 items-center justify-center ${iconClass}`}>
           <span className="material-symbols-outlined text-xl">{icon}</span>
@@ -498,7 +498,7 @@ function ProgressStat({
 
 function InsightTag({ icon, text }: { icon: string; text: string }) {
   return (
-    <div className="inline-flex items-center gap-2 border border-outline-variant bg-surface px-3 py-2 text-on-surface-variant">
+    <div className="inline-flex items-center gap-2 rounded-2xl border-2 border-outline-variant bg-surface px-3 py-2 text-on-surface-variant">
       <span className="material-symbols-outlined text-secondary text-lg">{icon}</span>
       <span className="font-label-sm text-label-sm">{text}</span>
     </div>
@@ -547,7 +547,7 @@ function SubjectRow({
   const ui = getSubjectUi(subject, labels);
 
   return (
-    <div className="border border-outline-variant bg-surface px-4 py-4">
+    <div className="rounded-2xl border-2 border-outline-variant bg-surface px-4 py-4">
       <div className="mb-3 flex items-start justify-between gap-4">
         <div className="flex min-w-0 items-center gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-surface-container-high text-secondary">
@@ -572,3 +572,5 @@ function SubjectRow({
     </div>
   );
 }
+
+

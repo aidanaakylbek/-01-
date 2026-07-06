@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+﻿import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Navbar } from "@/components/navbar";
 import { challengeLevels, challengeTopics } from "@/data/topic-challenge";
@@ -65,10 +65,10 @@ function TopicChallenge() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-on-background pb-24">
+    <div className="min-h-screen game-shell text-on-background pb-24">
       <Navbar />
       <main className="mx-auto w-full max-w-7xl px-container-padding-mobile py-stack-lg md:px-container-padding-desktop">
-        <section className="border border-outline-variant bg-surface-container-lowest p-7 shadow-[12px_12px_0_var(--secondary-container)]">
+        <section className="game-card p-7 shadow-[12px_12px_0_var(--secondary-container)]">
           <p className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
             AI-Sana Challenge
           </p>
@@ -82,7 +82,7 @@ function TopicChallenge() {
 
         <section className="mt-stack-lg grid gap-gutter lg:grid-cols-[320px_1fr]">
           <aside className="space-y-4">
-            <div className="border border-outline-variant bg-surface p-5">
+            <div className="rounded-2xl border-2 border-outline-variant bg-surface p-5">
               <h2 className="font-title-lg text-title-lg text-primary">{c.chooseTopic}</h2>
               <div className="mt-4 grid gap-2">
                 {challengeTopics.map((topic) => (
@@ -108,7 +108,7 @@ function TopicChallenge() {
               </div>
             </div>
 
-            <div className="border border-outline-variant bg-surface p-5">
+            <div className="rounded-2xl border-2 border-outline-variant bg-surface p-5">
               <h2 className="font-title-lg text-title-lg text-primary">{c.levels}</h2>
               <div className="mt-4 space-y-2">
                 {challengeLevels.map((item) => {
@@ -136,7 +136,7 @@ function TopicChallenge() {
             </div>
           </aside>
 
-          <article className="border border-outline-variant bg-surface-container-lowest p-6">
+          <article className="game-card p-6">
             <div className="flex flex-wrap items-start justify-between gap-4 border-b border-outline-variant pb-5">
               <div>
                 <p className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
@@ -158,7 +158,7 @@ function TopicChallenge() {
                     {questionIndex + 1}. {question.prompt[language]}
                   </span>
                   <input
-                    className="mt-3 w-full border border-outline-variant bg-surface px-4 py-3 outline-none focus:border-secondary"
+                    className="mt-3 w-full rounded-2xl border-2 border-outline-variant bg-surface px-4 py-3 outline-none focus:border-secondary"
                     onChange={(event) =>
                       setAnswers((prev) => ({ ...prev, [question.id]: event.target.value }))
                     }
@@ -233,3 +233,5 @@ const copy = {
       `Вы близко в теме ${topic}. Повторите уровень «${level}»: держите фокус на первом шаге и аккуратно проверяйте вычисления.`,
   },
 };
+
+

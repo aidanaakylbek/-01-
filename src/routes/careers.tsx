@@ -44,7 +44,7 @@ function Careers() {
           };
 
   return (
-    <div className="min-h-screen bg-background text-on-background">
+    <div className="min-h-screen game-shell text-on-background">
       <Navbar />
       <main className="max-w-4xl mx-auto px-container-padding-mobile md:px-container-padding-desktop py-stack-lg">
         <span className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
@@ -63,3 +63,4 @@ function Careers() {
     </div>
   );
 }
+

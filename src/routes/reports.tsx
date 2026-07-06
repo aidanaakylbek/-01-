@@ -185,7 +185,7 @@ function ParentReport() {
   ];
 
   return (
-    <div className="min-h-screen bg-background text-on-background pb-safe">
+    <div className="min-h-screen game-shell text-on-background pb-safe">
       <Navbar />
       <main className="w-full max-w-7xl mx-auto px-container-padding-mobile md:px-container-padding-desktop py-stack-lg">
         <header className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 mb-stack-lg">
@@ -203,7 +203,7 @@ function ParentReport() {
           <div className="flex flex-col sm:flex-row gap-3">
             <Link
               to="/plan"
-              className="bg-secondary text-on-secondary px-6 py-3 font-label-caps text-label-caps uppercase tracking-widest hover:bg-secondary-container hover:text-on-secondary-container transition-colors text-center"
+              className="game-button bg-secondary text-on-secondary px-6 py-3 font-label-caps text-label-caps uppercase tracking-widest hover:bg-secondary-container hover:text-on-secondary-container transition-colors text-center"
             >
               {copy.openPlan}
             </Link>
@@ -363,7 +363,7 @@ function ParentReport() {
               {copy.recommendationsList.map((item) => (
                 <div
                   key={item}
-                  className="flex items-start gap-3 border border-outline-variant bg-surface p-4"
+                  className="flex items-start gap-3 rounded-2xl border-2 border-outline-variant bg-surface p-4"
                 >
                   <span className="material-symbols-outlined text-secondary">task_alt</span>
                   <p className="font-body-md text-body-md text-on-surface-variant">{item}</p>
@@ -386,3 +386,5 @@ function maskWhatsAppPhone(phone: string) {
 
   return `+${digits.slice(0, 3)} *** ** ${digits.slice(-2)}`;
 }
+
+

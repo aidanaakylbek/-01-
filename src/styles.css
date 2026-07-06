@@ -172,10 +172,17 @@
     border-color: var(--color-outline-variant);
   }
   body {
-    background-color: var(--background);
+    background:
+      radial-gradient(circle at 10% 0%, rgba(167, 139, 250, 0.26), transparent 28%),
+      radial-gradient(circle at 92% 12%, rgba(216, 189, 243, 0.34), transparent 24%),
+      linear-gradient(180deg, #fffaff 0%, #fbf7ff 45%, #f3eaff 100%);
     color: var(--on-background);
     font-family: "Plus Jakarta Sans", system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
+  }
+  button,
+  a {
+    -webkit-tap-highlight-color: transparent;
   }
   /* Accessible keyboard focus ring (visible only for keyboard users) */
   :focus-visible {
@@ -385,6 +392,13 @@
       border-color 0.18s ease;
   }
 
+  .game-panel {
+    border: 2px solid var(--outline-variant);
+    border-radius: 26px;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 10px 0 rgba(124, 58, 237, 0.14);
+  }
+
   .game-card:hover {
     transform: translateY(-3px);
     border-color: var(--secondary);
@@ -445,6 +459,21 @@
     border-radius: 999px;
     background: var(--secondary-container);
     opacity: 0.55;
+  }
+
+  .reward-pop {
+    animation: reward-pop 0.42s cubic-bezier(0.2, 1.35, 0.3, 1) both;
+  }
+
+  @keyframes reward-pop {
+    0% {
+      opacity: 0;
+      transform: scale(0.86) translateY(8px);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
   }
 
   .motion-arrow {

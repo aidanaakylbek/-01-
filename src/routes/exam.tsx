@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+﻿import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Navbar } from "@/components/navbar";
 import { examQuestions, examSections } from "@/data/exam-simulator";
@@ -129,7 +129,7 @@ function ExamSimulator() {
   }, [result, saved, status]);
 
   return (
-    <div className="min-h-screen bg-background text-on-background pb-24">
+    <div className="min-h-screen game-shell text-on-background pb-24">
       <Navbar />
       <main className="mx-auto w-full max-w-7xl px-container-padding-mobile py-stack-lg md:px-container-padding-desktop">
         <Link className="text-on-surface-variant hover:text-primary" to="/home">
@@ -138,7 +138,7 @@ function ExamSimulator() {
 
         {status === "intro" ? (
           <section className="mt-stack-md grid gap-gutter lg:grid-cols-[1fr_420px]">
-            <div className="border border-outline-variant bg-surface-container-lowest p-8 shadow-[12px_12px_0_var(--secondary-container)]">
+            <div className="game-card p-8 shadow-[12px_12px_0_var(--secondary-container)]">
               <p className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
                 NIS · BIL · NSPM
               </p>
@@ -158,7 +158,7 @@ function ExamSimulator() {
             </div>
             <div className="grid gap-3">
               {examSections.map((section) => (
-                <div className="border border-outline-variant bg-surface p-5" key={section.id}>
+                <div className="rounded-2xl border-2 border-outline-variant bg-surface p-5" key={section.id}>
                   <span className="material-symbols-outlined text-secondary">{section.icon}</span>
                   <h2 className="mt-2 font-title-lg text-title-lg text-primary">
                     {section.title[language]}
@@ -174,7 +174,7 @@ function ExamSimulator() {
 
         {status === "active" && current ? (
           <section className="mt-stack-md grid gap-gutter lg:grid-cols-[280px_1fr]">
-            <aside className="border border-outline-variant bg-surface p-5">
+            <aside className="rounded-2xl border-2 border-outline-variant bg-surface p-5">
               <p className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
                 {c.timer}
               </p>
@@ -201,7 +201,7 @@ function ExamSimulator() {
               </div>
             </aside>
 
-            <article className="border border-outline-variant bg-surface-container-lowest p-6 md:p-8">
+            <article className="game-card p-6 md:p-8">
               <p className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
                 {examSections.find((section) => section.id === current.sectionId)?.title[language]} ·{" "}
                 {current.topic[language]}
@@ -271,7 +271,7 @@ function ExamSimulator() {
             </div>
             <div className="space-y-4">
               {result.questions.map((question) => (
-                <div className="border border-outline-variant bg-surface p-5" key={question.id}>
+                <div className="rounded-2xl border-2 border-outline-variant bg-surface p-5" key={question.id}>
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <h2 className="font-title-md text-title-md text-primary">{question.question}</h2>
                     <span className={question.isCorrect ? "text-green-700" : "text-red-700"}>
@@ -370,3 +370,5 @@ const copy = {
     tooFast: "похоже на угадывание",
   },
 };
+
+

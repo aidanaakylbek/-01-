@@ -214,8 +214,8 @@ export function Navbar() {
   return (
     <>
       <header
-        className={`sticky top-0 z-40 w-full bg-surface/90 backdrop-blur-md border-b border-surface-variant transition-shadow duration-300 ${
-          scrolled ? "shadow-md" : "shadow-none"
+        className={`sticky top-0 z-40 w-full bg-surface/80 backdrop-blur-xl border-b-2 border-outline-variant transition-shadow duration-300 ${
+          scrolled ? "shadow-[0_8px_0_rgba(124,58,237,0.10)]" : "shadow-none"
         }`}
       >
         <div className="grid grid-cols-[auto_1fr_auto] items-center gap-3 px-container-padding-mobile md:px-container-padding-desktop py-base w-full max-w-7xl mx-auto min-h-20">
@@ -238,8 +238,10 @@ export function Navbar() {
           >
             {tabs.map((tab) => {
               const isActive = tab.id === active;
-              const className = `nav-link px-3 xl:px-4 py-2 font-label-md text-label-md transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
-                isActive ? "active text-primary" : "text-on-surface-variant hover:text-primary"
+              const className = `rounded-2xl px-3 xl:px-4 py-2 font-label-md text-label-md transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+                isActive
+                  ? "bg-secondary text-on-secondary shadow-[0_5px_0_#5b21b6]"
+                  : "text-on-surface-variant hover:bg-secondary-container hover:text-primary"
               } ${tab.disabled ? "opacity-45 cursor-not-allowed hover:text-on-surface-variant" : ""}`;
 
               if (tab.disabled || (!tab.to && !tab.href)) {
@@ -286,7 +288,7 @@ export function Navbar() {
           <div className="hidden md:flex items-center justify-end gap-3 xl:gap-5 relative">
             {/* Language Switcher */}
             <div
-              className="flex gap-1 border border-outline-variant/50 rounded-full px-2 py-1 bg-surface-container-low"
+              className="game-stat flex gap-1 px-2 py-1"
               role="group"
               aria-label="Language selection"
             >
@@ -297,13 +299,13 @@ export function Navbar() {
               <div className="hidden xl:flex items-center gap-2">
                 <Link
                   to="/register"
-                  className="inline-flex bg-secondary text-on-secondary font-label-caps text-label-caps uppercase tracking-widest px-5 py-3 hover:bg-secondary-container hover:text-on-secondary-container transition-colors btn-squish border border-secondary whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
+                  className="game-button inline-flex bg-secondary text-on-secondary font-label-caps text-label-caps uppercase tracking-widest px-5 py-3 whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
                 >
                   {authLabels.register}
                 </Link>
                 <Link
                   to="/login"
-                  className="inline-flex bg-surface text-primary font-label-caps text-label-caps uppercase tracking-widest px-5 py-3 hover:bg-surface-container-high transition-colors btn-squish border border-primary whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  className="inline-flex rounded-2xl bg-surface text-primary font-label-caps text-label-caps uppercase tracking-widest px-5 py-3 hover:bg-surface-container-high transition-colors border-2 border-primary whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 >
                   {authLabels.signIn}
                 </Link>
@@ -316,7 +318,7 @@ export function Navbar() {
                 aria-label={t("nav_notifications")}
                 aria-expanded={notificationsOpen}
                 aria-controls="notifications-panel"
-                className="w-10 h-10 flex items-center justify-center text-primary hover:text-secondary btn-squish bg-transparent hover:bg-surface-container-high border border-outline-variant focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary cursor-pointer"
+                className="game-stat w-11 h-11 flex items-center justify-center text-primary hover:text-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary cursor-pointer"
                 onClick={() => {
                   setNotificationsOpen((open) => !open);
                   setProfileOpen(false);
@@ -328,7 +330,7 @@ export function Navbar() {
               {notificationsOpen && (
                 <div
                   id="notifications-panel"
-                  className="absolute right-0 top-12 w-80 bg-surface-container-lowest border border-outline-variant soft-shadow p-4 z-50"
+                  className="game-card absolute right-0 top-12 w-80 p-4 z-50"
                 >
                   <h2 className="font-label-caps text-label-caps uppercase tracking-widest text-primary mb-3">
                     {actionLabels.notificationsTitle}
@@ -341,7 +343,7 @@ export function Navbar() {
                     ].map(([icon, text]) => (
                       <div
                         key={text}
-                        className="flex items-start gap-3 border border-outline-variant bg-surface p-3"
+                        className="flex items-start gap-3 rounded-2xl border-2 border-outline-variant bg-surface p-3"
                       >
                         <span className="material-symbols-outlined text-secondary text-xl">
                           {icon}
@@ -366,7 +368,7 @@ export function Navbar() {
                   setNotificationsOpen(false);
                 }}
               >
-                <Avatar className="w-10 h-10 border border-outline-variant hover:border-secondary transition-colors cursor-pointer">
+                <Avatar className="w-11 h-11 border-2 border-outline-variant hover:border-secondary transition-colors cursor-pointer shadow-[0_4px_0_rgba(124,58,237,0.18)]">
                   <AvatarFallback className="bg-secondary text-on-secondary font-bold">
                     {profileInitials}
                   </AvatarFallback>
@@ -375,7 +377,7 @@ export function Navbar() {
               {profileOpen && (
                 <div
                   id="profile-panel"
-                  className="absolute right-0 top-12 w-72 bg-surface-container-lowest border border-outline-variant soft-shadow p-4 z-50"
+                  className="game-card absolute right-0 top-12 w-72 p-4 z-50"
                 >
                   <div className="flex items-center gap-3 pb-4 border-b border-outline-variant">
                     <Avatar className="w-12 h-12 border border-outline-variant">
@@ -395,7 +397,7 @@ export function Navbar() {
                   <div className="flex flex-col py-3">
                     <Link
                       to="/progress"
-                      className="flex items-center gap-3 px-2 py-3 hover:bg-surface-container-high text-primary font-label-md text-label-md"
+                      className="flex items-center gap-3 rounded-2xl px-2 py-3 hover:bg-surface-container-high text-primary font-label-md text-label-md"
                       onClick={closeHeaderPanels}
                     >
                       <span className="material-symbols-outlined">analytics</span>
@@ -403,7 +405,7 @@ export function Navbar() {
                     </Link>
                     <Link
                       to="/plan"
-                      className="flex items-center gap-3 px-2 py-3 hover:bg-surface-container-high text-primary font-label-md text-label-md"
+                      className="flex items-center gap-3 rounded-2xl px-2 py-3 hover:bg-surface-container-high text-primary font-label-md text-label-md"
                       onClick={closeHeaderPanels}
                     >
                       <span className="material-symbols-outlined">exercise</span>
@@ -457,7 +459,7 @@ export function Navbar() {
           role="dialog"
           aria-modal="true"
           aria-label="Navigation menu"
-          className="fixed inset-0 z-50 bg-surface/98 backdrop-blur-lg flex flex-col animate-in fade-in slide-in-from-top-4 duration-200"
+            className="fixed inset-0 z-50 game-shell backdrop-blur-lg flex flex-col animate-in fade-in slide-in-from-top-4 duration-200"
         >
           {/* Top Bar inside Menu */}
           <div className="flex justify-between items-center px-container-padding-mobile py-base h-20">
@@ -487,10 +489,10 @@ export function Navbar() {
           >
             {tabs.map((tItem) => {
               const isActive = tItem.id === active;
-              const className = `flex items-center gap-4 py-5 px-4 rounded-lg transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+              const className = `flex items-center gap-4 py-5 px-4 rounded-3xl border-2 transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                 isActive
-                  ? "bg-secondary/10 text-secondary font-bold"
-                  : "text-on-surface hover:bg-surface-container-high"
+                  ? "bg-secondary text-on-secondary border-secondary shadow-[0_6px_0_#5b21b6] font-bold"
+                  : "text-on-surface bg-white/80 border-outline-variant hover:bg-surface-container-high"
               } ${tItem.disabled ? "opacity-45 cursor-not-allowed hover:bg-transparent" : ""}`;
 
               if (tItem.disabled || (!tItem.to && !tItem.href)) {

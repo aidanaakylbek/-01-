@@ -26,7 +26,7 @@ function Plan() {
         : "AI review after task";
 
   return (
-    <div className="bg-background text-on-background min-h-screen pb-24">
+    <div className="game-shell text-on-background min-h-screen pb-24">
       <Navbar />
       <main className="w-full max-w-7xl mx-auto px-container-padding-mobile md:px-container-padding-desktop mt-stack-md flex flex-col gap-stack-lg">
         <section className="flex flex-col gap-2 mt-4">
@@ -733,3 +733,5 @@ function Plan() {
     </div>
   );
 }
+
+

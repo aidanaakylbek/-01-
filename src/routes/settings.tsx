@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Navbar } from "@/components/navbar";
 import { mentorStyles } from "@/lib/ai-mentor";
@@ -36,10 +36,10 @@ function Settings() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-on-background pb-24">
+    <div className="min-h-screen game-shell text-on-background pb-24">
       <Navbar />
       <main className="mx-auto w-full max-w-5xl px-container-padding-mobile py-stack-lg md:px-container-padding-desktop">
-        <section className="border border-outline-variant bg-surface-container-lowest p-7 shadow-[12px_12px_0_var(--secondary-container)]">
+        <section className="game-card p-7 shadow-[12px_12px_0_var(--secondary-container)]">
           <p className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
             AI-Sana
           </p>
@@ -99,3 +99,5 @@ const copy = {
     error: "Не удалось сохранить стиль. Попробуйте ещё раз.",
   },
 };
+
+

@@ -74,7 +74,7 @@ function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-on-background">
+    <div className="min-h-screen game-shell text-on-background">
       <Navbar />
       <main className="px-container-padding-mobile md:px-container-padding-desktop py-stack-lg">
         <section className="max-w-md mx-auto bg-surface-container-lowest border border-outline-variant p-8 md:p-10 soft-shadow">
@@ -147,3 +147,4 @@ function Login() {
     </div>
   );
 }
+

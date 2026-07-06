@@ -160,7 +160,7 @@ function Diagnostic() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-on-background font-body-md text-body-md">
+    <div className="min-h-screen game-shell text-on-background font-body-md text-body-md">
       <Navbar />
 
       <main className="w-full max-w-4xl mx-auto px-container-padding-mobile md:px-container-padding-desktop py-stack-lg">
@@ -202,7 +202,7 @@ function Diagnostic() {
                 {c.introDesc}
               </p>
               <button
-                className="mt-8 w-full sm:w-auto bg-primary text-on-primary px-8 py-4 font-label-caps text-label-caps uppercase tracking-widest hover:bg-secondary btn-squish transition-colors flex items-center justify-center gap-2"
+                className="mt-8 w-full sm:w-auto game-button bg-primary text-on-primary px-8 py-4 font-label-caps text-label-caps uppercase tracking-widest hover:bg-secondary btn-squish transition-colors flex items-center justify-center gap-2"
                 onClick={startTest}
                 type="button"
               >
@@ -212,10 +212,10 @@ function Diagnostic() {
               <p className="font-label-sm text-label-sm text-on-surface-variant mt-4">{c.time}</p>
             </div>
 
-            <div className="border border-outline-variant bg-surface-container-lowest p-6 md:p-8 flex flex-col gap-4">
+            <div className="game-card p-6 md:p-8 flex flex-col gap-4">
               {diagnosticQuestions.map((question, index) => (
                 <div
-                  className="flex items-center gap-4 border border-outline-variant bg-surface p-4"
+                  className="flex items-center gap-4 rounded-2xl border-2 border-outline-variant bg-surface p-4"
                   key={question.id}
                 >
                   <span className="w-10 h-10 bg-primary text-on-primary flex items-center justify-center font-label-md">
@@ -244,7 +244,7 @@ function Diagnostic() {
                   {c.question} {currentIndex + 1} {c.of} {totalQuestions}
                 </h1>
               </div>
-              <div className="border border-outline-variant bg-surface px-4 py-3 text-center">
+              <div className="rounded-2xl border-2 border-outline-variant bg-surface px-4 py-3 text-center">
                 <p className="font-label-caps text-label-caps uppercase tracking-widest text-on-surface-variant">
                   {answeredCount}/{totalQuestions}
                 </p>
@@ -335,7 +335,7 @@ function Diagnostic() {
                   <div className="flex flex-wrap gap-2">
                     {result.weakTopics.map((topic) => (
                       <span
-                        className="border border-outline-variant bg-surface px-3 py-2 font-label-md text-label-md"
+                        className="rounded-2xl border-2 border-outline-variant bg-surface px-3 py-2 font-label-md text-label-md"
                         key={topic}
                       >
                         {topic}
@@ -354,7 +354,7 @@ function Diagnostic() {
                   {c.retry}
                 </button>
                 <Link
-                  className="w-full bg-primary text-on-primary px-6 py-3 font-label-caps text-label-caps uppercase tracking-widest text-center hover:bg-secondary transition-colors"
+                  className="w-full game-button bg-primary text-on-primary px-6 py-3 font-label-caps text-label-caps uppercase tracking-widest text-center hover:bg-secondary transition-colors"
                   to="/home"
                 >
                   {c.home}
@@ -382,3 +382,5 @@ function Diagnostic() {
     </div>
   );
 }
+
+

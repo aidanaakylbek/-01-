@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Navbar } from "@/components/navbar";
 import { useLanguage } from "@/hooks/use-language";
@@ -44,10 +44,10 @@ function ExplainSolution() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-on-background pb-24">
+    <div className="min-h-screen game-shell text-on-background pb-24">
       <Navbar />
       <main className="mx-auto w-full max-w-5xl px-container-padding-mobile py-stack-lg md:px-container-padding-desktop">
-        <section className="border border-outline-variant bg-surface-container-lowest p-7 shadow-[12px_12px_0_var(--secondary-container)]">
+        <section className="game-card p-7 shadow-[12px_12px_0_var(--secondary-container)]">
           <p className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
             AI-Sana
           </p>
@@ -61,7 +61,7 @@ function ExplainSolution() {
           <Field label={c.question} value={question} onChange={setQuestion} />
           <Field label={c.solution} value={correctSolution} onChange={setCorrectSolution} />
           <Field label={c.transcript} value={transcript} onChange={setTranscript} />
-          <div className="border border-outline-variant bg-surface p-4 text-on-surface-variant">
+          <div className="rounded-2xl border-2 border-outline-variant bg-surface p-4 text-on-surface-variant">
             {/* TODO: Replace this placeholder with real speech-to-text upload/transcription. */}
             {c.voiceTodo}
           </div>
@@ -98,7 +98,7 @@ function Field({
     <label className="block">
       <span className="font-title-md text-title-md text-primary">{label}</span>
       <textarea
-        className="mt-3 min-h-28 w-full border border-outline-variant bg-surface p-4 outline-none focus:border-secondary"
+        className="mt-3 min-h-28 w-full rounded-2xl border-2 border-outline-variant bg-surface p-4 outline-none focus:border-secondary"
         onChange={(event) => onChange(event.target.value)}
         value={value}
       />
@@ -141,3 +141,5 @@ const copy = {
     error: "AI-Sana сейчас не смогла разобрать объяснение.",
   },
 };
+
+
