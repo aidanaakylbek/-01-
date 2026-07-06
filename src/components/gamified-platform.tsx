@@ -124,7 +124,7 @@ export function GameTopBar() {
             ))}
           </div>
           <Link
-            to="/settings"
+            to="/profile"
             className="grid h-11 w-11 place-items-center rounded-full bg-[#8B5CF6] font-black text-white shadow-[0_5px_0_#5B21B6]"
           >
             AA
@@ -146,8 +146,8 @@ function GameSidebar() {
     { label: c.tutor, icon: "smart_toy", to: "/explain-solution" },
     { label: c.progress, icon: "monitoring", to: "/progress" },
     { label: c.reports, icon: "lab_profile", to: "/reports" },
-    { label: c.profile, icon: "person", to: "/settings" },
-    { label: c.leaderboard, icon: "leaderboard", to: "/topic-challenge" },
+    { label: c.profile, icon: "person", to: "/profile" },
+    { label: c.leaderboard, icon: "leaderboard", to: "/leaderboard" },
     { label: c.shop, icon: "storefront", to: "/shop" },
   ];
   return (
@@ -301,12 +301,15 @@ function WeakTopic({ name, value }: { name: string; value: number }) {
 export function GameCard({
   children,
   className = "",
+  id,
 }: {
   children: ReactNode;
   className?: string;
+  id?: string;
 }) {
   return (
     <section
+      id={id}
       className={`rounded-[28px] border-2 border-[#DDD6FE] bg-white p-5 shadow-[0_9px_0_rgba(109,40,217,0.12)] ${className}`}
     >
       {children}

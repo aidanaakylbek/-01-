@@ -13,8 +13,14 @@ export const Route = createFileRoute("/settings")({
   component: ProfilePage,
 });
 
-function ProfilePage() {
+type DashboardData = Awaited<ReturnType<typeof getAccountDashboard>>;
+
+export function ProfilePage() {
   const dashboard = Route.useLoaderData();
+  return <ProfileContent dashboard={dashboard} />;
+}
+
+export function ProfileContent({ dashboard }: { dashboard: DashboardData }) {
   const { language } = useLanguage();
   const [mentorStyle, setMentorStyle] = useState<MentorStyle>(dashboard.account.mentorStyle);
   const [status, setStatus] = useState("");

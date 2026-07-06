@@ -1,6 +1,6 @@
-﻿import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Navbar } from "@/components/navbar";
+import { GameCard, GameLayout, MascotCoach, ProgressBar } from "@/components/gamified-platform";
 import { getTopic } from "@/data/subjects";
 import { useLanguage } from "@/hooks/use-language";
 
@@ -13,10 +13,7 @@ export const Route = createFileRoute("/lesson/$subjectId/$topicId")({
   head: ({ loaderData }) => ({
     meta: [
       { title: `${loaderData?.topic.title.EN ?? "Lesson"} — AI-Sana` },
-      {
-        name: "description",
-        content: loaderData?.topic.description.EN ?? "AI-Sana lesson and quiz.",
-      },
+      { name: "description", content: "AI-Sana game lesson." },
     ],
   }),
   component: TopicLessonPage,
@@ -25,7 +22,6 @@ export const Route = createFileRoute("/lesson/$subjectId/$topicId")({
 function TopicLessonPage() {
   const { subject, module, topic } = Route.useLoaderData();
   const { language } = useLanguage();
-  const copy = getLessonCopy(language);
   const lesson = topic.lesson;
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [submitted, setSubmitted] = useState(false);
@@ -37,275 +33,165 @@ function TopicLessonPage() {
       ),
     [answers, lesson.quiz],
   );
+  const c =
+    language === "RU"
+      ? {
+          back: "Назад к предмету",
+          coach: "Прочитай короткие блоки, потом пройди мини-тест.",
+          goals: "После урока ты сможешь",
+          quiz: "Проверь понимание",
+          submit: "Проверить",
+          result: "Результат",
+          correct: "правильно",
+        }
+      : language === "EN"
+        ? {
+            back: "Back to subject",
+            coach: "Read short blocks, then finish the mini test.",
+            goals: "By the end you can",
+            quiz: "Check understanding",
+            submit: "Check",
+            result: "Result",
+            correct: "correct",
+          }
+        : {
+            back: "Пәнге оралу",
+            coach: "Қысқа блоктарды оқы, сосын мини-тесттен өт.",
+            goals: "Сабақ соңында сен",
+            quiz: "Түсінгеніңді тексер",
+            submit: "Тексеру",
+            result: "Нәтиже",
+            correct: "дұрыс",
+          };
 
   return (
-    <div className="game-shell min-h-screen text-on-background pb-24">
-      <Navbar />
-      <main className="w-full max-w-7xl mx-auto px-container-padding-mobile md:px-container-padding-desktop py-stack-lg">
+    <GameLayout>
+      <div className="space-y-5">
         <Link
-          className="inline-flex items-center gap-2 text-on-surface-variant hover:text-primary font-label-md text-label-md mb-stack-md"
-          params={{ subjectId: subject.id }}
           to="/subjects/$subjectId"
+          params={{ subjectId: subject.id }}
+          className="inline-flex rounded-2xl bg-white px-4 py-3 font-black text-[#6D28D9] shadow-[0_5px_0_rgba(109,40,217,0.12)]"
         >
-          <span className="material-symbols-outlined text-sm">arrow_back</span>
-          {copy.backToSubject}
+          ← {c.back}
         </Link>
+        <GameCard className="bg-gradient-to-br from-[#6D28D9] to-[#8B5CF6] text-white">
+          <p className="text-sm font-black uppercase tracking-[0.25em] text-[#FACC15]">
+            {subject.exam} · {module.title[language]}
+          </p>
+          <h1 className="mt-2 text-4xl font-black md:text-6xl">{topic.title[language]}</h1>
+          <p className="mt-3 max-w-3xl text-lg font-semibold text-[#EDE9FE]">
+            {topic.description[language]}
+          </p>
+          <ProgressBar value={48} />
+        </GameCard>
+        <MascotCoach text={c.coach} />
 
-        <section className="game-card relative overflow-hidden p-6 md:p-10">
-          <div className="absolute -right-14 -top-14 hidden h-44 w-44 rounded-full bg-secondary-container/50 md:block" />
-          <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-end">
-            <div>
-              <p className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
-                {subject.exam} · {module.title[language]}
-              </p>
-              <h1 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary mt-3 max-w-3xl">
-                {topic.title[language]}
-              </h1>
-              <p className="font-body-lg text-body-lg text-on-surface-variant mt-4 max-w-3xl">
-                {topic.description[language]}
-              </p>
-            </div>
-            <div className="game-card p-5">
-              <p className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
-                {copy.lessonMap}
-              </p>
-              <div className="mt-4 grid grid-cols-3 gap-2">
-                <MiniStat icon="menu_book" label={copy.read} value={lesson.blocks.length} />
-                <MiniStat icon="flag" label={copy.goals} value={lesson.goals[language].length} />
-                <MiniStat icon="quiz" label={copy.test} value={lesson.quiz.length} />
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="mt-stack-lg grid gap-gutter lg:grid-cols-[minmax(0,1fr)_390px] lg:items-start">
-          <article className="space-y-gutter">
-            <div className="game-card p-5 md:p-6">
-              <p className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
-                AI-Sana
-              </p>
+        <section className="grid gap-5 lg:grid-cols-[1fr_360px] lg:items-start">
+          <article className="space-y-5">
+            <GameCard>
+              <h2 className="text-2xl font-black">AI-Sana</h2>
               <div className="mt-4 space-y-3">
                 {lesson.intro[language].map((paragraph) => (
-                  <p className="font-body-lg text-body-lg text-on-surface-variant" key={paragraph}>
+                  <p key={paragraph} className="text-lg font-semibold leading-8 text-[#4B3D73]">
                     {paragraph}
                   </p>
                 ))}
               </div>
-            </div>
-
-            <div className="game-card p-5 md:p-6">
-              <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center bg-secondary text-on-secondary">
-                  <span className="material-symbols-outlined">checklist</span>
-                </div>
-                <h2 className="font-headline-md text-headline-md text-primary">
-                  {copy.lessonGoals}
-                </h2>
-              </div>
-              <div className="mt-5 grid gap-3 md:grid-cols-2">
+            </GameCard>
+            <GameCard>
+              <h2 className="text-2xl font-black">{c.goals}</h2>
+              <div className="mt-4 grid gap-3 md:grid-cols-2">
                 {lesson.goals[language].map((goal) => (
-                  <div
-                    className="rounded-2xl border-2 border-outline-variant bg-surface-container-lowest p-4"
-                    key={goal}
-                  >
-                    <span className="material-symbols-outlined text-secondary text-lg">check</span>
-                    <p className="font-body-md text-body-md text-on-surface-variant mt-2">{goal}</p>
+                  <div key={goal} className="rounded-2xl bg-[#DCFCE7] p-4 font-bold">
+                    ✅ {goal}
                   </div>
                 ))}
               </div>
-            </div>
-
+            </GameCard>
             {lesson.blocks.map((block, index) => (
-              <section
-                className="group game-card p-5 md:p-6"
-                key={block.title[language]}
-              >
-                <div className="flex items-start gap-4">
-                  <div className="path-node !h-12 !w-12 !text-base !shadow-[0_5px_0_#5b21b6] shrink-0">
+              <GameCard key={block.title[language]}>
+                <div className="flex gap-4">
+                  <div className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-[#8B5CF6] text-xl font-black text-white shadow-[0_6px_0_#5B21B6]">
                     {index + 1}
                   </div>
                   <div>
-                    <h2 className="font-headline-md text-headline-md text-primary">
-                      {block.title[language]}
-                    </h2>
+                    <h2 className="text-2xl font-black">{block.title[language]}</h2>
                     <div className="mt-3 space-y-3">
                       {block.body[language].map((paragraph) => (
-                        <p
-                          className="font-body-lg text-body-lg text-on-surface-variant"
-                          key={paragraph}
-                        >
+                        <p key={paragraph} className="text-lg font-semibold leading-8 text-[#4B3D73]">
                           {paragraph}
                         </p>
                       ))}
                     </div>
                   </div>
                 </div>
-              </section>
+              </GameCard>
             ))}
           </article>
 
-          <aside className="lg:sticky lg:top-28">
-            <div className="game-card border-secondary p-5">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
-                    {copy.checkUnderstanding}
-                  </p>
-                  <h2 className="font-title-lg text-title-lg text-primary mt-2">
-                    {copy.quizTitle}
-                  </h2>
-                </div>
-                <div className="flex h-11 w-11 items-center justify-center bg-secondary text-on-secondary">
-                  <span className="material-symbols-outlined">quiz</span>
-                </div>
-              </div>
-
+          <aside className="lg:sticky lg:top-20">
+            <GameCard className="border-[#8B5CF6]">
+              <h2 className="text-2xl font-black">{c.quiz}</h2>
               {submitted ? (
-                <div className="mt-4 rounded-2xl border-2 border-outline-variant bg-surface p-4">
-                  <p className="font-label-md text-label-md text-on-surface-variant">
-                    {copy.result}
-                  </p>
-                  <p className="font-headline-md text-headline-md text-primary mt-1">
-                    {score}/{lesson.quiz.length} {copy.correct}
+                <div className="mt-4 rounded-2xl bg-[#F5F3FF] p-4">
+                  <p className="font-black text-[#8B5CF6]">{c.result}</p>
+                  <p className="text-3xl font-black">
+                    {score}/{lesson.quiz.length} {c.correct}
                   </p>
                 </div>
               ) : null}
-
               <div className="mt-5 space-y-4">
-                {lesson.quiz.map((question, questionIndex) => {
-                  const selected = answers[questionIndex];
-
-                  return (
-                    <div
-                      className="rounded-2xl border-2 border-outline-variant bg-surface p-4"
-                      key={question.question[language]}
-                    >
-                      <p className="font-title-md text-title-md text-primary">
-                        {questionIndex + 1}. {question.question[language]}
-                      </p>
-                      <div className="mt-3 grid gap-2">
-                        {question.options[language].map((option, optionIndex) => {
-                          const isCorrect = submitted && optionIndex === question.answerIndex;
-                          const isWrong =
-                            submitted &&
-                            selected === optionIndex &&
-                            optionIndex !== question.answerIndex;
-
-                          return (
-                            <button
-                              className={`rounded-2xl border-2 px-4 py-3 text-left font-body-md text-body-md transition-colors ${
-                                isCorrect
-                                  ? "border-secondary bg-secondary/10 text-primary"
-                                  : isWrong
-                                    ? "border-error bg-error-container text-error"
-                                    : selected === optionIndex
-                                      ? "border-secondary text-primary"
-                                      : "border-outline-variant text-on-surface-variant hover:border-primary"
-                              }`}
-                              key={option}
-                              onClick={() => {
-                                setAnswers((prev) => ({ ...prev, [questionIndex]: optionIndex }));
-                              }}
-                              type="button"
-                            >
-                              {String.fromCharCode(65 + optionIndex)}) {option}
-                            </button>
-                          );
-                        })}
-                      </div>
-                      {submitted ? (
-                        <p className="font-body-sm text-body-sm text-on-surface-variant mt-3">
-                          {copy.answer}: {String.fromCharCode(65 + question.answerIndex)}.{" "}
-                          {question.explanation[language]}
-                        </p>
-                      ) : null}
+                {lesson.quiz.map((question, questionIndex) => (
+                  <div key={question.question[language]} className="rounded-2xl border-2 border-[#DDD6FE] p-4">
+                    <p className="font-black">
+                      {questionIndex + 1}. {question.question[language]}
+                    </p>
+                    <div className="mt-3 grid gap-2">
+                      {question.options[language].map((option, optionIndex) => {
+                        const selected = answers[questionIndex] === optionIndex;
+                        const isCorrect = submitted && optionIndex === question.answerIndex;
+                        const isWrong = submitted && selected && !isCorrect;
+                        return (
+                          <button
+                            key={option}
+                            type="button"
+                            onClick={() =>
+                              setAnswers((prev) => ({ ...prev, [questionIndex]: optionIndex }))
+                            }
+                            className={`rounded-2xl border-2 px-4 py-3 text-left font-bold transition ${
+                              isCorrect
+                                ? "border-[#22C55E] bg-[#DCFCE7]"
+                                : isWrong
+                                  ? "border-[#EF4444] bg-[#FEE2E2]"
+                                  : selected
+                                    ? "border-[#8B5CF6] bg-[#F5F3FF]"
+                                    : "border-[#DDD6FE] bg-white"
+                            }`}
+                          >
+                            {String.fromCharCode(65 + optionIndex)}) {option}
+                          </button>
+                        );
+                      })}
                     </div>
-                  );
-                })}
+                    {submitted ? (
+                      <p className="mt-3 text-sm font-semibold text-[#6B5E8F]">
+                        AI-Sana: {question.explanation[language]}
+                      </p>
+                    ) : null}
+                  </div>
+                ))}
               </div>
-
               <button
-                className="game-button mt-5 w-full bg-secondary px-4 py-3 font-label-caps text-label-caps uppercase tracking-widest text-on-secondary"
-                onClick={() => {
-                  if (submitted) {
-                    setAnswers({});
-                    setSubmitted(false);
-                    return;
-                  }
-                  setSubmitted(true);
-                }}
                 type="button"
+                onClick={() => setSubmitted(true)}
+                className="mt-5 w-full rounded-2xl bg-[#6D28D9] px-5 py-4 font-black text-white shadow-[0_6px_0_#4C1D95]"
               >
-                {submitted ? copy.retryTest : copy.checkTest}
+                {c.submit}
               </button>
-            </div>
+            </GameCard>
           </aside>
         </section>
-      </main>
-    </div>
+      </div>
+    </GameLayout>
   );
-}
-
-function MiniStat({ icon, label, value }: { icon: string; label: string; value: number }) {
-  return (
-    <div className="game-stat p-3 text-center">
-      <span className="material-symbols-outlined text-secondary text-lg">{icon}</span>
-      <p className="font-title-md text-title-md text-primary mt-1">{value}</p>
-      <p className="font-label-sm text-label-sm text-on-surface-variant">{label}</p>
-    </div>
-  );
-}
-
-function getLessonCopy(language: "EN" | "KZ" | "RU") {
-  if (language === "KZ") {
-    return {
-      backToSubject: "Математикаға оралу",
-      lessonMap: "Сабақ картасы",
-      read: "бөлім",
-      goals: "мақсат",
-      test: "сұрақ",
-      lessonGoals: "Бүгін сен не үйренесің?",
-      checkUnderstanding: "Тақырыпты түсінгеніңді тексер",
-      quizTitle: "Қысқа тест",
-      result: "Нәтиже",
-      correct: "дұрыс",
-      answer: "Жауап",
-      checkTest: "Жауаптарды тексеру",
-      retryTest: "Қайта тапсыру",
-    };
-  }
-
-  if (language === "RU") {
-    return {
-      backToSubject: "Вернуться к математике",
-      lessonMap: "Карта урока",
-      read: "блоков",
-      goals: "целей",
-      test: "вопросов",
-      lessonGoals: "Что ты изучишь сегодня?",
-      checkUnderstanding: "Проверь понимание темы",
-      quizTitle: "Короткий тест",
-      result: "Результат",
-      correct: "правильно",
-      answer: "Ответ",
-      checkTest: "Проверить ответы",
-      retryTest: "Пройти снова",
-    };
-  }
-
-  return {
-    backToSubject: "Back to mathematics",
-    lessonMap: "Lesson map",
-    read: "blocks",
-    goals: "goals",
-    test: "questions",
-    lessonGoals: "What will you learn today?",
-    checkUnderstanding: "Check your understanding",
-    quizTitle: "Short quiz",
-    result: "Result",
-    correct: "correct",
-    answer: "Answer",
-    checkTest: "Check answers",
-    retryTest: "Try again",
-  };
 }

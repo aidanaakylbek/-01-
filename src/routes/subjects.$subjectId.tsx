@@ -1,5 +1,5 @@
-﻿import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { Navbar } from "@/components/navbar";
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { GameCard, GameLayout, MascotCoach, ProgressBar } from "@/components/gamified-platform";
 import { getSubject } from "@/data/subjects";
 import { useLanguage } from "@/hooks/use-language";
 
@@ -12,213 +12,155 @@ export const Route = createFileRoute("/subjects/$subjectId")({
   head: ({ loaderData }) => ({
     meta: [
       { title: `${loaderData?.subject.title.EN ?? "Subject"} — AI-Sana` },
-      {
-        name: "description",
-        content: loaderData?.subject.description.EN ?? "AI-Sana subject modules and topics.",
-      },
+      { name: "description", content: "AI-Sana subject path." },
     ],
   }),
   component: SubjectPage,
 });
 
-const difficultyCopy = {
-  basic: { EN: "Basic", KZ: "Бастапқы", RU: "Базовый" },
-  medium: { EN: "Medium", KZ: "Орташа", RU: "Средний" },
-  advanced: { EN: "Advanced", KZ: "Күрделі", RU: "Сложный" },
+const difficulty = {
+  basic: { KZ: "Бастапқы", RU: "Базовый", EN: "Basic" },
+  medium: { KZ: "Орташа", RU: "Средний", EN: "Medium" },
+  advanced: { KZ: "Күрделі", RU: "Сложный", EN: "Advanced" },
 };
 
 function SubjectPage() {
   const { subject } = Route.useLoaderData();
   const { language } = useLanguage();
-  const copy = getSubjectPageCopy(language);
+  const c =
+    language === "RU"
+      ? {
+          back: "Назад к карте",
+          coach: "Открывай темы по порядку: так легче сохранить серию.",
+          modules: "Модули",
+          openLesson: "Открыть урок",
+          practice: "Практика",
+          test: "Тест есть",
+        }
+      : language === "EN"
+        ? {
+            back: "Back to map",
+            coach: "Unlock topics in order: it is easier to keep your streak.",
+            modules: "Modules",
+            openLesson: "Open lesson",
+            practice: "Practice",
+            test: "Has test",
+          }
+        : {
+            back: "Картаға оралу",
+            coach: "Тақырыптарды ретімен аш: серияңды сақтау жеңіл болады.",
+            modules: "Модульдер",
+            openLesson: "Сабақты ашу",
+            practice: "Жаттығу",
+            test: "Тест бар",
+          };
 
   return (
-    <div className="game-shell min-h-screen text-on-background pb-24">
-      <Navbar />
-      <main className="w-full max-w-7xl mx-auto px-container-padding-mobile md:px-container-padding-desktop py-stack-lg">
-        <Link
-          className="inline-flex items-center gap-2 text-on-surface-variant hover:text-primary font-label-md text-label-md mb-stack-md"
-          to="/subjects"
-        >
-          <span className="material-symbols-outlined text-sm">arrow_back</span>
-          {copy.back}
+    <GameLayout>
+      <div className="space-y-5">
+        <Link to="/subjects" className="inline-flex rounded-2xl bg-white px-4 py-3 font-black text-[#6D28D9] shadow-[0_5px_0_rgba(109,40,217,0.12)]">
+          ← {c.back}
         </Link>
-
-        <section className="game-card relative overflow-hidden p-7 md:p-10 mb-stack-lg">
-          <div className="absolute right-8 top-8 hidden h-24 w-24 rounded-full bg-secondary-container/50 md:flex items-center justify-center">
-            <span className="material-symbols-outlined text-secondary text-5xl">{subject.icon}</span>
-          </div>
-          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6 relative z-10">
+        <GameCard className="bg-gradient-to-br from-[#6D28D9] to-[#8B5CF6] text-white">
+          <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
-                {subject.exam} · {copy.learningPath}
+              <p className="text-sm font-black uppercase tracking-[0.25em] text-[#FACC15]">
+                {subject.exam} Quest
               </p>
-              <h1 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary mt-3">
-                {subject.title[language]}
-              </h1>
-              <p className="font-body-lg text-body-lg text-on-surface-variant mt-4 max-w-2xl">
+              <h1 className="mt-2 text-4xl font-black md:text-6xl">{subject.title[language]}</h1>
+              <p className="mt-3 max-w-2xl text-lg font-semibold text-[#EDE9FE]">
                 {subject.description[language]}
               </p>
             </div>
-            <div className="path-node shrink-0">
-              <span className="material-symbols-outlined text-4xl">{subject.icon}</span>
+            <div className="grid h-24 w-24 place-items-center rounded-full bg-white/20 text-white">
+              <span className="material-symbols-outlined text-6xl">{subject.icon}</span>
             </div>
           </div>
-        </section>
-
-        <section>
-          <div className="flex items-end justify-between gap-4 mb-stack-md">
-            <div>
-              <p className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
-                {copy.chooseTopic}
-              </p>
-              <h2 className="font-headline-md text-headline-md text-primary mt-2">
-                {copy.modules}
-              </h2>
-            </div>
-            <Link
-              className="hidden sm:inline-flex bg-primary text-on-primary px-5 py-3 font-label-caps text-label-caps uppercase tracking-widest hover:bg-secondary transition-colors"
-              to="/plan"
-            >
-              {copy.practice}
-            </Link>
-          </div>
-
-          <div className="flex flex-col gap-stack-md">
-            {subject.modules.map((module, moduleIndex) => (
-              <article
-                className="game-card p-6 md:p-8"
-                key={module.id}
-              >
-                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 border-b border-outline-variant pb-5 mb-5">
-                  <div>
-                    <p className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
-                      {copy.module} {moduleIndex + 1}
-                    </p>
-                    <h3 className="font-headline-md text-headline-md text-primary mt-2">
-                      {module.title[language]}
-                    </h3>
-                    <p className="font-body-md text-body-md text-on-surface-variant mt-3">
-                      {module.description[language]}
-                    </p>
-                  </div>
-                  <span className="game-stat px-4 py-2 font-label-md text-label-md text-on-surface-variant shrink-0">
-                    {module.topics.length} {copy.topics}
-                  </span>
+        </GameCard>
+        <MascotCoach text={c.coach} />
+        <section className="space-y-5">
+          {subject.modules.map((module, moduleIndex) => (
+            <GameCard key={module.id}>
+              <div className="mb-6 flex flex-col gap-3 border-b-2 border-[#DDD6FE] pb-5 md:flex-row md:items-end md:justify-between">
+                <div>
+                  <p className="text-sm font-black uppercase tracking-[0.25em] text-[#8B5CF6]">
+                    {c.modules} {moduleIndex + 1}
+                  </p>
+                  <h2 className="mt-2 text-3xl font-black">{module.title[language]}</h2>
+                  <p className="mt-2 font-semibold text-[#6B5E8F]">{module.description[language]}</p>
                 </div>
-
-                <div className="grid grid-cols-1 gap-5">
-                  {module.topics.map((topic, topicIndex) => (
-                    <div
-                      className="group relative grid gap-5 md:grid-cols-[92px_1fr] md:items-start"
-                      key={topic.id}
-                    >
-                      <div className="relative flex justify-center md:block">
-                        {topicIndex < module.topics.length - 1 ? <span className="path-rail" /> : null}
-                        <div className={`path-node ${topic.lesson || topicIndex < 2 ? "" : "locked"}`}>
-                          <span className="material-symbols-outlined">
-                            {topic.lesson ? "play_arrow" : topicIndex < 2 ? "star" : "lock"}
+                <span className="rounded-full bg-[#FACC15] px-4 py-2 font-black text-[#1E1B4B]">
+                  {module.topics.length * 20} XP
+                </span>
+              </div>
+              <div className="space-y-5">
+                {module.topics.map((topic, topicIndex) => {
+                  const hasLesson = Boolean(topic.lesson);
+                  const locked = !hasLesson && topicIndex > 1;
+                  return (
+                    <div key={topic.id} className="grid gap-4 md:grid-cols-[90px_1fr] md:items-start">
+                      <div className="relative flex justify-center">
+                        {topicIndex < module.topics.length - 1 ? (
+                          <span className="absolute top-16 h-[calc(100%+1.25rem)] w-3 rounded-full bg-[#DDD6FE]" />
+                        ) : null}
+                        <div
+                          className={`relative z-10 grid h-20 w-20 place-items-center rounded-full text-white shadow-[0_8px_0_#5B21B6] ${
+                            locked ? "bg-[#DDD6FE] text-[#8B5CF6]" : "bg-[#8B5CF6]"
+                          }`}
+                        >
+                          <span className="material-symbols-outlined text-4xl">
+                            {locked ? "lock" : hasLesson ? "play_arrow" : "star"}
                           </span>
                         </div>
                       </div>
-                      <div className="game-card p-5 md:p-6">
-                        <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="rounded-[26px] border-2 border-[#DDD6FE] bg-white p-5 shadow-[0_7px_0_rgba(109,40,217,0.10)]">
+                        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                           <div>
-                            <span className="game-stat inline-flex px-3 py-1 font-label-sm text-label-sm whitespace-nowrap">
-                              {difficultyCopy[topic.difficulty][language]}
+                            <span className="rounded-full bg-[#F5F3FF] px-3 py-2 text-xs font-black text-[#6D28D9]">
+                              {difficulty[topic.difficulty][language]}
                             </span>
-                            <h4 className="font-title-lg text-title-lg text-primary mt-4">
-                              {topic.title[language]}
-                            </h4>
-                            <p className="font-body-md text-body-md text-on-surface-variant mt-3">
+                            <h3 className="mt-4 text-2xl font-black">{topic.title[language]}</h3>
+                            <p className="mt-2 font-semibold text-[#6B5E8F]">
                               {topic.description[language]}
                             </p>
                           </div>
-                          <span className="rounded-full bg-secondary-container px-3 py-2 font-label-md text-label-md text-on-secondary-container">
+                          <span className="rounded-full bg-[#C084FC] px-4 py-2 font-black text-white">
                             +20 XP
                           </span>
                         </div>
-
+                        <ProgressBar value={hasLesson ? 68 : locked ? 0 : 30} />
                         <div className="mt-5 flex flex-wrap gap-3">
-                          {topic.lesson ? (
+                          {hasLesson ? (
                             <Link
-                              className="game-button inline-flex items-center gap-2 bg-secondary text-on-secondary px-5 py-3 font-label-caps text-label-caps uppercase tracking-widest"
-                              params={{ subjectId: subject.id, topicId: topic.id }}
                               to="/lesson/$subjectId/$topicId"
+                              params={{ subjectId: subject.id, topicId: topic.id }}
+                              className="rounded-2xl bg-[#6D28D9] px-5 py-3 font-black text-white shadow-[0_5px_0_#4C1D95]"
                             >
-                              {copy.openLesson}
-                              <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                              {c.openLesson} →
                             </Link>
                           ) : (
                             <Link
-                              className="inline-flex items-center gap-2 rounded-2xl border-2 border-primary text-primary px-5 py-3 font-label-caps text-label-caps uppercase tracking-widest hover:bg-primary hover:text-on-primary transition-colors"
                               to="/plan"
+                              className="rounded-2xl bg-[#6D28D9] px-5 py-3 font-black text-white shadow-[0_5px_0_#4C1D95]"
                             >
-                              {copy.start}
-                              <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                              {c.practice} →
                             </Link>
                           )}
-                          {topic.lesson ? (
-                            <span className="inline-flex items-center gap-2 rounded-2xl border-2 border-outline-variant px-4 py-3 font-label-caps text-label-caps uppercase tracking-widest text-on-surface-variant">
-                              <span className="material-symbols-outlined text-sm">quiz</span>
-                              {copy.hasTest}
+                          {hasLesson ? (
+                            <span className="rounded-2xl border-2 border-[#DDD6FE] px-5 py-3 font-black text-[#6D28D9]">
+                              🧩 {c.test}
                             </span>
                           ) : null}
                         </div>
                       </div>
                     </div>
-                  ))}
-                </div>
-              </article>
-            ))}
-          </div>
+                  );
+                })}
+              </div>
+            </GameCard>
+          ))}
         </section>
-      </main>
-    </div>
+      </div>
+    </GameLayout>
   );
-}
-
-function getSubjectPageCopy(language: "EN" | "KZ" | "RU") {
-  if (language === "KZ") {
-    return {
-      back: "Пәндерге оралу",
-      learningPath: "оқу жолы",
-      chooseTopic: "Тақырып таңда",
-      modules: "Модульдер",
-      module: "Модуль",
-      topics: "тақырып",
-      start: "Тақырыпқа кіру",
-      openLesson: "Сабақты ашу",
-      hasTest: "тест бар",
-      practice: "Жаттығу бастау",
-    };
-  }
-
-  if (language === "RU") {
-    return {
-      back: "Назад к предметам",
-      learningPath: "учебный путь",
-      chooseTopic: "Выберите тему",
-      modules: "Модули",
-      module: "Модуль",
-      topics: "тем",
-      start: "Открыть тему",
-      openLesson: "Открыть урок",
-      hasTest: "есть тест",
-      practice: "Начать практику",
-    };
-  }
-
-  return {
-    back: "Back to subjects",
-    learningPath: "learning path",
-    chooseTopic: "Choose a topic",
-    modules: "Modules",
-    module: "Module",
-    topics: "topics",
-    start: "Open topic",
-    openLesson: "Open lesson",
-    hasTest: "has test",
-    practice: "Start practice",
-  };
 }

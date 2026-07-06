@@ -16,9 +16,11 @@ import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as ProgressRouteImport } from './routes/progress'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PlanRouteImport } from './routes/plan'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as ExplainSolutionRouteImport } from './routes/explain-solution'
 import { Route as ExamRouteImport } from './routes/exam'
@@ -69,6 +71,11 @@ const ProgressRoute = ProgressRouteImport.update({
   path: '/progress',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
@@ -82,6 +89,11 @@ const PlanRoute = PlanRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LeaderboardRoute = LeaderboardRouteImport.update({
+  id: '/leaderboard',
+  path: '/leaderboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HomeRoute = HomeRouteImport.update({
@@ -163,9 +175,11 @@ export interface FileRoutesByFullPath {
   '/exam': typeof ExamRoute
   '/explain-solution': typeof ExplainSolutionRoute
   '/home': typeof HomeRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
   '/plan': typeof PlanRoute
   '/privacy': typeof PrivacyRoute
+  '/profile': typeof ProfileRoute
   '/progress': typeof ProgressRoute
   '/register': typeof RegisterRoute
   '/reports': typeof ReportsRoute
@@ -189,9 +203,11 @@ export interface FileRoutesByTo {
   '/exam': typeof ExamRoute
   '/explain-solution': typeof ExplainSolutionRoute
   '/home': typeof HomeRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
   '/plan': typeof PlanRoute
   '/privacy': typeof PrivacyRoute
+  '/profile': typeof ProfileRoute
   '/progress': typeof ProgressRoute
   '/register': typeof RegisterRoute
   '/reports': typeof ReportsRoute
@@ -216,9 +232,11 @@ export interface FileRoutesById {
   '/exam': typeof ExamRoute
   '/explain-solution': typeof ExplainSolutionRoute
   '/home': typeof HomeRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
   '/plan': typeof PlanRoute
   '/privacy': typeof PrivacyRoute
+  '/profile': typeof ProfileRoute
   '/progress': typeof ProgressRoute
   '/register': typeof RegisterRoute
   '/reports': typeof ReportsRoute
@@ -244,9 +262,11 @@ export interface FileRouteTypes {
     | '/exam'
     | '/explain-solution'
     | '/home'
+    | '/leaderboard'
     | '/login'
     | '/plan'
     | '/privacy'
+    | '/profile'
     | '/progress'
     | '/register'
     | '/reports'
@@ -270,9 +290,11 @@ export interface FileRouteTypes {
     | '/exam'
     | '/explain-solution'
     | '/home'
+    | '/leaderboard'
     | '/login'
     | '/plan'
     | '/privacy'
+    | '/profile'
     | '/progress'
     | '/register'
     | '/reports'
@@ -296,9 +318,11 @@ export interface FileRouteTypes {
     | '/exam'
     | '/explain-solution'
     | '/home'
+    | '/leaderboard'
     | '/login'
     | '/plan'
     | '/privacy'
+    | '/profile'
     | '/progress'
     | '/register'
     | '/reports'
@@ -323,9 +347,11 @@ export interface RootRouteChildren {
   ExamRoute: typeof ExamRoute
   ExplainSolutionRoute: typeof ExplainSolutionRoute
   HomeRoute: typeof HomeRoute
+  LeaderboardRoute: typeof LeaderboardRoute
   LoginRoute: typeof LoginRoute
   PlanRoute: typeof PlanRoute
   PrivacyRoute: typeof PrivacyRoute
+  ProfileRoute: typeof ProfileRoute
   ProgressRoute: typeof ProgressRoute
   RegisterRoute: typeof RegisterRoute
   ReportsRoute: typeof ReportsRoute
@@ -392,6 +418,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProgressRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/privacy': {
       id: '/privacy'
       path: '/privacy'
@@ -411,6 +444,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/leaderboard': {
+      id: '/leaderboard'
+      path: '/leaderboard'
+      fullPath: '/leaderboard'
+      preLoaderRoute: typeof LeaderboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/home': {
@@ -534,9 +574,11 @@ const rootRouteChildren: RootRouteChildren = {
   ExamRoute: ExamRoute,
   ExplainSolutionRoute: ExplainSolutionRoute,
   HomeRoute: HomeRoute,
+  LeaderboardRoute: LeaderboardRoute,
   LoginRoute: LoginRoute,
   PlanRoute: PlanRoute,
   PrivacyRoute: PrivacyRoute,
+  ProfileRoute: ProfileRoute,
   ProgressRoute: ProgressRoute,
   RegisterRoute: RegisterRoute,
   ReportsRoute: ReportsRoute,

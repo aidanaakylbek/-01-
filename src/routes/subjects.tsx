@@ -1,5 +1,5 @@
-﻿import { createFileRoute, Link, Outlet, useLocation } from "@tanstack/react-router";
-import { Navbar } from "@/components/navbar";
+import { createFileRoute, Link, Outlet, useLocation } from "@tanstack/react-router";
+import { GameCard, GameLayout, MascotCoach, ProgressBar } from "@/components/gamified-platform";
 import { subjects, type Subject } from "@/data/subjects";
 import { useLanguage } from "@/hooks/use-language";
 
@@ -7,10 +7,7 @@ export const Route = createFileRoute("/subjects")({
   head: () => ({
     meta: [
       { title: "Subjects — AI-Sana" },
-      {
-        name: "description",
-        content: "All AI-Sana subjects with modules and topics for NIS, BIL, and NSPM preparation.",
-      },
+      { name: "description", content: "Gamified AI-Sana subject map." },
     ],
   }),
   component: SubjectsPage,
@@ -19,206 +16,129 @@ export const Route = createFileRoute("/subjects")({
 function SubjectsPage() {
   const { language } = useLanguage();
   const location = useLocation();
-  if (location.pathname !== "/subjects") {
-    return <Outlet />;
-  }
+  if (location.pathname !== "/subjects") return <Outlet />;
 
   const copy =
-    language === "KZ"
+    language === "RU"
       ? {
-          label: "Оқу құрылымы",
-          title: "Пәндер",
-          desc: "Пәнді таңдаңыз. Ішінде модульдер мен нақты тақырыптар бар.",
-          modules: "модуль",
-          topics: "тақырып",
-          subjectsUnit: "пән",
-          open: "Пәнге кіру",
+          label: "Карта предметов",
+          title: "Выбери экзамен и предмет",
+          desc: "Каждый предмет открывается как игровой путь: модули, темы, XP и тесты.",
+          coach: "Начни с НИШ математики: сегодня можно закрыть 2 темы.",
+          open: "Открыть путь",
+          modules: "модуля",
+          topics: "тем",
           tracks: [
-            {
-              id: "NIS",
-              title: "НЗМ",
-              desc: "Назарбаев Зияткерлік мектептеріне дайындық пәндері.",
-            },
-            {
-              id: "BIL",
-              title: "БИЛ",
-              desc: "Білім-Инновация лицейлеріне арналған пәндер.",
-            },
-            {
-              id: "NSPM",
-              title: "РФММ",
-              desc: "Республикалық физика-математика мектебіне дайындық пәндері.",
-            },
+            ["NIS", "НИШ", "Логика, математика и грамотность"],
+            ["BIL", "БИЛ", "Чтение, языки и аналитика"],
+            ["NSPM", "РФМШ", "Математика и сложные задачи"],
           ],
         }
-      : language === "RU"
+      : language === "EN"
         ? {
-            label: "Структура обучения",
-            title: "Предметы",
-            desc: "Выберите предмет. Внутри есть модули и конкретные темы.",
-            modules: "модулей",
-            topics: "тем",
-            subjectsUnit: "предметов",
-            open: "Открыть предмет",
+            label: "Subject Map",
+            title: "Choose an exam and subject",
+            desc: "Each subject opens as a game path with modules, topics, XP and tests.",
+            coach: "Start with NIS Math: you can finish 2 topics today.",
+            open: "Open path",
+            modules: "modules",
+            topics: "topics",
             tracks: [
-              {
-                id: "NIS",
-                title: "НИШ",
-                desc: "Предметы для подготовки в Назарбаев Интеллектуальные школы.",
-              },
-              {
-                id: "BIL",
-                title: "БИЛ",
-                desc: "Предметы для подготовки в Билим-Инновация лицеи.",
-              },
-              {
-                id: "NSPM",
-                title: "РФМШ",
-                desc: "Предметы для подготовки в Республиканскую физико-математическую школу.",
-              },
+              ["NIS", "NIS", "Logic, math and literacy"],
+              ["BIL", "BIL", "Reading, languages and analysis"],
+              ["NSPM", "NSPM", "Math and advanced problems"],
             ],
           }
         : {
-            label: "Learning structure",
-            title: "Subjects",
-            desc: "Choose a subject. Each subject has modules and focused topics.",
-            modules: "modules",
-            topics: "topics",
-            subjectsUnit: "subjects",
-            open: "Open subject",
+            label: "Пән картасы",
+            title: "Емтихан мен пәнді таңда",
+            desc: "Әр пән ойын жолы сияқты ашылады: модуль, тақырып, XP және тесттер.",
+            coach: "НЗМ математикасынан баста: бүгін 2 тақырып жабуға болады.",
+            open: "Жолды ашу",
+            modules: "модуль",
+            topics: "тақырып",
             tracks: [
-              {
-                id: "NIS",
-                title: "NIS",
-                desc: "Subjects for Nazarbayev Intellectual Schools preparation.",
-              },
-              {
-                id: "BIL",
-                title: "BIL",
-                desc: "Subjects for Bilim-Innovation Lyceums preparation.",
-              },
-              {
-                id: "NSPM",
-                title: "NSPM",
-                desc: "Subjects for Republican Physics and Mathematics School preparation.",
-              },
+              ["NIS", "НЗМ", "Логика, математика және сауаттылық"],
+              ["BIL", "БИЛ", "Оқу, тілдер және талдау"],
+              ["NSPM", "РФММ", "Математика және күрделі есептер"],
             ],
           };
 
-  const getTrackSubjects = (trackId: "NIS" | "BIL" | "NSPM") =>
-    subjects.filter((subject) => subject.exam === trackId || subject.exam === "ALL");
-
   return (
-    <div className="game-shell min-h-screen text-on-background pb-24">
-      <Navbar />
-      <main className="w-full max-w-7xl mx-auto px-container-padding-mobile md:px-container-padding-desktop py-stack-lg">
-        <section className="game-card mb-stack-lg p-7 md:p-10 relative overflow-hidden">
-          <div className="absolute right-8 top-8 hidden md:flex h-20 w-20 rounded-full bg-secondary-container/60 items-center justify-center">
-            <span className="material-symbols-outlined text-secondary text-4xl">map</span>
-          </div>
-          <p className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
+    <GameLayout>
+      <div className="space-y-5">
+        <GameCard className="overflow-hidden bg-gradient-to-br from-[#6D28D9] to-[#8B5CF6] text-white">
+          <p className="text-sm font-black uppercase tracking-[0.25em] text-[#FACC15]">
             {copy.label}
           </p>
-          <h1 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary mt-3">
-            {copy.title}
-          </h1>
-          <p className="font-body-lg text-body-lg text-on-surface-variant mt-4 max-w-2xl">
-            {copy.desc}
-          </p>
-        </section>
-
-        <section className="flex flex-col gap-stack-lg">
-          {copy.tracks.map((track) => (
-            <div
-              id={track.id.toLowerCase()}
-              className="scroll-mt-28 game-card p-5 md:p-6"
-              key={track.id}
-            >
-              <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3 border-b border-outline-variant pb-5 mb-5">
-                <div>
-                  <p className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
-                    {track.title}
-                  </p>
-                  <h2 className="font-headline-md text-headline-md text-primary mt-2">
-                    {track.title}
-                  </h2>
-                  <p className="font-body-md text-body-md text-on-surface-variant mt-2">
-                    {track.desc}
-                  </p>
+          <h1 className="mt-2 text-4xl font-black md:text-6xl">{copy.title}</h1>
+          <p className="mt-3 max-w-2xl text-lg font-semibold text-[#EDE9FE]">{copy.desc}</p>
+        </GameCard>
+        <MascotCoach text={copy.coach} />
+        <section className="space-y-5">
+          {copy.tracks.map(([trackId, trackTitle, trackDesc]) => {
+            const trackSubjects = subjects.filter(
+              (subject) => subject.exam === trackId || subject.exam === "ALL",
+            );
+            return (
+              <GameCard key={trackId} className="scroll-mt-24" id={trackId.toLowerCase()}>
+                <div className="mb-5 flex flex-col gap-3 border-b-2 border-[#DDD6FE] pb-5 md:flex-row md:items-end md:justify-between">
+                  <div>
+                    <p className="text-sm font-black uppercase tracking-[0.25em] text-[#8B5CF6]">
+                      {trackTitle}
+                    </p>
+                    <h2 className="mt-1 text-3xl font-black">{trackDesc}</h2>
+                  </div>
+                  <span className="rounded-full bg-[#F5F3FF] px-4 py-2 font-black text-[#6D28D9]">
+                    {trackSubjects.length} пән
+                  </span>
                 </div>
-                <span className="game-stat px-4 py-2 font-label-md text-label-md text-on-surface-variant self-start md:self-auto">
-                  {getTrackSubjects(track.id as "NIS" | "BIL" | "NSPM").length} {copy.subjectsUnit}
-                </span>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-gutter">
-                {getTrackSubjects(track.id as "NIS" | "BIL" | "NSPM").map((subject) => (
-                  <SubjectCard
-                    copy={copy}
-                    key={`${track.id}-${subject.id}`}
-                    subject={subject}
-                    trackTitle={track.title}
-                  />
-                ))}
-              </div>
-            </div>
-          ))}
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  {trackSubjects.map((subject) => (
+                    <SubjectCard key={`${trackId}-${subject.id}`} copy={copy} subject={subject} />
+                  ))}
+                </div>
+              </GameCard>
+            );
+          })}
         </section>
-      </main>
-    </div>
+      </div>
+    </GameLayout>
   );
 }
 
 function SubjectCard({
   copy,
   subject,
-  trackTitle,
 }: {
-  copy: {
-    modules: string;
-    topics: string;
-    subjectsUnit: string;
-    open: string;
-  };
+  copy: { open: string; modules: string; topics: string };
   subject: Subject;
-  trackTitle: string;
 }) {
   const { language } = useLanguage();
   const topicCount = subject.modules.reduce((sum, module) => sum + module.topics.length, 0);
-
   return (
     <Link
-      className="group game-card p-6 min-h-[280px] flex flex-col gap-5"
-      params={{ subjectId: subject.id }}
       to="/subjects/$subjectId"
+      params={{ subjectId: subject.id }}
+      className="group rounded-[28px] border-2 border-[#DDD6FE] bg-white p-5 shadow-[0_8px_0_rgba(109,40,217,0.12)] transition hover:-translate-y-1 hover:border-[#8B5CF6]"
     >
       <div className="flex items-start justify-between gap-4">
-        <div className="path-node !h-16 !w-16 !shadow-[0_6px_0_#5b21b6]">
+        <div className="grid h-16 w-16 place-items-center rounded-full bg-[#8B5CF6] text-white shadow-[0_7px_0_#5B21B6]">
           <span className="material-symbols-outlined text-3xl">{subject.icon}</span>
         </div>
-        <span className="game-stat px-3 py-1 font-label-caps text-label-caps uppercase tracking-widest text-on-surface-variant">
-          {trackTitle}
-        </span>
-      </div>
-
-      <div>
-        <h3 className="font-headline-md text-headline-md text-primary">
-          {subject.title[language]}
-        </h3>
-        <p className="font-body-md text-body-md text-on-surface-variant mt-3">
-          {subject.description[language]}
-        </p>
-      </div>
-
-      <div className="mt-auto flex items-center justify-between border-t border-outline-variant pt-4">
-        <p className="font-label-md text-label-md text-on-surface-variant">
-          {subject.modules.length} {copy.modules} • {topicCount} {copy.topics}
-        </p>
-        <span className="rounded-full bg-secondary px-4 py-2 text-on-secondary font-label-caps text-label-caps uppercase tracking-widest">
+        <span className="rounded-full bg-[#FACC15] px-3 py-2 text-sm font-black text-[#1E1B4B]">
           +{topicCount * 20} XP
         </span>
       </div>
-      <span className="sr-only">{copy.open}</span>
+      <h3 className="mt-5 text-2xl font-black">{subject.title[language]}</h3>
+      <p className="mt-2 font-semibold text-[#6B5E8F]">{subject.description[language]}</p>
+      <ProgressBar value={Math.min(85, topicCount * 12)} />
+      <div className="mt-5 flex items-center justify-between border-t-2 border-[#DDD6FE] pt-4">
+        <span className="text-sm font-black text-[#6B5E8F]">
+          {subject.modules.length} {copy.modules} · {topicCount} {copy.topics}
+        </span>
+        <span className="font-black text-[#6D28D9]">{copy.open} →</span>
+      </div>
     </Link>
   );
 }
