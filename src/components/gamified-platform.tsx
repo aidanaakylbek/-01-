@@ -82,9 +82,9 @@ export function GameLayout({
   return (
     <div className="min-h-screen bg-[#F5F3FF] text-[#1E1B4B]">
       <GameTopBar />
-      <div className="mx-auto grid w-full max-w-[1500px] gap-4 px-3 pb-24 pt-3 md:grid-cols-[240px_minmax(0,1fr)] md:px-5 lg:grid-cols-[250px_minmax(0,1fr)_330px]">
+      <div className="mx-auto grid w-full max-w-[1440px] gap-5 px-3 pb-24 pt-4 md:grid-cols-[216px_minmax(0,1fr)] md:px-5 lg:grid-cols-[220px_minmax(0,1fr)_300px] xl:grid-cols-[232px_minmax(0,1fr)_316px]">
         <GameSidebar />
-        <main className="min-w-0">{children}</main>
+        <main className="min-w-0 space-y-5">{children}</main>
         <aside className="hidden lg:block">{right ?? <RightWidgets />}</aside>
       </div>
       <MobileGameNav />
@@ -95,27 +95,29 @@ export function GameLayout({
 export function GameTopBar() {
   const { language, setLanguage } = useLanguage();
   return (
-    <header className="sticky top-0 z-50 border-b-2 border-[#DDD6FE] bg-white/90 backdrop-blur-xl">
-      <div className="mx-auto flex min-h-16 max-w-[1500px] items-center gap-3 px-3 md:px-5">
-        <Link to="/" className="flex items-center gap-2 md:min-w-[220px]">
+    <header className="sticky top-0 z-50 border-b-2 border-[#DDD6FE] bg-white/92 shadow-[0_6px_0_rgba(109,40,217,0.06)] backdrop-blur-xl">
+      <div className="mx-auto flex min-h-16 max-w-[1440px] items-center gap-3 px-3 md:px-5">
+        <Link to="/" className="flex shrink-0 items-center gap-2 md:w-[220px]">
           <AibiMark size="md" className="shadow-[0_5px_0_rgba(109,40,217,0.18)]" />
           <span className="hidden text-2xl font-black tracking-tight text-[#6D28D9] sm:inline">
             AI-Sana
           </span>
         </Link>
-        <div className="flex flex-1 items-center justify-end gap-2 overflow-x-auto py-2">
+        <div className="hidden flex-1 items-center justify-center gap-2 md:flex">
           <StatusPill icon="🔥" value="12 күн" />
           <StatusPill icon="❤️" value="5" />
-          <StatusPill icon="⭐" value="2450 XP" />
+          <StatusPill icon="⭐" value="2450" />
           <StatusPill icon="💎" value="1280" />
-          <StatusPill icon="🏆" value="Level 16" />
-          <div className="flex rounded-full border-2 border-[#DDD6FE] bg-[#F5F3FF] p-1">
+          <StatusPill icon="🏆" value="16" />
+        </div>
+        <div className="ml-auto flex shrink-0 items-center gap-2">
+          <div className="flex rounded-full border-2 border-[#DDD6FE] bg-[#F5F3FF] p-1 shadow-[0_4px_0_rgba(109,40,217,0.08)]">
             {(["KZ", "RU", "EN"] as Lang[]).map((lang) => (
               <button
                 key={lang}
                 type="button"
                 onClick={() => setLanguage(lang)}
-                className={`rounded-full px-3 py-1 text-sm font-black ${
+                className={`rounded-full px-2.5 py-1 text-sm font-black transition ${
                   language === lang ? "bg-[#6D28D9] text-white" : "text-[#1E1B4B]"
                 }`}
               >
@@ -125,7 +127,7 @@ export function GameTopBar() {
           </div>
           <Link
             to="/profile"
-            className="grid h-11 w-11 place-items-center rounded-full bg-[#8B5CF6] font-black text-white shadow-[0_5px_0_#5B21B6]"
+            className="grid h-11 w-11 place-items-center rounded-full bg-[#8B5CF6] font-black text-white shadow-[0_5px_0_#5B21B6] transition hover:-translate-y-0.5"
           >
             AA
           </Link>
@@ -152,24 +154,24 @@ function GameSidebar() {
   ];
   return (
     <aside className="hidden md:block">
-      <div className="sticky top-20 rounded-[28px] border-2 border-[#DDD6FE] bg-white p-3 shadow-[0_10px_0_rgba(109,40,217,0.12)]">
-        <div className="mb-3 rounded-3xl bg-gradient-to-br from-[#8B5CF6] to-[#6D28D9] p-4 text-white">
+      <div className="sticky top-20 rounded-[28px] border-2 border-[#DDD6FE] bg-white p-3 shadow-[0_10px_0_rgba(109,40,217,0.10)]">
+        <div className="mb-3 rounded-3xl bg-gradient-to-br from-[#8B5CF6] to-[#6D28D9] p-3 text-white shadow-[0_6px_0_rgba(76,29,149,0.28)]">
           <div className="flex items-center gap-3">
             <AibiMark size="lg" className="bg-white" />
             <div>
               <p className="text-xs font-black uppercase tracking-widest opacity-80">AI-Sana</p>
-              <p className="font-black">Келесі деңгейге дайынсың!</p>
+              <p className="text-sm font-black leading-tight">Келесі деңгейге дайынсың!</p>
             </div>
           </div>
         </div>
-        <nav className="space-y-1">
+        <nav className="space-y-1.5">
           {items.map((item) => {
             const active = location.pathname === item.to;
             return (
               <Link
                 key={item.label}
                 to={item.to as never}
-                className={`flex items-center gap-3 rounded-2xl px-4 py-3 font-black transition ${
+                className={`flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-black transition ${
                   active
                     ? "bg-[#6D28D9] text-white shadow-[0_5px_0_#4C1D95]"
                     : "text-[#4C1D95] hover:bg-[#EDE9FE]"
@@ -234,7 +236,7 @@ export function RightWidgets() {
   const c = labels[language];
   return (
     <div className="sticky top-20 space-y-4">
-      <GameCard>
+      <GameCard className="bg-white/95">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-black uppercase tracking-widest text-[#8B5CF6]">{c.today}</p>
@@ -247,12 +249,12 @@ export function RightWidgets() {
         <ProgressBar value={66} />
         <p className="mt-3 text-sm font-bold text-[#6B5E8F]">{c.reward}</p>
       </GameCard>
-      <GameCard>
+      <GameCard className="bg-white/95">
         <h3 className="text-lg font-black">{c.weak}</h3>
         <WeakTopic name="Пайыздар" value={28} />
         <WeakTopic name="Сөйлемдегі байланыс" value={35} />
       </GameCard>
-      <GameCard>
+      <GameCard className="bg-white/95">
         <h3 className="text-lg font-black">{c.weekly}</h3>
         <div className="mt-4 flex h-28 items-end gap-2">
           {[42, 58, 51, 70, 82, 68, 88].map((h, i) => (
