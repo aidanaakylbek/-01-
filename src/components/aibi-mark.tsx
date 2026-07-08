@@ -6,7 +6,7 @@ import aiSanaHero from "@/assets/ai-sana-hero.jpg";
 type AibiMarkProps = HTMLAttributes<HTMLDivElement> & {
   className?: string;
   label?: string;
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "xl" | "hero";
   shape?: "circle" | "square";
 };
 
@@ -14,6 +14,8 @@ const sizeClasses = {
   sm: "w-8 h-8",
   md: "w-10 h-10",
   lg: "w-14 h-14",
+  xl: "w-24 h-24",
+  hero: "w-52 h-52 md:w-72 md:h-72",
 };
 
 export function AibiMark({

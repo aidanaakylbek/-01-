@@ -2,10 +2,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   GameCard,
   GameLayout,
-  MascotCoach,
   ProgressBar,
   RightWidgets,
 } from "@/components/gamified-platform";
+import { AibiMark } from "@/components/aibi-mark";
 import { useLanguage } from "@/hooks/use-language";
 
 export const Route = createFileRoute("/")({
@@ -68,7 +68,7 @@ export function Dashboard() {
       <div className="space-y-5">
         <section className="relative overflow-hidden rounded-[34px] bg-gradient-to-br from-[#1E1B4B] via-[#6D28D9] to-[#8B5CF6] p-6 text-white shadow-[0_12px_0_rgba(30,27,75,0.25)] md:p-8">
           <div className="absolute right-[-50px] top-[-50px] h-44 w-44 rounded-full bg-[#C084FC]/30 blur-2xl" />
-          <div className="relative grid gap-6 lg:grid-cols-[1fr_260px] lg:items-center">
+          <div className="relative grid gap-8 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-center">
             <div>
               <p className="text-sm font-black uppercase tracking-[0.25em] text-[#FACC15]">
                 AI-Sana Quest
@@ -92,8 +92,34 @@ export function Dashboard() {
                 </Link>
               </div>
             </div>
-            <div className="rounded-[28px] border-2 border-white/30 bg-white/15 p-4 backdrop-blur">
-              <MascotCoach text={c.coach} />
+            <div className="relative min-h-[310px] overflow-visible">
+              <div className="absolute left-8 top-2 hidden h-28 w-28 rounded-full bg-[#FACC15]/25 blur-2xl md:block" />
+              <div className="absolute right-0 top-8 h-48 w-48 rounded-full bg-white/15 blur-2xl" />
+              <div className="relative mx-auto flex h-full max-w-[380px] items-center justify-center">
+                <div className="absolute right-4 top-2 rounded-[26px] border-2 border-white/30 bg-white/20 px-4 py-3 font-black text-white shadow-[0_8px_0_rgba(30,27,75,0.18)] backdrop-blur-md animate-[sana-bubble_3.2s_ease-in-out_infinite]">
+                  +20 XP
+                </div>
+                <div className="absolute left-2 top-16 grid h-12 w-12 place-items-center rounded-full bg-[#FACC15] text-2xl shadow-[0_6px_0_#CA8A04] animate-[sana-spark_2.8s_ease-in-out_infinite]">
+                  ⭐
+                </div>
+                <div className="absolute bottom-12 right-0 grid h-14 w-14 place-items-center rounded-full bg-white text-2xl shadow-[0_6px_0_rgba(30,27,75,0.18)] animate-[sana-spark_3.4s_ease-in-out_infinite]">
+                  💎
+                </div>
+                <div className="absolute bottom-2 left-3 rounded-[28px] border-2 border-white/35 bg-white px-5 py-4 text-[#1E1B4B] shadow-[0_8px_0_rgba(30,27,75,0.20)] animate-[sana-bubble_3.8s_ease-in-out_infinite]">
+                  <p className="text-xs font-black uppercase tracking-[0.2em] text-[#8B5CF6]">
+                    AI-Sana
+                  </p>
+                  <p className="max-w-[210px] text-base font-black">{c.coach}</p>
+                </div>
+                <div className="relative rounded-full bg-white/15 p-5 ring-2 ring-white/30 shadow-[0_20px_60px_rgba(30,27,75,0.28)] animate-[sana-live_4.5s_ease-in-out_infinite]">
+                  <div className="absolute inset-2 rounded-full border-2 border-white/25 animate-[sana-orbit_6s_linear_infinite]" />
+                  <AibiMark
+                    size="hero"
+                    shape="circle"
+                    className="border-4 border-white bg-white shadow-[0_16px_0_rgba(30,27,75,0.18)]"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </section>

@@ -537,11 +537,53 @@
     }
   }
 
+  @keyframes sana-live {
+    0%,
+    100% {
+      transform: translateY(0) rotate(-1deg) scale(1);
+    }
+    50% {
+      transform: translateY(-14px) rotate(1deg) scale(1.035);
+    }
+  }
+
+  @keyframes sana-bubble {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-8px);
+    }
+  }
+
+  @keyframes sana-spark {
+    0%,
+    100% {
+      transform: translateY(0) scale(1);
+    }
+    50% {
+      transform: translateY(-12px) scale(1.08);
+    }
+  }
+
+  @keyframes sana-orbit {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .motion-rise,
     .motion-panel,
     .motion-float,
     .motion-pulse-dot,
+    .animate-\[sana-live_4\.5s_ease-in-out_infinite\],
+    .animate-\[sana-bubble_3\.2s_ease-in-out_infinite\],
+    .animate-\[sana-bubble_3\.8s_ease-in-out_infinite\],
+    .animate-\[sana-spark_2\.8s_ease-in-out_infinite\],
+    .animate-\[sana-spark_3\.4s_ease-in-out_infinite\],
+    .animate-\[sana-orbit_6s_linear_infinite\],
     .chart-line,
     .progress-68,
     .animate-bounce {
