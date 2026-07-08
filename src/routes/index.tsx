@@ -107,12 +107,18 @@ export function Dashboard() {
                 </div>
                 <div className="relative rounded-full bg-white/15 p-4 ring-2 ring-white/30 shadow-[0_20px_60px_rgba(30,27,75,0.28)] animate-[sana-live_5.5s_ease-in-out_infinite]">
                   <div className="absolute inset-2 rounded-full border-2 border-white/20" />
+                  <div className="absolute -left-3 top-9 z-10 rounded-2xl border-2 border-white/50 bg-white px-4 py-2 text-sm font-black text-[#6D28D9] shadow-[0_6px_0_rgba(30,27,75,0.16)] animate-[sana-bubble_2.8s_ease-in-out_infinite]">
+                    Сәлем!
+                  </div>
                   <div className="relative h-52 w-52 overflow-hidden rounded-full border-4 border-white bg-white shadow-[0_16px_0_rgba(30,27,75,0.18)] md:h-72 md:w-72">
                     <img
                       alt="AI-Sana tutor"
-                      className="h-full w-full scale-[1.08] object-cover object-[center_45%]"
+                      className="sana-wave-person h-full w-full scale-[1.08] object-cover object-[center_45%]"
                       src={aiSanaPoster}
                     />
+                    <span className="sana-wave-line sana-wave-line-1" />
+                    <span className="sana-wave-line sana-wave-line-2" />
+                    <span className="sana-wave-line sana-wave-line-3" />
                   </div>
                 </div>
               </div>

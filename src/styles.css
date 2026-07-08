@@ -567,6 +567,78 @@
     }
   }
 
+  .sana-wave-person {
+    animation: sana-wave-person 2.7s ease-in-out infinite;
+    transform-origin: 38% 72%;
+  }
+
+  .sana-wave-line {
+    position: absolute;
+    left: 27%;
+    top: 30%;
+    display: block;
+    border: 3px solid rgba(109, 40, 217, 0.72);
+    border-bottom-color: transparent;
+    border-left-color: transparent;
+    border-radius: 999px;
+    opacity: 0;
+    pointer-events: none;
+    transform: rotate(-22deg) scale(0.6);
+    transform-origin: left bottom;
+  }
+
+  .sana-wave-line-1 {
+    height: 28px;
+    width: 28px;
+    animation: sana-wave-line 1.8s ease-out infinite;
+  }
+
+  .sana-wave-line-2 {
+    height: 42px;
+    width: 42px;
+    animation: sana-wave-line 1.8s ease-out 0.18s infinite;
+  }
+
+  .sana-wave-line-3 {
+    height: 56px;
+    width: 56px;
+    animation: sana-wave-line 1.8s ease-out 0.36s infinite;
+  }
+
+  @keyframes sana-wave-person {
+    0%,
+    100% {
+      transform: scale(1.08) rotate(0deg) translateY(0);
+    }
+    18% {
+      transform: scale(1.09) rotate(-1.5deg) translateY(-2px);
+    }
+    34% {
+      transform: scale(1.08) rotate(1.2deg) translateY(1px);
+    }
+    50% {
+      transform: scale(1.09) rotate(-1deg) translateY(-2px);
+    }
+  }
+
+  @keyframes sana-wave-line {
+    0% {
+      opacity: 0;
+      transform: rotate(-22deg) scale(0.55);
+    }
+    22% {
+      opacity: 0.85;
+    }
+    72% {
+      opacity: 0;
+      transform: rotate(-22deg) scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: rotate(-22deg) scale(1);
+    }
+  }
+
   @keyframes sana-orbit {
     to {
       transform: rotate(360deg);
@@ -578,7 +650,11 @@
     .motion-panel,
     .motion-float,
     .motion-pulse-dot,
+    .sana-wave-person,
+    .sana-wave-line,
     .animate-\[sana-live_4\.5s_ease-in-out_infinite\],
+    .animate-\[sana-live_5\.5s_ease-in-out_infinite\],
+    .animate-\[sana-bubble_2\.8s_ease-in-out_infinite\],
     .animate-\[sana-bubble_3\.2s_ease-in-out_infinite\],
     .animate-\[sana-bubble_3\.8s_ease-in-out_infinite\],
     .animate-\[sana-spark_2\.8s_ease-in-out_infinite\],
