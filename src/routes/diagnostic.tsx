@@ -1,7 +1,7 @@
 ﻿import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AIReviewPanel } from "@/components/ai-review-panel";
-import { Navbar } from "@/components/navbar";
+import { GameLayout } from "@/components/gamified-platform";
 import { diagnosticQuestions } from "@/data/diagnostic-questions";
 import { useLanguage } from "@/hooks/use-language";
 
@@ -160,10 +160,8 @@ function Diagnostic() {
   };
 
   return (
-    <div className="min-h-screen game-shell text-on-background font-body-md text-body-md">
-      <Navbar />
-
-      <main className="w-full max-w-4xl mx-auto px-container-padding-mobile md:px-container-padding-desktop py-stack-lg">
+    <GameLayout>
+      <main className="mx-auto w-full max-w-4xl font-body-md text-body-md">
         <div className="w-full flex justify-start mb-4">
           <Link
             to="/"
@@ -379,7 +377,7 @@ function Diagnostic() {
           </section>
         )}
       </main>
-    </div>
+    </GameLayout>
   );
 }
 

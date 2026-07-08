@@ -1,6 +1,5 @@
 ﻿import { createFileRoute } from "@tanstack/react-router";
-import { Navbar } from "@/components/navbar";
-import { SiteFooter } from "@/components/site-footer";
+import { GameLayout } from "@/components/gamified-platform";
 import { useLanguage } from "@/hooks/use-language";
 
 export const Route = createFileRoute("/privacy")({
@@ -50,9 +49,8 @@ function Privacy() {
           };
 
   return (
-    <div className="min-h-screen game-shell text-on-background">
-      <Navbar />
-      <main className="max-w-4xl mx-auto px-container-padding-mobile md:px-container-padding-desktop py-stack-lg">
+    <GameLayout>
+      <main className="mx-auto max-w-4xl">
         <span className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
           {copy.eyebrow}
         </span>
@@ -65,8 +63,7 @@ function Privacy() {
           ))}
         </div>
       </main>
-      <SiteFooter />
-    </div>
+    </GameLayout>
   );
 }
 

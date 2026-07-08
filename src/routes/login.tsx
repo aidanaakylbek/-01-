@@ -1,6 +1,6 @@
 ﻿import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { FormEvent } from "react";
-import { Navbar } from "@/components/navbar";
+import { GameLayout } from "@/components/gamified-platform";
 import { useLanguage } from "@/hooks/use-language";
 import { loginAccount } from "@/lib/api/account.functions";
 
@@ -74,9 +74,8 @@ function Login() {
   };
 
   return (
-    <div className="min-h-screen game-shell text-on-background">
-      <Navbar />
-      <main className="px-container-padding-mobile md:px-container-padding-desktop py-stack-lg">
+    <GameLayout>
+      <main>
         <section className="max-w-md mx-auto bg-surface-container-lowest border border-outline-variant p-8 md:p-10 soft-shadow">
           <div className="mb-8">
             <div className="w-14 h-14 organic-shape-1 bg-secondary text-on-secondary flex items-center justify-center mb-6">
@@ -144,7 +143,7 @@ function Login() {
           </p>
         </section>
       </main>
-    </div>
+    </GameLayout>
   );
 }
 
