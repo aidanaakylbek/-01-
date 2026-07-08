@@ -119,7 +119,7 @@ function ProfileRoute() {
                       : "border-[#DDD6FE] bg-white"
                   }`}
                 >
-                  <p className="text-lg font-black text-[#1E1B4B]">{style.label[language]}</p>
+                  <p className="text-lg font-black text-[#1E1B4B]">{style.title[language]}</p>
                   <p className="mt-1 font-semibold text-[#6B5E8F]">
                     {style.description[language]}
                   </p>

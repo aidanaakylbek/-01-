@@ -97,7 +97,7 @@ export function ProfileContent({ dashboard }: { dashboard: DashboardData }) {
                     : "border-[#DDD6FE] bg-white hover:bg-[#F5F3FF]"
                 }`}
               >
-                <p className="text-xl font-black">{style.label[language]}</p>
+                <p className="text-xl font-black">{style.title[language]}</p>
                 <p className="mt-2 font-semibold text-[#6B5E8F]">{style.description[language]}</p>
               </button>
             ))}
