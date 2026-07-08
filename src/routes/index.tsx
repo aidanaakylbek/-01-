@@ -6,7 +6,6 @@ import {
   RightWidgets,
 } from "@/components/gamified-platform";
 import aiSanaPoster from "@/assets/ai-sana-hero.jpg";
-import aiSanaAnimated from "@/assets/ai-sana-animated.mp4";
 import { useLanguage } from "@/hooks/use-language";
 
 export const Route = createFileRoute("/")({
@@ -106,19 +105,13 @@ export function Dashboard() {
                 <div className="absolute bottom-12 right-0 grid h-14 w-14 place-items-center rounded-full bg-white text-2xl shadow-[0_6px_0_rgba(30,27,75,0.18)] animate-[sana-spark_3.4s_ease-in-out_infinite]">
                   💎
                 </div>
-                <div className="relative rounded-full bg-white/15 p-4 ring-2 ring-white/30 shadow-[0_20px_60px_rgba(30,27,75,0.28)]">
+                <div className="relative rounded-full bg-white/15 p-4 ring-2 ring-white/30 shadow-[0_20px_60px_rgba(30,27,75,0.28)] animate-[sana-live_5.5s_ease-in-out_infinite]">
                   <div className="absolute inset-2 rounded-full border-2 border-white/20" />
                   <div className="relative h-52 w-52 overflow-hidden rounded-full border-4 border-white bg-white shadow-[0_16px_0_rgba(30,27,75,0.18)] md:h-72 md:w-72">
-                    <video
-                      aria-label="Animated AI-Sana tutor"
-                      autoPlay
-                      className="h-full w-full scale-[1.16] object-cover object-[center_58%]"
-                      loop
-                      muted
-                      playsInline
-                      poster={aiSanaPoster}
-                      preload="metadata"
-                      src={aiSanaAnimated}
+                    <img
+                      alt="AI-Sana tutor"
+                      className="h-full w-full scale-[1.08] object-cover object-[center_45%]"
+                      src={aiSanaPoster}
                     />
                   </div>
                 </div>
