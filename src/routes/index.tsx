@@ -6,6 +6,7 @@ import {
   RightWidgets,
 } from "@/components/gamified-platform";
 import aiSanaPoster from "@/assets/ai-sana-hero.jpg";
+import aiSanaAnimated from "@/assets/ai-sana-animated.mp4";
 import { useLanguage } from "@/hooks/use-language";
 
 export const Route = createFileRoute("/")({
@@ -111,11 +112,18 @@ export function Dashboard() {
                     Сәлем!
                   </div>
                   <div className="relative h-52 w-52 overflow-hidden rounded-full border-4 border-white bg-white shadow-[0_16px_0_rgba(30,27,75,0.18)] md:h-72 md:w-72">
-                    <img
-                      alt="AI-Sana tutor"
-                      className="sana-wave-person h-full w-full scale-[1.08] object-cover object-[center_45%]"
-                      src={aiSanaPoster}
+                    <video
+                      aria-label="Animated AI-Sana tutor"
+                      autoPlay
+                      className="h-full w-full scale-[1.42] object-cover object-[center_62%]"
+                      loop
+                      muted
+                      playsInline
+                      poster={aiSanaPoster}
+                      preload="auto"
+                      src={aiSanaAnimated}
                     />
+                    <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-white via-white/70 to-transparent" />
                     <span className="sana-wave-line sana-wave-line-1" />
                     <span className="sana-wave-line sana-wave-line-2" />
                     <span className="sana-wave-line sana-wave-line-3" />
