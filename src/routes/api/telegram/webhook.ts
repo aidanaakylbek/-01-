@@ -51,6 +51,8 @@ export const Route = createFileRoute("/api/telegram/webhook")({
           text: [
             "Сіз AI-Sana ата-ана есебіне қосылдыңыз ✅",
             "",
+            `Растау коды қабылданды: ${inviteCode}`,
+            "",
             "Енді балаңыздың апталық оқу нәтижесі Telegram арқылы келеді.",
           ].join("\n"),
         });

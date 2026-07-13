@@ -1,7 +1,7 @@
 {
   "crons": [
     {
-      "path": "/api/whatsapp-weekly-report",
+      "path": "/api/cron/send-weekly-reports",
       "schedule": "0 9 * * 1"
     }
   ]

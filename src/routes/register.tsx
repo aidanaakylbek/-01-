@@ -19,6 +19,10 @@ function Register() {
   const { language } = useLanguage();
   const [statusMessage, setStatusMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [parentInvite, setParentInvite] = useState<{
+    code: string;
+    link: string;
+  } | null>(null);
 
   const copy =
     language === "RU"
@@ -34,6 +38,10 @@ function Register() {
           submitError: "Не получилось создать аккаунт. Проверьте данные.",
           success:
             "Аккаунт создан. Недельный отчет будет отправляться после подтверждения родителя через Telegram.",
+          inviteTitle: "Код для Telegram готов",
+          inviteHint: "Отправьте эту ссылку родителю. После открытия бот сразу подтвердит родителя.",
+          openTelegram: "Открыть Telegram bot",
+          continue: "Продолжить",
           password: "Пароль",
           submit: "Создать аккаунт",
           haveAccount: "Уже есть аккаунт?",
@@ -51,6 +59,10 @@ function Register() {
             parentHint: "Reports are sent only after the parent connects to the Telegram bot.",
             submitError: "Could not create account. Check the form.",
             success: "Account created. Weekly reports will be sent after Telegram parent verification.",
+            inviteTitle: "Telegram code is ready",
+            inviteHint: "Send this link to the parent. The bot verifies the parent after opening it.",
+            openTelegram: "Open Telegram bot",
+            continue: "Continue",
             password: "Password",
             submit: "Create Account",
             haveAccount: "Already have an account?",
@@ -68,6 +80,11 @@ function Register() {
             submitError: "Аккаунт ашылмады. Мәліметтерді тексеріңіз.",
             success:
               "Аккаунт ашылды. Ата-анаңыз Telegram арқылы расталғаннан кейін апталық есеп жіберіледі.",
+            inviteTitle: "Telegram коды дайын",
+            inviteHint:
+              "Осы сілтемені ата-анаңызға жіберіңіз. Ата-ана ботты ашқанда код автоматты барады.",
+            openTelegram: "Telegram bot ашу",
+            continue: "Жалғастыру",
             password: "Құпия сөз",
             submit: "Аккаунт ашу",
             haveAccount: "Аккаунтыңыз бар ма?",
@@ -80,7 +97,7 @@ function Register() {
     try {
       setErrorMessage("");
 
-      await registerAccount({
+      const account = await registerAccount({
         data: {
           name: String(formData.get("name") ?? ""),
           email: String(formData.get("email") ?? ""),
@@ -92,9 +109,12 @@ function Register() {
       });
 
       setStatusMessage(copy.success);
-      window.setTimeout(() => {
-        void navigate({ to: "/reports" });
-      }, 900);
+      const code = account.parentInviteCode;
+      const username = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || "YOUR_BOT_USERNAME";
+      setParentInvite({
+        code,
+        link: `https://t.me/${username}?start=parent_${encodeURIComponent(code)}`,
+      });
     } catch {
       setErrorMessage(copy.submitError);
     }
@@ -117,7 +137,34 @@ function Register() {
             <p className="font-semibold text-[#6B5E8F]">{copy.subtitle}</p>
           </div>
 
-          <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
+          {parentInvite ? (
+            <div className="rounded-[28px] border-2 border-[#DDD6FE] bg-[#F5F3FF] p-5">
+              <p className="text-sm font-black uppercase tracking-[0.2em] text-[#8B5CF6]">
+                {copy.inviteTitle}
+              </p>
+              <p className="mt-2 text-4xl font-black text-[#1E1B4B]">{parentInvite.code}</p>
+              <p className="mt-2 font-semibold text-[#6B5E8F]">{copy.inviteHint}</p>
+              <div className="mt-5 grid gap-3">
+                <a
+                  className="rounded-2xl bg-[#FACC15] px-5 py-4 text-center font-black text-[#1E1B4B] shadow-[0_6px_0_#D97706]"
+                  href={parentInvite.link}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {copy.openTelegram}
+                </a>
+                <button
+                  className="rounded-2xl bg-[#6D28D9] px-5 py-4 font-black text-white shadow-[0_6px_0_#4C1D95]"
+                  type="button"
+                  onClick={() => void navigate({ to: "/diagnostic" })}
+                >
+                  {copy.continue}
+                </button>
+              </div>
+            </div>
+          ) : null}
+
+          <form className={`flex flex-col gap-5 ${parentInvite ? "mt-6" : ""}`} onSubmit={handleSubmit}>
             <RegisterInput autoComplete="name" label={copy.name} name="name" type="text" />
             <RegisterInput autoComplete="email" label={copy.email} name="email" type="email" />
 
