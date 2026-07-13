@@ -4,6 +4,14 @@ export type Account = {
   email: string;
   grade: string;
   initials: string;
+  parentName: string;
+  parentPhone: string;
+  parentPhoneVerified: boolean;
+  parentTelegramChatId?: string;
+  parentTelegramConnected: boolean;
+  parentTelegramVerifiedAt?: string;
+  parentInviteCode: string;
+  parentLastReportSentAt?: string;
   parentWhatsApp: string;
   parentWhatsAppVerified: boolean;
   mentorStyle: MentorStyle;
@@ -121,14 +129,24 @@ type ParentWhatsAppVerification = {
   expiresAt: number;
 };
 
+const sentWeeklyReportKeys = new Set<string>();
+
 const demoAccount: StoredAccount = {
   id: "demo-aidana",
   name: "Aidana Akylbek",
   email: "aidana@aibi.kz",
   grade: "7",
   initials: "AA",
+  parentName: "Айдананың ата-анасы",
+  parentPhone: "+77001234567",
+  parentPhoneVerified: false,
+  parentTelegramChatId: undefined,
+  parentTelegramConnected: false,
+  parentTelegramVerifiedAt: undefined,
+  parentInviteCode: "demo-parent",
+  parentLastReportSentAt: undefined,
   parentWhatsApp: "+77001234567",
-  parentWhatsAppVerified: true,
+  parentWhatsAppVerified: false,
   mentorStyle: "friendly",
   password: "demo123",
 };
@@ -263,15 +281,12 @@ export function registerAccount(input: {
   name: string;
   email: string;
   grade: string;
-  parentWhatsApp: string;
-  parentWhatsAppVerificationCode: string;
+  parentName: string;
+  parentPhone: string;
   password: string;
 }) {
-  const parentWhatsApp = input.parentWhatsApp.trim();
-
-  if (!verifyParentWhatsAppCode(parentWhatsApp, input.parentWhatsAppVerificationCode)) {
-    throw new Error("Parent WhatsApp verification code is incorrect or expired.");
-  }
+  const parentPhone = input.parentPhone.trim();
+  const inviteCode = createUniqueParentInviteCode();
 
   const account: StoredAccount = {
     id: `account-${Date.now()}`,
@@ -279,8 +294,16 @@ export function registerAccount(input: {
     email: input.email.trim().toLowerCase(),
     grade: input.grade,
     initials: getInitials(input.name),
-    parentWhatsApp,
-    parentWhatsAppVerified: true,
+    parentName: input.parentName.trim(),
+    parentPhone,
+    parentPhoneVerified: false,
+    parentTelegramChatId: undefined,
+    parentTelegramConnected: false,
+    parentTelegramVerifiedAt: undefined,
+    parentInviteCode: inviteCode,
+    parentLastReportSentAt: undefined,
+    parentWhatsApp: parentPhone,
+    parentWhatsAppVerified: false,
     mentorStyle: "friendly",
     password: input.password,
   };
@@ -289,6 +312,91 @@ export function registerAccount(input: {
   activeEmail = account.email;
 
   return toPublicAccount(account);
+}
+
+export function createOrReturnParentInvite() {
+  const account = accounts.get(activeEmail) ?? demoAccount;
+
+  if (!account.parentInviteCode) {
+    account.parentInviteCode = createUniqueParentInviteCode();
+    accounts.set(account.email, account);
+  }
+
+  return {
+    inviteCode: account.parentInviteCode,
+    parentName: account.parentName,
+    verified: account.parentTelegramConnected && account.parentPhoneVerified,
+  };
+}
+
+export function verifyParentTelegramInvite(inviteCode: string, telegramChatId: string) {
+  const account = [...accounts.values()].find((item) => item.parentInviteCode === inviteCode);
+
+  if (!account) {
+    return null;
+  }
+
+  const now = new Date().toISOString();
+  account.parentTelegramChatId = telegramChatId;
+  account.parentTelegramConnected = true;
+  account.parentPhoneVerified = true;
+  account.parentWhatsAppVerified = false;
+  account.parentTelegramVerifiedAt = now;
+  accounts.set(account.email, account);
+
+  return toPublicAccount(account);
+}
+
+export function getVerifiedParentReportTargets() {
+  return [...accounts.values()]
+    .filter(
+      (account) =>
+        Boolean(account.parentTelegramChatId) &&
+        account.parentTelegramConnected &&
+        account.parentPhoneVerified,
+    )
+    .map((account) => ({
+      account: toPublicAccount(account),
+      telegramChatId: account.parentTelegramChatId as string,
+    }));
+}
+
+export function getCurrentParentReportTarget() {
+  const account = accounts.get(activeEmail) ?? demoAccount;
+
+  if (!account.parentTelegramChatId || !account.parentTelegramConnected || !account.parentPhoneVerified) {
+    return null;
+  }
+
+  return {
+    account: toPublicAccount(account),
+    telegramChatId: account.parentTelegramChatId,
+  };
+}
+
+export function wasWeeklyReportSent(studentId: string, weekKey: string) {
+  return sentWeeklyReportKeys.has(`${studentId}:${weekKey}`);
+}
+
+export function markWeeklyReportSent(studentId: string, weekKey: string) {
+  sentWeeklyReportKeys.add(`${studentId}:${weekKey}`);
+  const account = [...accounts.values()].find((item) => item.id === studentId);
+
+  if (account) {
+    account.parentLastReportSentAt = new Date().toISOString();
+    accounts.set(account.email, account);
+  }
+}
+
+function createUniqueParentInviteCode() {
+  let inviteCode = "";
+  const existingCodes = new Set([...accounts.values()].map((account) => account.parentInviteCode));
+
+  do {
+    inviteCode = Math.random().toString(36).slice(2, 8).toUpperCase();
+  } while (existingCodes.has(inviteCode));
+
+  return inviteCode;
 }
 
 export function updateMentorStyle(style: MentorStyle) {

@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { getDashboardAccount } from "@/lib/account-store.server";
-import { maskPhone, sendWhatsAppTemplate, sendWhatsAppText } from "@/lib/whatsapp.server";
+import { getCurrentParentReportTarget, getDashboardAccount } from "@/lib/account-store.server";
+import { sendTelegramMessage } from "@/lib/telegram.server";
 
 export const Route = createFileRoute("/api/whatsapp-weekly-report")({
   server: {
@@ -11,23 +11,20 @@ export const Route = createFileRoute("/api/whatsapp-weekly-report")({
           return Response.json({ error: "Unauthorized weekly report request." }, { status: 401 });
         }
 
-        const dashboard = getDashboardAccount();
-        const recipientPhone = process.env.DEMO_PARENT_WHATSAPP || dashboard.account.parentWhatsApp;
-        const useTemplate = new URL(request.url).searchParams.get("template") === "1";
-        const templateName =
-          process.env.WHATSAPP_TEST_TEMPLATE_NAME || "3p_direct_integration_test_template";
-        const templateLanguage = process.env.WHATSAPP_TEST_TEMPLATE_LANGUAGE || "en_US";
-        const reportText = generateWeeklyReport(dashboard.account.id);
-        const result = useTemplate
-          ? await sendWhatsAppTemplate({
-              languageCode: templateLanguage,
-              name: templateName,
-              to: recipientPhone,
-            })
-          : await sendWhatsAppText({
-              body: reportText,
-              to: recipientPhone,
-            });
+        const target = getCurrentParentReportTarget();
+
+        if (!target) {
+          return Response.json({
+            status: "not_sent",
+            reason: "Parent is not verified through Telegram yet.",
+          });
+        }
+
+        const reportText = generateWeeklyReport(target.account.id);
+        const result = await sendTelegramMessage({
+          chatId: target.telegramChatId,
+          text: reportText,
+        });
 
         if (!result.ok) {
           return Response.json(
@@ -42,9 +39,8 @@ export const Route = createFileRoute("/api/whatsapp-weekly-report")({
 
         return Response.json({
           status: "sent",
-          mode: useTemplate ? "template" : "text",
-          to: maskPhone(recipientPhone),
-          whatsappMessageId: result.whatsappMessageId,
+          mode: "telegram",
+          telegramMessageId: result.messageId,
         });
       },
     },

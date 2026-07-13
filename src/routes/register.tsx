@@ -1,8 +1,8 @@
-﻿import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { FormEvent, useState } from "react";
 import { GameCard, GameLayout } from "@/components/gamified-platform";
 import { useLanguage } from "@/hooks/use-language";
-import { registerAccount, requestParentWhatsAppVerification } from "@/lib/api/account.functions";
+import { registerAccount } from "@/lib/api/account.functions";
 
 export const Route = createFileRoute("/register")({
   head: () => ({
@@ -17,7 +17,6 @@ export const Route = createFileRoute("/register")({
 function Register() {
   const navigate = useNavigate();
   const { language } = useLanguage();
-  const [verificationState, setVerificationState] = useState<"idle" | "sending" | "sent">("idle");
   const [statusMessage, setStatusMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -25,61 +24,54 @@ function Register() {
     language === "RU"
       ? {
           title: "Регистрация",
-          subtitle: "Создайте аккаунт и начните персональную подготовку.",
+          subtitle: "Создайте аккаунт и подключите родителя через Telegram.",
           name: "Имя ученика",
           email: "Электронная почта",
           grade: "Класс",
-          parentWhatsApp: "WhatsApp родителя",
-          sendCode: "Отправить код",
-          sendingCode: "Отправляем...",
-          code: "Код из WhatsApp",
-          codeHint: "Код действует 10 минут. Без подтверждения отчет не будет привязан к родителю.",
-          codeSent: "Код отправлен на",
-          codeError: "Не получилось отправить код. Проверьте WhatsApp API и номер родителя.",
-          submitError: "Не получилось создать аккаунт. Проверьте код из WhatsApp.",
+          parentName: "Имя родителя",
+          parentPhone: "Телефон родителя",
+          parentHint: "Отчет будет отправляться только после подключения родителя к Telegram-боту.",
+          submitError: "Не получилось создать аккаунт. Проверьте данные.",
+          success:
+            "Аккаунт создан. Недельный отчет будет отправляться после подтверждения родителя через Telegram.",
           password: "Пароль",
           submit: "Создать аккаунт",
           haveAccount: "Уже есть аккаунт?",
           signIn: "Войти",
         }
-      : language === "KZ"
+      : language === "EN"
         ? {
-            title: "Тіркелу",
-            subtitle: "Аккаунт ашып, жеке дайындықты бастаңыз.",
-            name: "Оқушының аты",
-            email: "Электрондық пошта",
-            grade: "Сынып",
-            parentWhatsApp: "Ата-ананың WhatsApp нөмірі",
-            sendCode: "Код жіберу",
-            sendingCode: "Жіберіліп жатыр...",
-            code: "WhatsApp-тағы код",
-            codeHint: "Код 10 минут жарамды. Расталмаса, отчет ата-анаға байланыспайды.",
-            codeSent: "Код жіберілді:",
-            codeError: "Код жіберілмеді. WhatsApp API мен ата-ана номерін тексеріңіз.",
-            submitError: "Аккаунт ашылмады. WhatsApp кодын тексеріңіз.",
-            password: "Құпия сөз",
-            submit: "Аккаунт ашу",
-            haveAccount: "Аккаунтыңыз бар ма?",
-            signIn: "Кіру",
-          }
-        : {
             title: "Register",
-            subtitle: "Create an account and start personalized preparation.",
+            subtitle: "Create an account and connect a parent through Telegram.",
             name: "Student name",
             email: "Email",
             grade: "Grade",
-            parentWhatsApp: "Parent WhatsApp",
-            sendCode: "Send code",
-            sendingCode: "Sending...",
-            code: "WhatsApp code",
-            codeHint: "The code is valid for 10 minutes. Reports need a verified parent number.",
-            codeSent: "Code sent to",
-            codeError: "Could not send the code. Check WhatsApp API and parent number.",
-            submitError: "Could not create account. Check the WhatsApp code.",
+            parentName: "Parent name",
+            parentPhone: "Parent phone number",
+            parentHint: "Reports are sent only after the parent connects to the Telegram bot.",
+            submitError: "Could not create account. Check the form.",
+            success: "Account created. Weekly reports will be sent after Telegram parent verification.",
             password: "Password",
             submit: "Create Account",
             haveAccount: "Already have an account?",
             signIn: "Sign In",
+          }
+        : {
+            title: "Тіркелу",
+            subtitle: "Аккаунт ашып, ата-ананы Telegram арқылы қосыңыз.",
+            name: "Оқушының аты",
+            email: "Электрондық пошта",
+            grade: "Сынып",
+            parentName: "Ата-ананың аты",
+            parentPhone: "Ата-ананың телефон нөмірі",
+            parentHint: "Есеп ата-ана Telegram ботқа қосылғаннан кейін ғана жіберіледі.",
+            submitError: "Аккаунт ашылмады. Мәліметтерді тексеріңіз.",
+            success:
+              "Аккаунт ашылды. Ата-анаңыз Telegram арқылы расталғаннан кейін апталық есеп жіберіледі.",
+            password: "Құпия сөз",
+            submit: "Аккаунт ашу",
+            haveAccount: "Аккаунтыңыз бар ма?",
+            signIn: "Кіру",
           };
 
   const submitAccount = async (form: HTMLFormElement) => {
@@ -93,44 +85,18 @@ function Register() {
           name: String(formData.get("name") ?? ""),
           email: String(formData.get("email") ?? ""),
           grade: String(formData.get("grade") ?? ""),
-          parentWhatsApp: String(formData.get("parentWhatsApp") ?? ""),
-          parentWhatsAppVerificationCode: String(
-            formData.get("parentWhatsAppVerificationCode") ?? "",
-          ),
+          parentName: String(formData.get("parentName") ?? ""),
+          parentPhone: String(formData.get("parentPhone") ?? ""),
           password: String(formData.get("password") ?? ""),
         },
       });
 
-      void navigate({ to: "/diagnostic" });
+      setStatusMessage(copy.success);
+      window.setTimeout(() => {
+        void navigate({ to: "/reports" });
+      }, 900);
     } catch {
       setErrorMessage(copy.submitError);
-    }
-  };
-
-  const sendParentCode = async (form: HTMLFormElement) => {
-    const formData = new FormData(form);
-    const studentName = String(formData.get("name") ?? "");
-    const parentWhatsApp = String(formData.get("parentWhatsApp") ?? "");
-
-    if (!studentName.trim() || !parentWhatsApp.trim()) {
-      form.reportValidity();
-      return;
-    }
-
-    try {
-      setVerificationState("sending");
-      setErrorMessage("");
-      setStatusMessage("");
-
-      const result = await requestParentWhatsAppVerification({
-        data: { studentName, parentWhatsApp },
-      });
-
-      setVerificationState("sent");
-      setStatusMessage(`${copy.codeSent} ${result.phone}`);
-    } catch {
-      setVerificationState("idle");
-      setErrorMessage(copy.codeError);
     }
   };
 
@@ -152,27 +118,8 @@ function Register() {
           </div>
 
           <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
-            <label className="flex flex-col gap-2 font-black text-[#1E1B4B]">
-              {copy.name}
-              <input
-                className="h-13 rounded-2xl border-2 border-[#DDD6FE] bg-[#F5F3FF] px-4 font-semibold text-[#1E1B4B] focus:border-[#8B5CF6] focus:outline-none"
-                name="name"
-                type="text"
-                autoComplete="name"
-                required
-              />
-            </label>
-
-            <label className="flex flex-col gap-2 font-black text-[#1E1B4B]">
-              {copy.email}
-              <input
-                className="h-13 rounded-2xl border-2 border-[#DDD6FE] bg-[#F5F3FF] px-4 font-semibold text-[#1E1B4B] focus:border-[#8B5CF6] focus:outline-none"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-              />
-            </label>
+            <RegisterInput autoComplete="name" label={copy.name} name="name" type="text" />
+            <RegisterInput autoComplete="email" label={copy.email} name="email" type="email" />
 
             <label className="flex flex-col gap-2 font-black text-[#1E1B4B]">
               {copy.grade}
@@ -190,50 +137,29 @@ function Register() {
               </select>
             </label>
 
+            <RegisterInput autoComplete="name" label={copy.parentName} name="parentName" type="text" />
             <label className="flex flex-col gap-2 font-black text-[#1E1B4B]">
-              {copy.parentWhatsApp}
-              <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
-                <input
-                  className="h-13 rounded-2xl border-2 border-[#DDD6FE] bg-[#F5F3FF] px-4 font-semibold text-[#1E1B4B] focus:border-[#8B5CF6] focus:outline-none"
-                  name="parentWhatsApp"
-                  type="tel"
-                  autoComplete="tel"
-                  placeholder="+7 700 123 45 67"
-                  required
-                />
-                <button
-                  className="h-13 rounded-2xl border-2 border-[#8B5CF6] px-5 font-black text-[#6D28D9] transition hover:bg-[#6D28D9] hover:text-white disabled:opacity-60"
-                  type="button"
-                  disabled={verificationState === "sending"}
-                  onClick={(event) => {
-                    const form = event.currentTarget.form;
-
-                    if (form) {
-                      void sendParentCode(form);
-                    }
-                  }}
-                >
-                  {verificationState === "sending" ? copy.sendingCode : copy.sendCode}
-                </button>
-              </div>
-            </label>
-
-            <label className="flex flex-col gap-2 font-black text-[#1E1B4B]">
-              {copy.code}
+              {copy.parentPhone}
               <input
                 className="h-13 rounded-2xl border-2 border-[#DDD6FE] bg-[#F5F3FF] px-4 font-semibold text-[#1E1B4B] focus:border-[#8B5CF6] focus:outline-none"
-                name="parentWhatsAppVerificationCode"
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]{6}"
-                autoComplete="one-time-code"
-                placeholder="123456"
+                name="parentPhone"
+                type="tel"
+                autoComplete="tel"
+                placeholder="+7 700 123 45 67"
                 required
               />
               <span className="text-sm font-semibold text-[#6B5E8F]">
-                {statusMessage || copy.codeHint}
+                {statusMessage || copy.parentHint}
               </span>
             </label>
+
+            <RegisterInput
+              autoComplete="new-password"
+              label={copy.password}
+              minLength={6}
+              name="password"
+              type="password"
+            />
 
             {errorMessage ? (
               <p className="rounded-2xl border-2 border-[#EF4444]/40 bg-[#FEE2E2] px-4 py-3 text-sm font-bold text-[#991B1B]">
@@ -241,28 +167,9 @@ function Register() {
               </p>
             ) : null}
 
-            <label className="flex flex-col gap-2 font-black text-[#1E1B4B]">
-              {copy.password}
-              <input
-                className="h-13 rounded-2xl border-2 border-[#DDD6FE] bg-[#F5F3FF] px-4 font-semibold text-[#1E1B4B] focus:border-[#8B5CF6] focus:outline-none"
-                name="password"
-                type="password"
-                autoComplete="new-password"
-                minLength={6}
-                required
-              />
-            </label>
-
             <button
               className="mt-2 h-13 rounded-2xl bg-[#6D28D9] font-black text-white shadow-[0_6px_0_#4C1D95] transition hover:-translate-y-0.5"
-              type="button"
-              onClick={(event) => {
-                const form = event.currentTarget.form;
-
-                if (form?.reportValidity()) {
-                  void submitAccount(form);
-                }
-              }}
+              type="submit"
             >
               {copy.submit}
             </button>
@@ -280,3 +187,30 @@ function Register() {
   );
 }
 
+function RegisterInput({
+  autoComplete,
+  label,
+  minLength,
+  name,
+  type,
+}: {
+  autoComplete: string;
+  label: string;
+  minLength?: number;
+  name: string;
+  type: string;
+}) {
+  return (
+    <label className="flex flex-col gap-2 font-black text-[#1E1B4B]">
+      {label}
+      <input
+        className="h-13 rounded-2xl border-2 border-[#DDD6FE] bg-[#F5F3FF] px-4 font-semibold text-[#1E1B4B] focus:border-[#8B5CF6] focus:outline-none"
+        name={name}
+        type={type}
+        autoComplete={autoComplete}
+        minLength={minLength}
+        required
+      />
+    </label>
+  );
+}

@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { GameCard, GameLayout, MascotCoach, ProgressBar } from "@/components/gamified-platform";
 import { useLanguage } from "@/hooks/use-language";
 
@@ -9,6 +10,8 @@ export const Route = createFileRoute("/reports")({
 
 function ParentReportPage() {
   const { language } = useLanguage();
+  const [invite, setInvite] = useState<ParentInviteResponse | null>(null);
+  const [testStatus, setTestStatus] = useState("");
   const c =
     language === "RU"
       ? {
@@ -20,6 +23,15 @@ function ParentReportPage() {
           strong: "Сильные темы",
           weak: "Слабые темы",
           parentTip: "Попросите ребенка объяснить две ошибки недели своими словами.",
+          notVerified: "Родитель не подтвержден",
+          verified: "Родитель подтвержден ✅",
+          telegramOff: "Telegram: не подключен",
+          telegramOn: "Telegram: подключен ✅",
+          verifyTelegram: "Подтвердить через Telegram",
+          sendTest: "Отправить тестовое сообщение",
+          onlyAfterTelegram: "Отчет отправляется только после подключения родителя к Telegram.",
+          testSent: "Тестовое сообщение отправлено.",
+          testFailed: "Не получилось отправить тестовое сообщение.",
         }
       : language === "EN"
         ? {
@@ -31,6 +43,15 @@ function ParentReportPage() {
             strong: "Strong topics",
             weak: "Weak topics",
             parentTip: "Ask the student to explain two weekly mistakes in their own words.",
+            notVerified: "Parent is not verified",
+            verified: "Parent verified ✅",
+            telegramOff: "Telegram: not connected",
+            telegramOn: "Telegram: connected ✅",
+            verifyTelegram: "Verify through Telegram",
+            sendTest: "Send test message",
+            onlyAfterTelegram: "Reports are sent only after the parent connects to Telegram.",
+            testSent: "Test message sent.",
+            testFailed: "Could not send test message.",
           }
         : {
             title: "Ата-ана есебі",
@@ -41,7 +62,31 @@ function ParentReportPage() {
             strong: "Мықты тақырыптар",
             weak: "Әлсіз тақырыптар",
             parentTip: "Балаңыздан аптадағы екі қатесін өз сөзімен түсіндіруін сұраңыз.",
+            notVerified: "Ата-ана расталмаған",
+            verified: "Ата-ана расталды ✅",
+            telegramOff: "Telegram: Қосылмаған",
+            telegramOn: "Telegram: Қосылған ✅",
+            verifyTelegram: "Telegram арқылы растау",
+            sendTest: "Тест хабарлама жіберу",
+            onlyAfterTelegram: "Ата-ана Telegram-ға қосылғаннан кейін ғана есеп жіберіледі.",
+            testSent: "Тест хабарлама жіберілді.",
+            testFailed: "Тест хабарлама жіберілмеді.",
           };
+
+  useEffect(() => {
+    void fetch("/api/parent/create-invite")
+      .then((response) => response.json())
+      .then((data: ParentInviteResponse) => setInvite(data))
+      .catch(() => setInvite(null));
+  }, []);
+
+  const sendTestMessage = async () => {
+    setTestStatus("");
+
+    const response = await fetch("/api/parent/send-test-message", { method: "POST" });
+
+    setTestStatus(response.ok ? c.testSent : c.testFailed);
+  };
 
   return (
     <GameLayout>
@@ -55,9 +100,50 @@ function ParentReportPage() {
               <h1 className="mt-2 text-4xl font-black md:text-6xl">{c.title}</h1>
               <p className="mt-3 max-w-2xl font-semibold text-[#6B5E8F]">{c.subtitle}</p>
             </div>
-            <button className="rounded-2xl bg-[#6D28D9] px-6 py-4 font-black text-white shadow-[0_6px_0_#4C1D95]">
-              {c.send}
-            </button>
+            {invite?.status.verified ? (
+              <button
+                className="rounded-2xl bg-[#6D28D9] px-6 py-4 font-black text-white shadow-[0_6px_0_#4C1D95]"
+                type="button"
+                onClick={() => void sendTestMessage()}
+              >
+                {c.sendTest}
+              </button>
+            ) : (
+              <a
+                className="rounded-2xl bg-[#FACC15] px-6 py-4 text-center font-black text-[#1E1B4B] shadow-[0_6px_0_#D97706]"
+                href={invite?.telegramLink ?? "#"}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {c.verifyTelegram}
+              </a>
+            )}
+          </div>
+        </GameCard>
+        <GameCard className="bg-white">
+          <div className="grid gap-4 md:grid-cols-[1fr_auto] md:items-center">
+            <div>
+              <p className="text-sm font-black uppercase tracking-[0.2em] text-[#8B5CF6]">
+                Telegram Parent Verification
+              </p>
+              <h2 className="mt-2 text-2xl font-black">
+                {invite?.status.verified ? c.verified : c.notVerified}
+              </h2>
+              <p className="mt-2 font-semibold text-[#6B5E8F]">
+                {invite?.status.telegramConnected ? c.telegramOn : c.telegramOff}
+              </p>
+              <p className="mt-2 font-semibold text-[#6B5E8F]">{c.onlyAfterTelegram}</p>
+              {invite?.status.lastReportSentAt ? (
+                <p className="mt-2 text-sm font-bold text-[#6B5E8F]">
+                  Last report: {new Date(invite.status.lastReportSentAt).toLocaleDateString()}
+                </p>
+              ) : null}
+              {testStatus ? <p className="mt-3 font-black text-[#6D28D9]">{testStatus}</p> : null}
+            </div>
+            <div className="rounded-3xl bg-[#F5F3FF] p-5 text-center">
+              <p className="text-xs font-black uppercase tracking-widest text-[#8B5CF6]">Invite code</p>
+              <p className="mt-1 text-3xl font-black text-[#1E1B4B]">{invite?.inviteCode ?? "..."}</p>
+            </div>
           </div>
         </GameCard>
         <MascotCoach text={c.parentTip} />
@@ -104,6 +190,19 @@ function ParentReportPage() {
     </GameLayout>
   );
 }
+
+type ParentInviteResponse = {
+  inviteCode: string;
+  parentName: string;
+  telegramLink: string;
+  status: {
+    lastReportSentAt: string | null;
+    phoneVerified: boolean;
+    telegramConnected: boolean;
+    telegramVerifiedAt: string | null;
+    verified: boolean;
+  };
+};
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
