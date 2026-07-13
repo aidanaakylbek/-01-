@@ -490,3 +490,8 @@ export function loginAccount(input: { email: string; password: string }) {
   activeEmail = account.email;
   return toPublicAccount(account);
 }
+
+export function logoutAccount() {
+  activeEmail = demoAccount.email;
+  return { ok: true };
+}

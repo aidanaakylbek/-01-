@@ -4,6 +4,7 @@ import { z } from "zod";
 import {
   getDashboardAccount as readDashboardAccount,
   loginAccount as loginStoredAccount,
+  logoutAccount as logoutStoredAccount,
   registerAccount as registerStoredAccount,
   saveExamAttempt as saveStoredExamAttempt,
   saveSolutionExplanationLog as saveStoredSolutionExplanationLog,
@@ -46,6 +47,10 @@ export const loginAccount = createServerFn({ method: "POST" })
 
     return account;
   });
+
+export const logoutAccount = createServerFn({ method: "POST" }).handler(async () => {
+  return logoutStoredAccount();
+});
 
 export const updateMentorStyle = createServerFn({ method: "POST" })
   .inputValidator(

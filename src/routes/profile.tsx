@@ -1,8 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AibiMark } from "@/components/aibi-mark";
 import { GameCard, GameLayout, MascotCoach, ProgressBar } from "@/components/gamified-platform";
 import { mentorStyles } from "@/lib/ai-mentor";
 import { useLanguage } from "@/hooks/use-language";
+import { logoutAccount } from "@/lib/api/account.functions";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({ meta: [{ title: "Profile — AI-Sana" }] }),
@@ -11,6 +12,7 @@ export const Route = createFileRoute("/profile")({
 
 function ProfileRoute() {
   const { language } = useLanguage();
+  const navigate = useNavigate();
   const c =
     language === "RU"
       ? {
@@ -21,6 +23,7 @@ function ProfileRoute() {
           history: "История обучения",
           mentor: "Стиль AI-наставника",
           coins: "Sana Coins",
+          logout: "Выйти из аккаунта",
           stats: ["XP", "Серия", "Бейджи", "Точность"],
           lessons: ["Диагностика", "Натуральные числа", "Проценты"],
         }
@@ -33,6 +36,7 @@ function ProfileRoute() {
             history: "Study history",
             mentor: "AI mentor style",
             coins: "Sana Coins",
+            logout: "Log out",
             stats: ["XP", "Streak", "Badges", "Accuracy"],
             lessons: ["Diagnostic", "Natural numbers", "Percentages"],
           }
@@ -44,6 +48,7 @@ function ProfileRoute() {
             history: "Оқу тарихы",
             mentor: "AI-ментор стилі",
             coins: "Sana Coins",
+            logout: "Аккаунттан шығу",
             stats: ["XP", "Серия", "Белгілер", "Дәлдік"],
             lessons: ["Диагностика", "Натурал сандар", "Пайыздар"],
           };
@@ -68,6 +73,17 @@ function ProfileRoute() {
                 {c.coins}
               </p>
               <p className="text-4xl font-black">💎 1280</p>
+              <button
+                className="mt-4 rounded-2xl bg-white px-5 py-3 font-black text-[#6D28D9] shadow-[0_5px_0_#C4B5FD] transition hover:-translate-y-0.5"
+                type="button"
+                onClick={() => {
+                  void logoutAccount().finally(() => {
+                    void navigate({ to: "/login" });
+                  });
+                }}
+              >
+                {c.logout}
+              </button>
             </div>
           </div>
         </GameCard>
