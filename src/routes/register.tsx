@@ -1,6 +1,6 @@
 ﻿import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { FormEvent, useState } from "react";
-import { GameLayout } from "@/components/gamified-platform";
+import { GameCard, GameLayout } from "@/components/gamified-platform";
 import { useLanguage } from "@/hooks/use-language";
 import { registerAccount, requestParentWhatsAppVerification } from "@/lib/api/account.functions";
 
@@ -141,23 +141,21 @@ function Register() {
 
   return (
     <GameLayout>
-      <main>
-        <section className="max-w-md mx-auto bg-surface-container-lowest border border-outline-variant p-8 md:p-10 soft-shadow">
+      <div className="mx-auto max-w-md">
+        <GameCard className="bg-white/95">
           <div className="mb-8">
-            <div className="w-14 h-14 organic-shape-2 bg-secondary text-on-secondary flex items-center justify-center mb-6">
+            <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-3xl bg-[#6D28D9] text-white shadow-[0_6px_0_#4C1D95]">
               <span className="material-symbols-outlined text-3xl">person_add</span>
             </div>
-            <h1 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary mb-3">
-              {copy.title}
-            </h1>
-            <p className="font-body-md text-body-md text-on-surface-variant">{copy.subtitle}</p>
+            <h1 className="mb-3 text-4xl font-black text-[#1E1B4B]">{copy.title}</h1>
+            <p className="font-semibold text-[#6B5E8F]">{copy.subtitle}</p>
           </div>
 
           <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
-            <label className="flex flex-col gap-2 font-label-md text-label-md text-primary">
+            <label className="flex flex-col gap-2 font-black text-[#1E1B4B]">
               {copy.name}
               <input
-                className="h-12 border border-outline-variant bg-surface px-4 font-body-md text-body-md text-on-surface focus:border-secondary focus:outline-none"
+                className="h-13 rounded-2xl border-2 border-[#DDD6FE] bg-[#F5F3FF] px-4 font-semibold text-[#1E1B4B] focus:border-[#8B5CF6] focus:outline-none"
                 name="name"
                 type="text"
                 autoComplete="name"
@@ -165,10 +163,10 @@ function Register() {
               />
             </label>
 
-            <label className="flex flex-col gap-2 font-label-md text-label-md text-primary">
+            <label className="flex flex-col gap-2 font-black text-[#1E1B4B]">
               {copy.email}
               <input
-                className="h-12 border border-outline-variant bg-surface px-4 font-body-md text-body-md text-on-surface focus:border-secondary focus:outline-none"
+                className="h-13 rounded-2xl border-2 border-[#DDD6FE] bg-[#F5F3FF] px-4 font-semibold text-[#1E1B4B] focus:border-[#8B5CF6] focus:outline-none"
                 name="email"
                 type="email"
                 autoComplete="email"
@@ -176,10 +174,10 @@ function Register() {
               />
             </label>
 
-            <label className="flex flex-col gap-2 font-label-md text-label-md text-primary">
+            <label className="flex flex-col gap-2 font-black text-[#1E1B4B]">
               {copy.grade}
               <select
-                className="h-12 border border-outline-variant bg-surface px-4 font-body-md text-body-md text-on-surface focus:border-secondary focus:outline-none"
+                className="h-13 rounded-2xl border-2 border-[#DDD6FE] bg-[#F5F3FF] px-4 font-semibold text-[#1E1B4B] focus:border-[#8B5CF6] focus:outline-none"
                 name="grade"
                 required
               >
@@ -192,11 +190,11 @@ function Register() {
               </select>
             </label>
 
-            <label className="flex flex-col gap-2 font-label-md text-label-md text-primary">
+            <label className="flex flex-col gap-2 font-black text-[#1E1B4B]">
               {copy.parentWhatsApp}
               <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
                 <input
-                  className="h-12 border border-outline-variant bg-surface px-4 font-body-md text-body-md text-on-surface focus:border-secondary focus:outline-none"
+                  className="h-13 rounded-2xl border-2 border-[#DDD6FE] bg-[#F5F3FF] px-4 font-semibold text-[#1E1B4B] focus:border-[#8B5CF6] focus:outline-none"
                   name="parentWhatsApp"
                   type="tel"
                   autoComplete="tel"
@@ -204,7 +202,7 @@ function Register() {
                   required
                 />
                 <button
-                  className="h-12 border border-secondary px-5 font-label-caps text-label-caps uppercase tracking-widest text-secondary hover:bg-secondary hover:text-on-secondary transition-colors disabled:opacity-60"
+                  className="h-13 rounded-2xl border-2 border-[#8B5CF6] px-5 font-black text-[#6D28D9] transition hover:bg-[#6D28D9] hover:text-white disabled:opacity-60"
                   type="button"
                   disabled={verificationState === "sending"}
                   onClick={(event) => {
@@ -220,10 +218,10 @@ function Register() {
               </div>
             </label>
 
-            <label className="flex flex-col gap-2 font-label-md text-label-md text-primary">
+            <label className="flex flex-col gap-2 font-black text-[#1E1B4B]">
               {copy.code}
               <input
-                className="h-12 border border-outline-variant bg-surface px-4 font-body-md text-body-md text-on-surface focus:border-secondary focus:outline-none"
+                className="h-13 rounded-2xl border-2 border-[#DDD6FE] bg-[#F5F3FF] px-4 font-semibold text-[#1E1B4B] focus:border-[#8B5CF6] focus:outline-none"
                 name="parentWhatsAppVerificationCode"
                 type="text"
                 inputMode="numeric"
@@ -232,21 +230,21 @@ function Register() {
                 placeholder="123456"
                 required
               />
-              <span className="font-body-sm text-body-sm text-on-surface-variant">
+              <span className="text-sm font-semibold text-[#6B5E8F]">
                 {statusMessage || copy.codeHint}
               </span>
             </label>
 
             {errorMessage ? (
-              <p className="border border-error/40 bg-error-container px-4 py-3 font-body-sm text-body-sm text-on-error-container">
+              <p className="rounded-2xl border-2 border-[#EF4444]/40 bg-[#FEE2E2] px-4 py-3 text-sm font-bold text-[#991B1B]">
                 {errorMessage}
               </p>
             ) : null}
 
-            <label className="flex flex-col gap-2 font-label-md text-label-md text-primary">
+            <label className="flex flex-col gap-2 font-black text-[#1E1B4B]">
               {copy.password}
               <input
-                className="h-12 border border-outline-variant bg-surface px-4 font-body-md text-body-md text-on-surface focus:border-secondary focus:outline-none"
+                className="h-13 rounded-2xl border-2 border-[#DDD6FE] bg-[#F5F3FF] px-4 font-semibold text-[#1E1B4B] focus:border-[#8B5CF6] focus:outline-none"
                 name="password"
                 type="password"
                 autoComplete="new-password"
@@ -256,7 +254,7 @@ function Register() {
             </label>
 
             <button
-              className="mt-2 h-13 bg-secondary text-on-secondary font-label-caps text-label-caps uppercase tracking-widest hover:bg-secondary-container hover:text-on-secondary-container transition-colors btn-squish"
+              className="mt-2 h-13 rounded-2xl bg-[#6D28D9] font-black text-white shadow-[0_6px_0_#4C1D95] transition hover:-translate-y-0.5"
               type="button"
               onClick={(event) => {
                 const form = event.currentTarget.form;
@@ -270,14 +268,14 @@ function Register() {
             </button>
           </form>
 
-          <p className="mt-8 text-center font-body-md text-body-md text-on-surface-variant">
+          <p className="mt-8 text-center font-semibold text-[#6B5E8F]">
             {copy.haveAccount}{" "}
-            <Link className="text-secondary font-bold hover:underline" to="/login">
+            <Link className="font-black text-[#6D28D9] hover:underline" to="/login">
               {copy.signIn}
             </Link>
           </p>
-        </section>
-      </main>
+        </GameCard>
+      </div>
     </GameLayout>
   );
 }

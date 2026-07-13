@@ -1,5 +1,5 @@
 ﻿import { createFileRoute } from "@tanstack/react-router";
-import { GameLayout } from "@/components/gamified-platform";
+import { GameCard, GameLayout } from "@/components/gamified-platform";
 import { useLanguage } from "@/hooks/use-language";
 
 export const Route = createFileRoute("/careers")({
@@ -44,19 +44,22 @@ function Careers() {
 
   return (
     <GameLayout>
-      <main className="mx-auto max-w-4xl">
-        <span className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
+      <div className="mx-auto max-w-5xl space-y-5">
+        <GameCard className="overflow-hidden bg-gradient-to-br from-[#6D28D9] to-[#8B5CF6] text-white">
+          <span className="text-sm font-black uppercase tracking-[0.25em] text-[#FACC15]">
           {copy.eyebrow}
-        </span>
-        <h1 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary mt-4">
-          {copy.title}
-        </h1>
-        <p className="font-body-lg text-body-lg text-on-surface-variant mt-6">{copy.body}</p>
-        <section className="mt-stack-lg border border-outline-variant bg-surface-container-lowest p-8">
-          <h2 className="font-headline-md text-headline-md text-primary">{copy.emptyTitle}</h2>
-          <p className="font-body-md text-body-md text-on-surface-variant mt-3">{copy.emptyText}</p>
-        </section>
-      </main>
+          </span>
+          <h1 className="mt-3 text-4xl font-black md:text-6xl">{copy.title}</h1>
+          <p className="mt-5 max-w-3xl text-lg font-semibold text-[#EDE9FE]">{copy.body}</p>
+        </GameCard>
+        <GameCard className="bg-white/95">
+          <div className="grid h-16 w-16 place-items-center rounded-full bg-[#FACC15] text-[#1E1B4B] shadow-[0_5px_0_#CA8A04]">
+            <span className="material-symbols-outlined text-3xl">work</span>
+          </div>
+          <h2 className="mt-5 text-3xl font-black text-[#1E1B4B]">{copy.emptyTitle}</h2>
+          <p className="mt-3 max-w-2xl font-semibold leading-7 text-[#6B5E8F]">{copy.emptyText}</p>
+        </GameCard>
+      </div>
     </GameLayout>
   );
 }

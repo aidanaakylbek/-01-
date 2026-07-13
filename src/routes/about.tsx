@@ -1,5 +1,5 @@
 ﻿import { createFileRoute, Link } from "@tanstack/react-router";
-import { GameLayout } from "@/components/gamified-platform";
+import { GameCard, GameLayout } from "@/components/gamified-platform";
 import { useLanguage } from "@/hooks/use-language";
 
 export const Route = createFileRoute("/about")({
@@ -61,33 +61,31 @@ function About() {
 
   return (
     <GameLayout>
-      <main className="mx-auto max-w-4xl">
-        <span className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
-          AI-Sana
-        </span>
-        <h1 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary mt-4">
-          {copy.title}
-        </h1>
-        <p className="font-body-lg text-body-lg text-on-surface-variant mt-6">{copy.body}</p>
-        <div className="grid md:grid-cols-3 gap-gutter mt-stack-lg">
+      <div className="mx-auto max-w-5xl space-y-5">
+        <GameCard className="overflow-hidden bg-gradient-to-br from-[#6D28D9] to-[#8B5CF6] text-white">
+          <span className="text-sm font-black uppercase tracking-[0.25em] text-[#FACC15]">
+            AI-Sana
+          </span>
+          <h1 className="mt-3 text-4xl font-black md:text-6xl">{copy.title}</h1>
+          <p className="mt-5 max-w-3xl text-lg font-semibold text-[#EDE9FE]">{copy.body}</p>
+          <Link
+            to="/register"
+            className="mt-8 inline-flex rounded-2xl bg-[#FACC15] px-8 py-4 font-black text-[#1E1B4B] shadow-[0_6px_0_#CA8A04] transition hover:-translate-y-0.5"
+          >
+            {copy.start}
+          </Link>
+        </GameCard>
+
+        <div className="grid gap-5 md:grid-cols-3">
           {copy.cards.map(([icon, title, text]) => (
-            <div
-              key={title}
-              className="border border-outline-variant bg-surface-container-lowest p-6"
-            >
-              <span className="material-symbols-outlined text-secondary text-3xl">{icon}</span>
-              <h2 className="font-headline-md text-headline-md text-primary mt-4">{title}</h2>
-              <p className="font-body-md text-body-md text-on-surface-variant mt-3">{text}</p>
-            </div>
+            <GameCard key={title} className="bg-white/95">
+              <span className="material-symbols-outlined text-4xl text-[#6D28D9]">{icon}</span>
+              <h2 className="mt-4 text-2xl font-black text-[#1E1B4B]">{title}</h2>
+              <p className="mt-3 font-semibold leading-7 text-[#6B5E8F]">{text}</p>
+            </GameCard>
           ))}
         </div>
-        <Link
-          to="/register"
-          className="inline-flex mt-stack-lg bg-secondary text-on-secondary px-8 py-4 font-label-caps text-label-caps uppercase tracking-widest"
-        >
-          {copy.start}
-        </Link>
-      </main>
+      </div>
     </GameLayout>
   );
 }

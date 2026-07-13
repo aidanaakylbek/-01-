@@ -1,7 +1,7 @@
 ﻿import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AIReviewPanel } from "@/components/ai-review-panel";
-import { GameLayout } from "@/components/gamified-platform";
+import { GameCard, GameLayout, ProgressBar } from "@/components/gamified-platform";
 import { diagnosticQuestions } from "@/data/diagnostic-questions";
 import { useLanguage } from "@/hooks/use-language";
 
@@ -161,108 +161,103 @@ function Diagnostic() {
 
   return (
     <GameLayout>
-      <main className="mx-auto w-full max-w-4xl font-body-md text-body-md">
-        <div className="w-full flex justify-start mb-4">
+      <div className="mx-auto w-full max-w-5xl space-y-5">
+        <div className="flex justify-start">
           <Link
             to="/"
-            className="text-on-surface-variant flex items-center gap-2 px-3 py-1.5 rounded-full hover:bg-surface-variant transition-colors font-label-md text-label-md"
+            className="inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-3 font-black text-[#6D28D9] shadow-[0_5px_0_rgba(109,40,217,0.12)] transition hover:-translate-y-0.5"
           >
             <span className="material-symbols-outlined text-sm">arrow_back</span>
             {c.back}
           </Link>
         </div>
 
-        <div className="w-full mb-stack-lg">
-          <div className="flex justify-between items-end mb-2">
-            <span className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">
+        <GameCard className="bg-white/95">
+          <div className="flex items-end justify-between">
+            <span className="text-sm font-black uppercase tracking-[0.25em] text-[#8B5CF6]">
               {c.progress}
             </span>
-            <span className="font-label-md text-label-md text-primary font-bold">{progress}%</span>
+            <span className="font-black text-[#6D28D9]">{progress}%</span>
           </div>
-          <div className="h-2 w-full bg-surface-variant rounded-full overflow-hidden">
-            <div
-              className="h-full bg-primary rounded-full transition-all duration-500"
-              style={{ width: `${Math.max(progress, status === "intro" ? 5 : progress)}%` }}
-            />
-          </div>
-        </div>
+          <ProgressBar value={Math.max(progress, status === "intro" ? 5 : progress)} />
+        </GameCard>
 
         {status === "intro" && (
-          <section className="grid gap-gutter lg:grid-cols-[1.1fr_0.9fr] items-stretch">
-            <div className="bg-surface-container-highest border border-outline-variant rounded-tr-[48px] rounded-bl-[48px] p-8 md:p-10 flex flex-col justify-center">
-              <p className="font-label-caps text-label-caps uppercase tracking-widest text-secondary mb-4">
+          <section className="grid items-stretch gap-5 lg:grid-cols-[1.1fr_0.9fr]">
+            <GameCard className="flex flex-col justify-center overflow-hidden bg-gradient-to-br from-[#6D28D9] to-[#8B5CF6] text-white">
+              <p className="text-sm font-black uppercase tracking-[0.25em] text-[#FACC15]">
                 {c.tracksLabel}
               </p>
-              <h1 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary">
+              <h1 className="mt-3 text-4xl font-black md:text-6xl">
                 {c.introTitle}
               </h1>
-              <p className="font-body-lg text-body-lg text-on-surface-variant mt-5 max-w-xl">
+              <p className="mt-5 max-w-xl text-lg font-semibold text-[#EDE9FE]">
                 {c.introDesc}
               </p>
               <button
-                className="mt-8 w-full sm:w-auto game-button bg-primary text-on-primary px-8 py-4 font-label-caps text-label-caps uppercase tracking-widest hover:bg-secondary btn-squish transition-colors flex items-center justify-center gap-2"
+                className="mt-8 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#FACC15] px-8 py-4 font-black text-[#1E1B4B] shadow-[0_6px_0_#CA8A04] transition hover:-translate-y-0.5 sm:w-auto"
                 onClick={startTest}
                 type="button"
               >
                 {c.start}
                 <span className="material-symbols-outlined text-lg">arrow_forward</span>
               </button>
-              <p className="font-label-sm text-label-sm text-on-surface-variant mt-4">{c.time}</p>
-            </div>
+              <p className="mt-4 text-sm font-bold text-[#EDE9FE]">{c.time}</p>
+            </GameCard>
 
-            <div className="game-card p-6 md:p-8 flex flex-col gap-4">
+            <GameCard className="flex flex-col gap-4">
               {diagnosticQuestions.map((question, index) => (
                 <div
-                  className="flex items-center gap-4 rounded-2xl border-2 border-outline-variant bg-surface p-4"
+                  className="flex items-center gap-4 rounded-2xl border-2 border-[#DDD6FE] bg-[#F5F3FF] p-4"
                   key={question.id}
                 >
-                  <span className="w-10 h-10 bg-primary text-on-primary flex items-center justify-center font-label-md">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#6D28D9] font-black text-white shadow-[0_4px_0_#4C1D95]">
                     {index + 1}
                   </span>
                   <div>
-                    <p className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
+                    <p className="text-xs font-black uppercase tracking-widest text-[#8B5CF6]">
                       {question.exam}
                     </p>
-                    <p className="font-title-md text-title-md text-primary">{question.topic}</p>
+                    <p className="font-black text-[#1E1B4B]">{question.topic}</p>
                   </div>
                 </div>
               ))}
-            </div>
+            </GameCard>
           </section>
         )}
 
         {status === "active" && currentQuestion && (
-          <section className="bg-surface-container-lowest border border-outline-variant rounded-tr-[48px] rounded-bl-[48px] p-6 md:p-10">
-            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-8">
+          <GameCard className="bg-white/95">
+            <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
               <div>
-                <p className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
+                <p className="text-sm font-black uppercase tracking-[0.25em] text-[#8B5CF6]">
                   {currentQuestion.exam} • {currentQuestion.topic}
                 </p>
-                <h1 className="font-headline-md text-headline-md text-primary mt-3">
+                <h1 className="mt-3 text-3xl font-black text-[#1E1B4B]">
                   {c.question} {currentIndex + 1} {c.of} {totalQuestions}
                 </h1>
               </div>
-              <div className="rounded-2xl border-2 border-outline-variant bg-surface px-4 py-3 text-center">
-                <p className="font-label-caps text-label-caps uppercase tracking-widest text-on-surface-variant">
+              <div className="rounded-2xl border-2 border-[#DDD6FE] bg-[#F5F3FF] px-4 py-3 text-center">
+                <p className="text-sm font-black uppercase tracking-widest text-[#6D28D9]">
                   {answeredCount}/{totalQuestions}
                 </p>
               </div>
             </div>
 
-            <p className="font-headline-sm text-headline-sm text-on-background mb-6">
+            <p className="mb-6 text-2xl font-black text-[#1E1B4B]">
               {currentQuestion.question[language]}
             </p>
-            <p className="font-label-md text-label-md text-on-surface-variant mb-3">{c.choose}</p>
+            <p className="mb-3 font-bold text-[#6B5E8F]">{c.choose}</p>
 
             <div className="grid gap-3">
               {currentQuestion.options[language].map((option) => {
                 const selected = answers[currentQuestion.id] === option;
                 return (
                   <button
-                    className={`text-left border px-5 py-4 font-title-md text-title-md transition-colors ${
+                    className={`rounded-2xl border-2 px-5 py-4 text-left font-black transition ${
                       selected
-                        ? "border-primary bg-primary text-on-primary"
-                        : "border-outline-variant bg-surface hover:border-primary hover:bg-primary-container hover:text-on-primary-container"
+                        ? "border-[#6D28D9] bg-[#6D28D9] text-white shadow-[0_5px_0_#4C1D95]"
+                        : "border-[#DDD6FE] bg-white hover:border-[#8B5CF6] hover:bg-[#F5F3FF]"
                     }`}
                     key={option}
                     onClick={() => selectAnswer(option)}
@@ -274,9 +269,9 @@ function Diagnostic() {
               })}
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-3 justify-between mt-8">
+            <div className="mt-8 flex flex-col justify-between gap-3 sm:flex-row">
               <button
-                className="px-6 py-3 border border-outline-variant text-primary font-label-caps text-label-caps uppercase tracking-widest disabled:opacity-40 hover:border-primary transition-colors"
+                className="rounded-2xl border-2 border-[#DDD6FE] px-6 py-3 font-black text-[#6D28D9] transition hover:bg-[#F5F3FF] disabled:opacity-40"
                 disabled={currentIndex === 0}
                 onClick={() => setCurrentIndex((index) => Math.max(0, index - 1))}
                 type="button"
@@ -286,7 +281,7 @@ function Diagnostic() {
 
               {currentIndex < totalQuestions - 1 ? (
                 <button
-                  className="px-6 py-3 bg-primary text-on-primary font-label-caps text-label-caps uppercase tracking-widest disabled:opacity-40 hover:bg-secondary transition-colors"
+                  className="rounded-2xl bg-[#6D28D9] px-6 py-3 font-black text-white shadow-[0_5px_0_#4C1D95] transition hover:-translate-y-0.5 disabled:opacity-40"
                   disabled={!answers[currentQuestion.id]}
                   onClick={() =>
                     setCurrentIndex((index) => Math.min(totalQuestions - 1, index + 1))
@@ -297,7 +292,7 @@ function Diagnostic() {
                 </button>
               ) : (
                 <button
-                  className="px-6 py-3 bg-secondary text-on-secondary font-label-caps text-label-caps uppercase tracking-widest disabled:opacity-40 hover:bg-primary transition-colors"
+                  className="rounded-2xl bg-[#FACC15] px-6 py-3 font-black text-[#1E1B4B] shadow-[0_5px_0_#CA8A04] transition hover:-translate-y-0.5 disabled:opacity-40"
                   disabled={answeredCount < totalQuestions}
                   onClick={finishTest}
                   type="button"
@@ -306,34 +301,34 @@ function Diagnostic() {
                 </button>
               )}
             </div>
-          </section>
+          </GameCard>
         )}
 
         {status === "finished" && (
-          <section className="grid gap-gutter lg:grid-cols-[0.9fr_1.1fr] items-start">
-            <div className="bg-surface-container-highest border border-outline-variant rounded-tr-[48px] rounded-bl-[48px] p-8">
-              <p className="font-label-caps text-label-caps uppercase tracking-widest text-secondary mb-3">
+          <section className="grid items-start gap-5 lg:grid-cols-[0.9fr_1.1fr]">
+            <GameCard className="bg-gradient-to-br from-white to-[#F5F3FF]">
+              <p className="mb-3 text-sm font-black uppercase tracking-[0.25em] text-[#8B5CF6]">
                 {c.resultTitle}
               </p>
               <div className="flex items-end gap-3">
-                <span className="font-headline-lg text-headline-lg text-primary">
+                <span className="text-6xl font-black text-[#6D28D9]">
                   {result.score}%
                 </span>
-                <span className="font-title-md text-title-md text-on-surface-variant pb-3">
+                <span className="pb-3 text-lg font-black text-[#6B5E8F]">
                   {result.correctAnswers}/{totalQuestions} {c.correct}
                 </span>
               </div>
-              <p className="font-body-md text-body-md text-on-surface-variant mt-5">{c.strong}</p>
+              <p className="mt-5 font-semibold text-[#6B5E8F]">{c.strong}</p>
 
               {result.weakTopics.length > 0 && (
                 <div className="mt-6">
-                  <p className="font-label-caps text-label-caps uppercase tracking-widest text-secondary mb-3">
+                  <p className="mb-3 text-sm font-black uppercase tracking-[0.25em] text-[#8B5CF6]">
                     {c.weakTopics}
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {result.weakTopics.map((topic) => (
                       <span
-                        className="rounded-2xl border-2 border-outline-variant bg-surface px-3 py-2 font-label-md text-label-md"
+                        className="rounded-2xl border-2 border-[#DDD6FE] bg-white px-3 py-2 font-black text-[#1E1B4B]"
                         key={topic}
                       >
                         {topic}
@@ -343,22 +338,22 @@ function Diagnostic() {
                 </div>
               )}
 
-              <div className="flex flex-col gap-3 mt-8">
+              <div className="mt-8 flex flex-col gap-3">
                 <button
-                  className="w-full border border-primary text-primary px-6 py-3 font-label-caps text-label-caps uppercase tracking-widest hover:bg-primary-container transition-colors"
+                  className="w-full rounded-2xl border-2 border-[#DDD6FE] px-6 py-3 font-black text-[#6D28D9] transition hover:bg-[#F5F3FF]"
                   onClick={startTest}
                   type="button"
                 >
                   {c.retry}
                 </button>
                 <Link
-                  className="w-full game-button bg-primary text-on-primary px-6 py-3 font-label-caps text-label-caps uppercase tracking-widest text-center hover:bg-secondary transition-colors"
+                  className="w-full rounded-2xl bg-[#6D28D9] px-6 py-3 text-center font-black text-white shadow-[0_5px_0_#4C1D95]"
                   to="/home"
                 >
                   {c.home}
                 </Link>
               </div>
-            </div>
+            </GameCard>
 
             <AIReviewPanel
               buttonLabel={c.review}
@@ -376,7 +371,7 @@ function Diagnostic() {
             />
           </section>
         )}
-      </main>
+      </div>
     </GameLayout>
   );
 }

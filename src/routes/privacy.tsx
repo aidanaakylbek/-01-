@@ -1,5 +1,5 @@
 ﻿import { createFileRoute } from "@tanstack/react-router";
-import { GameLayout } from "@/components/gamified-platform";
+import { GameCard, GameLayout } from "@/components/gamified-platform";
 import { useLanguage } from "@/hooks/use-language";
 
 export const Route = createFileRoute("/privacy")({
@@ -50,19 +50,21 @@ function Privacy() {
 
   return (
     <GameLayout>
-      <main className="mx-auto max-w-4xl">
-        <span className="font-label-caps text-label-caps uppercase tracking-widest text-secondary">
-          {copy.eyebrow}
-        </span>
-        <h1 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary mt-4">
-          {copy.title}
-        </h1>
-        <div className="mt-stack-lg space-y-6 font-body-md text-body-md text-on-surface-variant">
+      <div className="mx-auto max-w-5xl space-y-5">
+        <GameCard className="overflow-hidden bg-gradient-to-br from-[#6D28D9] to-[#8B5CF6] text-white">
+          <span className="text-sm font-black uppercase tracking-[0.25em] text-[#FACC15]">
+            {copy.eyebrow}
+          </span>
+          <h1 className="mt-3 text-4xl font-black md:text-6xl">{copy.title}</h1>
+        </GameCard>
+        <GameCard className="space-y-5 bg-white/95">
           {copy.paragraphs.map((paragraph) => (
-            <p key={paragraph}>{paragraph}</p>
+            <p key={paragraph} className="rounded-2xl border-2 border-[#DDD6FE] bg-[#F5F3FF] p-5 font-semibold leading-8 text-[#4B3D73]">
+              {paragraph}
+            </p>
           ))}
-        </div>
-      </main>
+        </GameCard>
+      </div>
     </GameLayout>
   );
 }
