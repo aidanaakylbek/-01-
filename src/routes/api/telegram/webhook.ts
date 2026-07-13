@@ -15,6 +15,11 @@ type TelegramUpdate = {
 export const Route = createFileRoute("/api/telegram/webhook")({
   server: {
     handlers: {
+      GET: async () =>
+        Response.json({
+          ok: true,
+          message: "AI-Sana Telegram webhook is ready. Telegram must send POST updates here.",
+        }),
       POST: async ({ request }) => {
         const update = (await request.json().catch(() => null)) as TelegramUpdate | null;
         const chatId = update?.message?.chat?.id;
