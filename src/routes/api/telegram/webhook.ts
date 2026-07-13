@@ -20,7 +20,7 @@ export const Route = createFileRoute("/api/telegram/webhook")({
         const chatId = update?.message?.chat?.id;
         const text = update?.message?.text?.trim() ?? "";
 
-        if (!chatId || !text.startsWith("/start")) {
+        if (!chatId || !text) {
           return Response.json({ ok: true, ignored: true });
         }
 
@@ -29,7 +29,11 @@ export const Route = createFileRoute("/api/telegram/webhook")({
         if (!inviteCode) {
           await sendTelegramMessage({
             chatId: String(chatId),
-            text: "Сәлем! AI-Sana ата-ана есебіне қосылу үшін сайттағы арнайы сілтемені ашыңыз.",
+            text: [
+              "Сәлем! AI-Sana ата-ана есебіне қосылу үшін сайтта шыққан invite code-ты осы жерге жіберіңіз.",
+              "",
+              "Мысалы: 78BYBH",
+            ].join("\n"),
           });
 
           return Response.json({ ok: true, ignored: true });
@@ -64,11 +68,27 @@ export const Route = createFileRoute("/api/telegram/webhook")({
 });
 
 function extractParentInviteCode(text: string) {
-  const [, payload] = text.split(/\s+/, 2);
+  const trimmedText = text.trim();
+
+  if (!trimmedText.startsWith("/start")) {
+    return normalizeInviteCode(trimmedText);
+  }
+
+  const [, payload] = trimmedText.split(/\s+/, 2);
 
   if (!payload?.startsWith("parent_")) {
     return "";
   }
 
-  return payload.replace(/^parent_/, "").trim();
+  return normalizeInviteCode(payload.replace(/^parent_/, ""));
+}
+
+function normalizeInviteCode(value: string) {
+  const code = value.trim().toUpperCase();
+
+  if (!/^[A-Z0-9]{6,10}$/.test(code)) {
+    return "";
+  }
+
+  return code;
 }

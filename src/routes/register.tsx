@@ -40,7 +40,7 @@ function Register() {
           success:
             "Аккаунт создан. Недельный отчет будет отправляться после подтверждения родителя через Telegram.",
           inviteTitle: "Код для Telegram готов",
-          inviteHint: "Отправьте эту ссылку родителю. После открытия бот сразу подтвердит родителя.",
+          inviteHint: "Отправьте код родителю. Родитель должен открыть Telegram bot и отправить этот код.",
           inviteConfigMissing:
             "Telegram bot username еще не настроен. Добавьте TELEGRAM_BOT_USERNAME в Vercel Environment Variables.",
           openTelegram: "Открыть Telegram bot",
@@ -63,7 +63,7 @@ function Register() {
             submitError: "Could not create account. Check the form.",
             success: "Account created. Weekly reports will be sent after Telegram parent verification.",
             inviteTitle: "Telegram code is ready",
-            inviteHint: "Send this link to the parent. The bot verifies the parent after opening it.",
+            inviteHint: "Send this code to the parent. The parent should open the Telegram bot and send this code.",
             inviteConfigMissing:
               "Telegram bot username is not configured yet. Add TELEGRAM_BOT_USERNAME in Vercel Environment Variables.",
             openTelegram: "Open Telegram bot",
@@ -86,8 +86,7 @@ function Register() {
             success:
               "Аккаунт ашылды. Ата-анаңыз Telegram арқылы расталғаннан кейін апталық есеп жіберіледі.",
             inviteTitle: "Telegram коды дайын",
-            inviteHint:
-              "Осы сілтемені ата-анаңызға жіберіңіз. Ата-ана ботты ашқанда код автоматты барады.",
+            inviteHint: "Осы кодты ата-анаңызға жіберіңіз. Ата-ана Telegram bot-қа кіріп, осы кодты жібереді.",
             inviteConfigMissing:
               "Telegram bot username әлі қойылмаған. Vercel Environment Variables ішіне TELEGRAM_BOT_USERNAME қосыңыз.",
             openTelegram: "Telegram bot ашу",
