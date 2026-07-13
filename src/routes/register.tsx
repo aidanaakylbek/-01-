@@ -21,6 +21,7 @@ function Register() {
   const [errorMessage, setErrorMessage] = useState("");
   const [parentInvite, setParentInvite] = useState<{
     code: string;
+    configured: boolean;
     link: string;
   } | null>(null);
 
@@ -40,6 +41,8 @@ function Register() {
             "Аккаунт создан. Недельный отчет будет отправляться после подтверждения родителя через Telegram.",
           inviteTitle: "Код для Telegram готов",
           inviteHint: "Отправьте эту ссылку родителю. После открытия бот сразу подтвердит родителя.",
+          inviteConfigMissing:
+            "Telegram bot username еще не настроен. Добавьте TELEGRAM_BOT_USERNAME в Vercel Environment Variables.",
           openTelegram: "Открыть Telegram bot",
           continue: "Продолжить",
           password: "Пароль",
@@ -61,6 +64,8 @@ function Register() {
             success: "Account created. Weekly reports will be sent after Telegram parent verification.",
             inviteTitle: "Telegram code is ready",
             inviteHint: "Send this link to the parent. The bot verifies the parent after opening it.",
+            inviteConfigMissing:
+              "Telegram bot username is not configured yet. Add TELEGRAM_BOT_USERNAME in Vercel Environment Variables.",
             openTelegram: "Open Telegram bot",
             continue: "Continue",
             password: "Password",
@@ -83,6 +88,8 @@ function Register() {
             inviteTitle: "Telegram коды дайын",
             inviteHint:
               "Осы сілтемені ата-анаңызға жіберіңіз. Ата-ана ботты ашқанда код автоматты барады.",
+            inviteConfigMissing:
+              "Telegram bot username әлі қойылмаған. Vercel Environment Variables ішіне TELEGRAM_BOT_USERNAME қосыңыз.",
             openTelegram: "Telegram bot ашу",
             continue: "Жалғастыру",
             password: "Құпия сөз",
@@ -97,7 +104,7 @@ function Register() {
     try {
       setErrorMessage("");
 
-      const account = await registerAccount({
+      await registerAccount({
         data: {
           name: String(formData.get("name") ?? ""),
           email: String(formData.get("email") ?? ""),
@@ -109,11 +116,13 @@ function Register() {
       });
 
       setStatusMessage(copy.success);
-      const code = account.parentInviteCode;
-      const username = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || "YOUR_BOT_USERNAME";
+      const invite = (await fetch("/api/parent/create-invite", { method: "POST" }).then((response) =>
+        response.json(),
+      )) as ParentInviteResponse;
       setParentInvite({
-        code,
-        link: `https://t.me/${username}?start=parent_${encodeURIComponent(code)}`,
+        code: invite.inviteCode,
+        configured: invite.telegramConfigured,
+        link: invite.telegramLink,
       });
     } catch {
       setErrorMessage(copy.submitError);
@@ -143,16 +152,20 @@ function Register() {
                 {copy.inviteTitle}
               </p>
               <p className="mt-2 text-4xl font-black text-[#1E1B4B]">{parentInvite.code}</p>
-              <p className="mt-2 font-semibold text-[#6B5E8F]">{copy.inviteHint}</p>
+              <p className="mt-2 font-semibold text-[#6B5E8F]">
+                {parentInvite.configured ? copy.inviteHint : copy.inviteConfigMissing}
+              </p>
               <div className="mt-5 grid gap-3">
-                <a
-                  className="rounded-2xl bg-[#FACC15] px-5 py-4 text-center font-black text-[#1E1B4B] shadow-[0_6px_0_#D97706]"
-                  href={parentInvite.link}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  {copy.openTelegram}
-                </a>
+                {parentInvite.configured ? (
+                  <a
+                    className="rounded-2xl bg-[#FACC15] px-5 py-4 text-center font-black text-[#1E1B4B] shadow-[0_6px_0_#D97706]"
+                    href={parentInvite.link}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {copy.openTelegram}
+                  </a>
+                ) : null}
                 <button
                   className="rounded-2xl bg-[#6D28D9] px-5 py-4 font-black text-white shadow-[0_6px_0_#4C1D95]"
                   type="button"
@@ -233,6 +246,12 @@ function Register() {
     </GameLayout>
   );
 }
+
+type ParentInviteResponse = {
+  inviteCode: string;
+  telegramConfigured: boolean;
+  telegramLink: string;
+};
 
 function RegisterInput({
   autoComplete,

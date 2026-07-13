@@ -3,11 +3,18 @@ export type TelegramSendResult =
   | { ok: false; code: string; detail: string };
 
 export function getTelegramBotUsername() {
-  return process.env.TELEGRAM_BOT_USERNAME || process.env.VITE_TELEGRAM_BOT_USERNAME || "YOUR_BOT_USERNAME";
+  const username = process.env.TELEGRAM_BOT_USERNAME || process.env.VITE_TELEGRAM_BOT_USERNAME || "";
+  return username.replace(/^@/, "").trim();
 }
 
 export function buildParentTelegramInviteLink(inviteCode: string) {
-  return `https://t.me/${getTelegramBotUsername()}?start=parent_${encodeURIComponent(inviteCode)}`;
+  const username = getTelegramBotUsername();
+
+  if (!username) {
+    return "";
+  }
+
+  return `https://t.me/${username}?start=parent_${encodeURIComponent(inviteCode)}`;
 }
 
 export async function sendTelegramMessage({

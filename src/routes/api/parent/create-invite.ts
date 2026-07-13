@@ -9,23 +9,27 @@ export const Route = createFileRoute("/api/parent/create-invite")({
       GET: async () => {
         const dashboard = getDashboardAccount();
         const invite = createOrReturnParentInvite();
+        const telegramLink = buildParentTelegramInviteLink(invite.inviteCode);
 
         return Response.json({
           inviteCode: invite.inviteCode,
           parentName: invite.parentName,
           status: getParentStatus(dashboard.account),
-          telegramLink: buildParentTelegramInviteLink(invite.inviteCode),
+          telegramConfigured: Boolean(telegramLink),
+          telegramLink,
         });
       },
       POST: async () => {
         const dashboard = getDashboardAccount();
         const invite = createOrReturnParentInvite();
+        const telegramLink = buildParentTelegramInviteLink(invite.inviteCode);
 
         return Response.json({
           inviteCode: invite.inviteCode,
           parentName: invite.parentName,
           status: getParentStatus(dashboard.account),
-          telegramLink: buildParentTelegramInviteLink(invite.inviteCode),
+          telegramConfigured: Boolean(telegramLink),
+          telegramLink,
         });
       },
     },
