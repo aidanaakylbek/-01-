@@ -31,13 +31,36 @@ export function buildParentTelegramInviteLink(inviteCode: string) {
   return `https://telegram.me/${username}?start=parent_${encodeURIComponent(inviteCode)}`;
 }
 
-export async function sendTelegramMessage({
-  chatId,
-  text,
-}: {
-  chatId: string;
-  text: string;
-}): Promise<TelegramSendResult> {
+export function getAppUrl(request?: Request) {
+  const configuredUrl = process.env.APP_URL?.trim().replace(/\/$/, "");
+
+  if (configuredUrl) {
+    return configuredUrl;
+  }
+
+  if (request) {
+    return new URL(request.url).origin;
+  }
+
+  return "";
+}
+
+export function buildTelegramWebhookUrl(request?: Request) {
+  const appUrl = getAppUrl(request);
+
+  if (!appUrl) {
+    return "";
+  }
+
+  return `${appUrl}/api/telegram/webhook`;
+}
+
+export async function sendTelegramMessage(
+  chatIdOrInput: string | { chatId: string; text: string },
+  maybeText?: string,
+): Promise<TelegramSendResult> {
+  const chatId = typeof chatIdOrInput === "string" ? chatIdOrInput : chatIdOrInput.chatId;
+  const text = typeof chatIdOrInput === "string" ? (maybeText ?? "") : chatIdOrInput.text;
   const token = process.env.TELEGRAM_BOT_TOKEN;
 
   if (!token) {
@@ -87,6 +110,14 @@ export async function sendTelegramMessage({
 
 export async function setTelegramWebhook(webhookUrl: string): Promise<TelegramWebhookResult> {
   const token = process.env.TELEGRAM_BOT_TOKEN;
+
+  if (!webhookUrl) {
+    return {
+      ok: false,
+      code: "missing_app_url",
+      detail: "Missing APP_URL. Add APP_URL=https://your-project.vercel.app in Vercel.",
+    };
+  }
 
   if (!token) {
     return {

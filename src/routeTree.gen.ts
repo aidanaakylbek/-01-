@@ -35,8 +35,10 @@ import { Route as ApiReviewRouteImport } from './routes/api/review'
 import { Route as ApiExplainSolutionRouteImport } from './routes/api/explain-solution'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as LessonSubjectIdTopicIdRouteImport } from './routes/lesson.$subjectId.$topicId'
+import { Route as ApiTelegramWebhookInfoRouteImport } from './routes/api/telegram/webhook-info'
 import { Route as ApiTelegramWebhookRouteImport } from './routes/api/telegram/webhook'
 import { Route as ApiTelegramSetupWebhookRouteImport } from './routes/api/telegram/setup-webhook'
+import { Route as ApiTelegramSetWebhookRouteImport } from './routes/api/telegram/set-webhook'
 import { Route as ApiParentSendTestMessageRouteImport } from './routes/api/parent/send-test-message'
 import { Route as ApiParentCreateInviteRouteImport } from './routes/api/parent/create-invite'
 import { Route as ApiCronSendWeeklyReportsRouteImport } from './routes/api/cron/send-weekly-reports'
@@ -171,6 +173,11 @@ const LessonSubjectIdTopicIdRoute = LessonSubjectIdTopicIdRouteImport.update({
   path: '/lesson/$subjectId/$topicId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiTelegramWebhookInfoRoute = ApiTelegramWebhookInfoRouteImport.update({
+  id: '/api/telegram/webhook-info',
+  path: '/api/telegram/webhook-info',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiTelegramWebhookRoute = ApiTelegramWebhookRouteImport.update({
   id: '/api/telegram/webhook',
   path: '/api/telegram/webhook',
@@ -179,6 +186,11 @@ const ApiTelegramWebhookRoute = ApiTelegramWebhookRouteImport.update({
 const ApiTelegramSetupWebhookRoute = ApiTelegramSetupWebhookRouteImport.update({
   id: '/api/telegram/setup-webhook',
   path: '/api/telegram/setup-webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTelegramSetWebhookRoute = ApiTelegramSetWebhookRouteImport.update({
+  id: '/api/telegram/set-webhook',
+  path: '/api/telegram/set-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiParentSendTestMessageRoute =
@@ -228,8 +240,10 @@ export interface FileRoutesByFullPath {
   '/api/cron/send-weekly-reports': typeof ApiCronSendWeeklyReportsRoute
   '/api/parent/create-invite': typeof ApiParentCreateInviteRoute
   '/api/parent/send-test-message': typeof ApiParentSendTestMessageRoute
+  '/api/telegram/set-webhook': typeof ApiTelegramSetWebhookRoute
   '/api/telegram/setup-webhook': typeof ApiTelegramSetupWebhookRoute
   '/api/telegram/webhook': typeof ApiTelegramWebhookRoute
+  '/api/telegram/webhook-info': typeof ApiTelegramWebhookInfoRoute
   '/lesson/$subjectId/$topicId': typeof LessonSubjectIdTopicIdRoute
 }
 export interface FileRoutesByTo {
@@ -261,8 +275,10 @@ export interface FileRoutesByTo {
   '/api/cron/send-weekly-reports': typeof ApiCronSendWeeklyReportsRoute
   '/api/parent/create-invite': typeof ApiParentCreateInviteRoute
   '/api/parent/send-test-message': typeof ApiParentSendTestMessageRoute
+  '/api/telegram/set-webhook': typeof ApiTelegramSetWebhookRoute
   '/api/telegram/setup-webhook': typeof ApiTelegramSetupWebhookRoute
   '/api/telegram/webhook': typeof ApiTelegramWebhookRoute
+  '/api/telegram/webhook-info': typeof ApiTelegramWebhookInfoRoute
   '/lesson/$subjectId/$topicId': typeof LessonSubjectIdTopicIdRoute
 }
 export interface FileRoutesById {
@@ -295,8 +311,10 @@ export interface FileRoutesById {
   '/api/cron/send-weekly-reports': typeof ApiCronSendWeeklyReportsRoute
   '/api/parent/create-invite': typeof ApiParentCreateInviteRoute
   '/api/parent/send-test-message': typeof ApiParentSendTestMessageRoute
+  '/api/telegram/set-webhook': typeof ApiTelegramSetWebhookRoute
   '/api/telegram/setup-webhook': typeof ApiTelegramSetupWebhookRoute
   '/api/telegram/webhook': typeof ApiTelegramWebhookRoute
+  '/api/telegram/webhook-info': typeof ApiTelegramWebhookInfoRoute
   '/lesson/$subjectId/$topicId': typeof LessonSubjectIdTopicIdRoute
 }
 export interface FileRouteTypes {
@@ -330,8 +348,10 @@ export interface FileRouteTypes {
     | '/api/cron/send-weekly-reports'
     | '/api/parent/create-invite'
     | '/api/parent/send-test-message'
+    | '/api/telegram/set-webhook'
     | '/api/telegram/setup-webhook'
     | '/api/telegram/webhook'
+    | '/api/telegram/webhook-info'
     | '/lesson/$subjectId/$topicId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -363,8 +383,10 @@ export interface FileRouteTypes {
     | '/api/cron/send-weekly-reports'
     | '/api/parent/create-invite'
     | '/api/parent/send-test-message'
+    | '/api/telegram/set-webhook'
     | '/api/telegram/setup-webhook'
     | '/api/telegram/webhook'
+    | '/api/telegram/webhook-info'
     | '/lesson/$subjectId/$topicId'
   id:
     | '__root__'
@@ -396,8 +418,10 @@ export interface FileRouteTypes {
     | '/api/cron/send-weekly-reports'
     | '/api/parent/create-invite'
     | '/api/parent/send-test-message'
+    | '/api/telegram/set-webhook'
     | '/api/telegram/setup-webhook'
     | '/api/telegram/webhook'
+    | '/api/telegram/webhook-info'
     | '/lesson/$subjectId/$topicId'
   fileRoutesById: FileRoutesById
 }
@@ -429,8 +453,10 @@ export interface RootRouteChildren {
   ApiCronSendWeeklyReportsRoute: typeof ApiCronSendWeeklyReportsRoute
   ApiParentCreateInviteRoute: typeof ApiParentCreateInviteRoute
   ApiParentSendTestMessageRoute: typeof ApiParentSendTestMessageRoute
+  ApiTelegramSetWebhookRoute: typeof ApiTelegramSetWebhookRoute
   ApiTelegramSetupWebhookRoute: typeof ApiTelegramSetupWebhookRoute
   ApiTelegramWebhookRoute: typeof ApiTelegramWebhookRoute
+  ApiTelegramWebhookInfoRoute: typeof ApiTelegramWebhookInfoRoute
   LessonSubjectIdTopicIdRoute: typeof LessonSubjectIdTopicIdRoute
 }
 
@@ -618,6 +644,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LessonSubjectIdTopicIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/telegram/webhook-info': {
+      id: '/api/telegram/webhook-info'
+      path: '/api/telegram/webhook-info'
+      fullPath: '/api/telegram/webhook-info'
+      preLoaderRoute: typeof ApiTelegramWebhookInfoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/telegram/webhook': {
       id: '/api/telegram/webhook'
       path: '/api/telegram/webhook'
@@ -630,6 +663,13 @@ declare module '@tanstack/react-router' {
       path: '/api/telegram/setup-webhook'
       fullPath: '/api/telegram/setup-webhook'
       preLoaderRoute: typeof ApiTelegramSetupWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/telegram/set-webhook': {
+      id: '/api/telegram/set-webhook'
+      path: '/api/telegram/set-webhook'
+      fullPath: '/api/telegram/set-webhook'
+      preLoaderRoute: typeof ApiTelegramSetWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/parent/send-test-message': {
@@ -696,8 +736,10 @@ const rootRouteChildren: RootRouteChildren = {
   ApiCronSendWeeklyReportsRoute: ApiCronSendWeeklyReportsRoute,
   ApiParentCreateInviteRoute: ApiParentCreateInviteRoute,
   ApiParentSendTestMessageRoute: ApiParentSendTestMessageRoute,
+  ApiTelegramSetWebhookRoute: ApiTelegramSetWebhookRoute,
   ApiTelegramSetupWebhookRoute: ApiTelegramSetupWebhookRoute,
   ApiTelegramWebhookRoute: ApiTelegramWebhookRoute,
+  ApiTelegramWebhookInfoRoute: ApiTelegramWebhookInfoRoute,
   LessonSubjectIdTopicIdRoute: LessonSubjectIdTopicIdRoute,
 }
 export const routeTree = rootRouteImport

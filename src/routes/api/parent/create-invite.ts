@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { createOrReturnParentInvite, getDashboardAccount } from "@/lib/account-store.server";
 import {
   buildParentTelegramInviteLink,
+  buildTelegramWebhookUrl,
   getTelegramWebhookInfo,
   setTelegramWebhook,
 } from "@/lib/telegram.server";
@@ -37,8 +38,7 @@ async function createParentInviteResponse(request: Request) {
 }
 
 async function ensureTelegramWebhook(request: Request) {
-  const url = new URL(request.url);
-  const webhookUrl = new URL("/api/telegram/webhook", url.origin).toString();
+  const webhookUrl = buildTelegramWebhookUrl(request);
   const info = await getTelegramWebhookInfo();
 
   if (info.ok && info.webhookUrl === webhookUrl && !info.lastErrorMessage) {

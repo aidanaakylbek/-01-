@@ -21,71 +21,107 @@ export const Route = createFileRoute("/api/telegram/webhook")({
           message: "AI-Sana Telegram webhook is ready. Telegram must send POST updates here.",
         }),
       POST: async ({ request }) => {
-        const update = (await request.json().catch(() => null)) as TelegramUpdate | null;
-        const chatId = update?.message?.chat?.id;
-        const text = update?.message?.text?.trim() ?? "";
+        try {
+          const update = (await request.json().catch(() => null)) as TelegramUpdate | null;
+          const chatId = update?.message?.chat?.id;
+          const text = update?.message?.text?.trim() ?? "";
 
-        if (!chatId || !text) {
-          return Response.json({ ok: true, ignored: true });
-        }
-
-        const inviteCode = extractParentInviteCode(text);
-
-        if (!inviteCode) {
-          await sendTelegramMessage({
-            chatId: String(chatId),
-            text: [
-              "Сәлем! AI-Sana ата-ана есебіне қосылу үшін сайтта шыққан invite code-ты осы жерге жіберіңіз.",
-              "",
-              "Мысалы: 78BYBH",
-            ].join("\n"),
+          console.log("[telegram:webhook] incoming update", {
+            chatId: chatId ? String(chatId) : "",
+            hasMessage: Boolean(update?.message),
+            text,
           });
 
-          return Response.json({ ok: true, ignored: true });
+          if (!chatId || !text) {
+            return Response.json({ ok: true, ignored: true });
+          }
+
+          const chatIdText = String(chatId);
+          const startInviteCode = extractStartParentInviteCode(text);
+
+          if (startInviteCode) {
+            await verifyParentOrSendInvalidMessage(chatIdText, startInviteCode);
+            return Response.json({ ok: true, handled: "parent_start" });
+          }
+
+          if (isPlainStart(text)) {
+            await sendTelegramMessage(
+              chatIdText,
+              [
+                "Сәлеметсіз бе! Бұл AI-Sana боты 🤖",
+                "Ата-ана есебін қосу үшін AI-Sana сайтындағы арнайы Telegram сілтемесі арқылы кіріңіз.",
+              ].join("\n"),
+            );
+
+            return Response.json({ ok: true, handled: "plain_start" });
+          }
+
+          const manualInviteCode = extractManualInviteCode(text);
+
+          if (manualInviteCode) {
+            await verifyParentOrSendInvalidMessage(chatIdText, manualInviteCode);
+            return Response.json({ ok: true, handled: "manual_code" });
+          }
+
+          await sendTelegramMessage(
+            chatIdText,
+            "Мен AI-Sana ата-ана есебін жіберетін ботпын. Қосылу үшін сайттағы Telegram батырмасын басыңыз.",
+          );
+
+          return Response.json({ ok: true, handled: "unknown_message" });
+        } catch (error) {
+          console.error("[telegram:webhook] failed to handle update", error);
+          return Response.json({ ok: true, handled: false });
         }
-
-        const account = verifyParentTelegramInvite(inviteCode, String(chatId));
-
-        if (!account) {
-          await sendTelegramMessage({
-            chatId: String(chatId),
-            text: "Сілтеме жарамсыз немесе мерзімі өткен. AI-Sana аккаунтынан қайта қосылып көріңіз.",
-          });
-
-          return Response.json({ ok: false, reason: "invalid_invite" }, { status: 404 });
-        }
-
-        await sendTelegramMessage({
-          chatId: String(chatId),
-          text: [
-            "Сіз AI-Sana ата-ана есебіне қосылдыңыз ✅",
-            "",
-            `Растау коды қабылданды: ${inviteCode}`,
-            "",
-            "Енді балаңыздың апталық оқу нәтижесі Telegram арқылы келеді.",
-          ].join("\n"),
-        });
-
-        return Response.json({ ok: true, verified: true, studentId: account.id });
       },
     },
   },
 });
 
-function extractParentInviteCode(text: string) {
+async function verifyParentOrSendInvalidMessage(chatId: string, inviteCode: string) {
+  const account = verifyParentTelegramInvite(inviteCode, chatId);
+
+  if (!account) {
+    await sendTelegramMessage(
+      chatId,
+      "Сілтеме жарамсыз немесе мерзімі өткен. AI-Sana сайтынан қайта қосылып көріңіз.",
+    );
+    return null;
+  }
+
+  await sendTelegramMessage(
+    chatId,
+    [
+      "Сіз AI-Sana ата-ана есебіне қосылдыңыз ✅",
+      "Енді балаңыздың апталық оқу нәтижесі Telegram арқылы келеді.",
+    ].join("\n"),
+  );
+
+  return account;
+}
+
+function isPlainStart(text: string) {
+  return text.trim().toLowerCase() === "/start";
+}
+
+function extractStartParentInviteCode(text: string) {
   const trimmedText = text.trim();
 
-  if (!trimmedText.startsWith("/start")) {
-    return normalizeInviteCode(trimmedText);
+  if (!trimmedText.toLowerCase().startsWith("/start")) {
+    return "";
   }
 
   const [, payload] = trimmedText.split(/\s+/, 2);
 
-  if (!payload?.startsWith("parent_")) {
+  if (!payload?.toLowerCase().startsWith("parent_")) {
     return "";
   }
 
-  return normalizeInviteCode(payload.replace(/^parent_/, ""));
+  return normalizeInviteCode(payload.replace(/^parent_/i, ""));
+}
+
+function extractManualInviteCode(text: string) {
+  return normalizeInviteCode(text);
 }
 
 function normalizeInviteCode(value: string) {

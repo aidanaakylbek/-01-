@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { getTelegramBotUsername, setTelegramWebhook } from "@/lib/telegram.server";
+import { buildTelegramWebhookUrl, getTelegramBotUsername, setTelegramWebhook } from "@/lib/telegram.server";
 
 export const Route = createFileRoute("/api/telegram/setup-webhook")({
   server: {
@@ -14,7 +14,7 @@ export const Route = createFileRoute("/api/telegram/setup-webhook")({
           return Response.json({ error: "Unauthorized Telegram webhook setup request." }, { status: 401 });
         }
 
-        const webhookUrl = new URL("/api/telegram/webhook", url.origin).toString();
+        const webhookUrl = buildTelegramWebhookUrl(request);
         const result = await setTelegramWebhook(webhookUrl);
 
         if (!result.ok) {
