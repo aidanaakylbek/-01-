@@ -133,6 +133,7 @@ export type RiskArea = {
 };
 
 export type DashboardAccount = {
+  authenticated: boolean;
   account: Account;
   readiness: number;
   completedLessons: number;
@@ -206,7 +207,19 @@ const demoAccount: StoredAccount = {
 const accounts = new Map<string, StoredAccount>([[demoAccount.email, demoAccount]]);
 const paymentRequests = new Map<string, PaymentRequest>();
 const parentWhatsAppVerifications = new Map<string, ParentWhatsAppVerification>();
-let activeEmail = demoAccount.email;
+let activeEmail: string | null = null;
+
+const guestAccount: StoredAccount = {
+  ...demoAccount,
+  id: "guest",
+  name: "Қонақ",
+  email: "",
+  initials: "AI",
+  parentName: "",
+  parentPhone: "",
+  parentInviteCode: "",
+  password: "",
+};
 
 export const pricingPlans: PricingPlan[] = [
   {
@@ -254,13 +267,15 @@ function toPublicAccount(account: StoredAccount): Account {
 }
 
 function getActiveStoredAccount() {
-  return accounts.get(activeEmail) ?? demoAccount;
+  return activeEmail ? (accounts.get(activeEmail) ?? null) : null;
 }
 
 export function getDashboardAccount(): DashboardAccount {
-  const account = accounts.get(activeEmail) ?? demoAccount;
+  const activeAccount = getActiveStoredAccount();
+  const account = activeAccount ?? guestAccount;
 
   return {
+    authenticated: Boolean(activeAccount),
     account: toPublicAccount(account),
     readiness: 68,
     completedLessons: 4,
@@ -416,7 +431,11 @@ export function registerAccount(input: {
 }
 
 export function createOrReturnParentInvite() {
-  const account = accounts.get(activeEmail) ?? demoAccount;
+  const account = getActiveStoredAccount();
+
+  if (!account) {
+    throw new Error("AUTH_REQUIRED");
+  }
 
   if (!account.parentInviteCode) {
     account.parentInviteCode = createUniqueParentInviteCode();
@@ -465,7 +484,11 @@ export function getVerifiedParentReportTargets() {
 }
 
 export function getCurrentParentReportTarget() {
-  const account = accounts.get(activeEmail) ?? demoAccount;
+  const account = getActiveStoredAccount();
+
+  if (!account) {
+    return null;
+  }
 
   if (
     !account.parentTelegramChatId ||
@@ -508,14 +531,24 @@ function createUniqueParentInviteCode() {
 }
 
 export function updateMentorStyle(style: MentorStyle) {
-  const account = accounts.get(activeEmail) ?? demoAccount;
+  const account = getActiveStoredAccount();
+
+  if (!account) {
+    throw new Error("AUTH_REQUIRED");
+  }
+
   account.mentorStyle = style;
   accounts.set(account.email, account);
   return toPublicAccount(account);
 }
 
 export function saveExamAttempt(attempt: Omit<ExamAttempt, "id" | "createdAt">) {
-  const account = accounts.get(activeEmail) ?? demoAccount;
+  const account = getActiveStoredAccount();
+
+  if (!account) {
+    throw new Error("AUTH_REQUIRED");
+  }
+
   const saved: ExamAttempt = {
     ...attempt,
     id: `exam-${Date.now()}`,
@@ -527,7 +560,12 @@ export function saveExamAttempt(attempt: Omit<ExamAttempt, "id" | "createdAt">) 
 }
 
 export function saveWeakTopicProgress(progress: WeakTopicProgress) {
-  const account = accounts.get(activeEmail) ?? demoAccount;
+  const account = getActiveStoredAccount();
+
+  if (!account) {
+    throw new Error("AUTH_REQUIRED");
+  }
+
   const previous = account.weakTopicProgress ?? [];
   account.weakTopicProgress = [
     progress,
@@ -538,7 +576,12 @@ export function saveWeakTopicProgress(progress: WeakTopicProgress) {
 }
 
 export function saveSolutionExplanationLog(log: Omit<SolutionExplanationLog, "id" | "createdAt">) {
-  const account = accounts.get(activeEmail) ?? demoAccount;
+  const account = getActiveStoredAccount();
+
+  if (!account) {
+    throw new Error("AUTH_REQUIRED");
+  }
+
   const saved: SolutionExplanationLog = {
     ...log,
     id: `solution-${Date.now()}`,
@@ -600,22 +643,31 @@ export function loginAccount(input: { email: string; password: string }) {
 }
 
 export function logoutAccount() {
-  activeEmail = demoAccount.email;
+  activeEmail = null;
   return { ok: true };
 }
 
 export function getCurrentAccount() {
-  return toPublicAccount(getActiveStoredAccount());
+  const account = getActiveStoredAccount();
+  return account ? toPublicAccount(account) : null;
 }
 
-export function canEnterPlatform(account: Account | StoredAccount = getActiveStoredAccount()) {
+export function canEnterPlatform(account: Account | StoredAccount | null = getActiveStoredAccount()) {
+  if (!account) {
+    return false;
+  }
+
   return Boolean(
     account.telegramParentVerified ||
       (account.parentTelegramConnected && account.parentPhoneVerified),
   );
 }
 
-export function hasActiveSubscription(account: Account | StoredAccount = getActiveStoredAccount()) {
+export function hasActiveSubscription(account: Account | StoredAccount | null = getActiveStoredAccount()) {
+  if (!account) {
+    return false;
+  }
+
   if (account.subscriptionStatus !== "active") {
     return false;
   }
@@ -643,7 +695,7 @@ export type ContentType =
 
 export function canAccessContent(
   contentType: ContentType,
-  account: Account | StoredAccount = getActiveStoredAccount(),
+  account: Account | StoredAccount | null = getActiveStoredAccount(),
 ) {
   if (!canEnterPlatform(account)) {
     return false;
@@ -664,6 +716,13 @@ export function canAccessContent(
 export function getAccessError(contentType: ContentType) {
   const account = getActiveStoredAccount();
 
+  if (!account) {
+    return {
+      error: "AUTH_REQUIRED",
+      message: "Алдымен аккаунтқа кіріңіз.",
+    };
+  }
+
   if (!canEnterPlatform(account)) {
     return {
       error: "TELEGRAM_VERIFICATION_REQUIRED",
@@ -683,6 +742,11 @@ export function getAccessError(contentType: ContentType) {
 
 export function saveDiagnosticResult(input: { score: number; weakTopics: string[] }) {
   const account = getActiveStoredAccount();
+
+  if (!account) {
+    throw new Error("AUTH_REQUIRED");
+  }
+
   account.diagnosticCompleted = true;
   account.diagnosticScore = input.score;
   account.diagnosticWeakTopics = input.weakTopics;
@@ -692,6 +756,11 @@ export function saveDiagnosticResult(input: { score: number; weakTopics: string[
 
 export function createPaymentRequest(input: { planKey: PlanKey; paymentMethod: PaymentMethod }) {
   const account = getActiveStoredAccount();
+
+  if (!account) {
+    throw new Error("AUTH_REQUIRED");
+  }
+
   const plan = pricingPlans.find((item) => item.key === input.planKey);
 
   if (!plan) {

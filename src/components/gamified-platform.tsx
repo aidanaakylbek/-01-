@@ -110,6 +110,7 @@ export function GameLayout({
 function useAccessGate() {
   const location = useLocation();
   const [account, setAccount] = useState<Account | null>(null);
+  const [authenticated, setAuthenticated] = useState(false);
   const [redirecting, setRedirecting] = useState(false);
   const pathname = location.pathname;
 
@@ -118,6 +119,7 @@ function useAccessGate() {
     void getAccountDashboard().then((dashboard) => {
       if (mounted) {
         setAccount(dashboard.account);
+        setAuthenticated(dashboard.authenticated);
       }
     });
 
@@ -131,15 +133,21 @@ function useAccessGate() {
       return;
     }
 
+    if (!authenticated && isProtectedBeforeLogin(pathname)) {
+      setRedirecting(true);
+      window.location.href = "/login";
+      return;
+    }
+
     if (!isTelegramVerified(account) && isProtectedBeforeTelegram(pathname)) {
       setRedirecting(true);
       window.location.href = "/verify-parent-telegram";
     }
-  }, [account, pathname]);
+  }, [account, authenticated, pathname]);
 
   return {
     redirecting,
-    paywalled: Boolean(account && isTelegramVerified(account) && isPaidRoute(pathname) && !hasActiveSubscription(account)),
+    paywalled: Boolean(authenticated && account && isTelegramVerified(account) && isPaidRoute(pathname) && !hasActiveSubscription(account)),
   };
 }
 
@@ -157,6 +165,17 @@ function hasActiveSubscription(account: Account) {
   }
 
   return new Date(account.subscriptionExpiresAt).getTime() > Date.now();
+}
+
+function isProtectedBeforeLogin(pathname: string) {
+  return ![
+    "/",
+    "/login",
+    "/register",
+    "/about",
+    "/careers",
+    "/privacy",
+  ].includes(pathname);
 }
 
 function isProtectedBeforeTelegram(pathname: string) {
@@ -214,6 +233,21 @@ function PaywallCard() {
 
 export function GameTopBar() {
   const { language, setLanguage } = useLanguage();
+  const [authenticated, setAuthenticated] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    void getAccountDashboard().then((dashboard) => {
+      if (mounted) {
+        setAuthenticated(dashboard.authenticated);
+      }
+    });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   return (
     <header className="sticky top-0 z-50 border-b-2 border-[#DDD6FE] bg-white/92 shadow-[0_6px_0_rgba(109,40,217,0.06)] backdrop-blur-xl">
       <div className="mx-auto flex min-h-16 max-w-[1440px] items-center gap-3 px-3 md:px-5">
@@ -245,12 +279,21 @@ export function GameTopBar() {
               </button>
             ))}
           </div>
-          <Link
-            to="/profile"
-            className="grid h-11 w-11 place-items-center rounded-full bg-[#8B5CF6] font-black text-white shadow-[0_5px_0_#5B21B6] transition hover:-translate-y-0.5"
-          >
-            AA
-          </Link>
+          {authenticated ? (
+            <Link
+              to="/profile"
+              className="grid h-11 w-11 place-items-center rounded-full bg-[#8B5CF6] font-black text-white shadow-[0_5px_0_#5B21B6] transition hover:-translate-y-0.5"
+            >
+              AA
+            </Link>
+          ) : (
+            <Link
+              to="/login"
+              className="rounded-2xl bg-[#6D28D9] px-4 py-2.5 text-sm font-black text-white shadow-[0_5px_0_#4C1D95] transition hover:-translate-y-0.5"
+            >
+              Кіру
+            </Link>
+          )}
         </div>
       </div>
     </header>
