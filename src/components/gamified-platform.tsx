@@ -112,14 +112,22 @@ function useAccessGate() {
   const [account, setAccount] = useState<Account | null>(null);
   const [authenticated, setAuthenticated] = useState(false);
   const [redirecting, setRedirecting] = useState(false);
+  const [loadingAccess, setLoadingAccess] = useState(true);
   const pathname = location.pathname;
 
   useEffect(() => {
     let mounted = true;
+    setLoadingAccess(true);
     void getAccountDashboard().then((dashboard) => {
       if (mounted) {
         setAccount(dashboard.account);
         setAuthenticated(dashboard.authenticated);
+        setLoadingAccess(false);
+      }
+    }).catch(() => {
+      if (mounted) {
+        setAuthenticated(false);
+        setLoadingAccess(false);
       }
     });
 
@@ -129,24 +137,38 @@ function useAccessGate() {
   }, [pathname]);
 
   useEffect(() => {
-    if (!account || typeof window === "undefined") {
+    if (loadingAccess || !account || typeof window === "undefined") {
       return;
     }
 
-    if (!authenticated && isProtectedBeforeLogin(pathname)) {
+    const redirect = (to: string) => {
+      if (pathname === to) return;
       setRedirecting(true);
-      window.location.href = "/login";
+      window.location.href = to;
+    };
+
+    if (!authenticated) {
+      if (isProtectedBeforeLogin(pathname)) redirect("/login");
       return;
     }
 
-    if (!isTelegramVerified(account) && isProtectedBeforeTelegram(pathname)) {
-      setRedirecting(true);
-      window.location.href = "/verify-parent-telegram";
+    if (!isTelegramVerified(account)) {
+      if (isProtectedBeforeTelegram(pathname)) redirect("/verify-parent-telegram");
+      return;
     }
-  }, [account, authenticated, pathname]);
+
+    if (!account.diagnosticCompleted && isProtectedBeforeDiagnostic(pathname)) {
+      redirect("/diagnostic");
+      return;
+    }
+
+    if (isPaidRoute(pathname) && !hasActiveSubscription(account)) {
+      redirect("/pricing");
+    }
+  }, [account, authenticated, loadingAccess, pathname]);
 
   return {
-    redirecting,
+    redirecting: redirecting || loadingAccess,
     paywalled: Boolean(authenticated && account && isTelegramVerified(account) && isPaidRoute(pathname) && !hasActiveSubscription(account)),
   };
 }
@@ -180,10 +202,24 @@ function isProtectedBeforeLogin(pathname: string) {
 
 function isProtectedBeforeTelegram(pathname: string) {
   return ![
+    "/",
     "/login",
     "/register",
     "/verify-parent-telegram",
-    "/admin/payments",
+    "/about",
+    "/careers",
+    "/privacy",
+  ].includes(pathname);
+}
+
+function isProtectedBeforeDiagnostic(pathname: string) {
+  return ![
+    "/",
+    "/login",
+    "/register",
+    "/verify-parent-telegram",
+    "/diagnostic",
+    "/diagnostic-test",
     "/about",
     "/careers",
     "/privacy",
@@ -191,7 +227,15 @@ function isProtectedBeforeTelegram(pathname: string) {
 }
 
 function isPaidRoute(pathname: string) {
-  if (["/", "/home", "/diagnostic", "/diagnostic-result", "/pricing", "/payment", "/verify-parent-telegram"].includes(pathname)) {
+  if ([
+    "/",
+    "/diagnostic",
+    "/diagnostic-test",
+    "/diagnostic-result",
+    "/pricing",
+    "/payment",
+    "/verify-parent-telegram",
+  ].includes(pathname)) {
     return false;
   }
 

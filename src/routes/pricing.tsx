@@ -2,11 +2,14 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 
 import { GameCard, GameLayout } from "@/components/gamified-platform";
-import { createPaymentRequest, getPricingPlans } from "@/lib/api/account.functions";
+import { createPaymentRequest, getAccountDashboard, getPricingPlans } from "@/lib/api/account.functions";
 import type { PaymentMethod, PricingPlan } from "@/lib/account-store.server";
 
 export const Route = createFileRoute("/pricing")({
-  loader: async () => getPricingPlans(),
+  loader: async () => {
+    const [plans, dashboard] = await Promise.all([getPricingPlans(), getAccountDashboard()]);
+    return { plans, dashboard };
+  },
   head: () => ({
     meta: [
       { title: "Pricing - AI-Sana" },
@@ -33,9 +36,10 @@ const features = [
 ];
 
 function Pricing() {
-  const plans = Route.useLoaderData() as PricingPlan[];
+  const { plans, dashboard } = Route.useLoaderData() as Awaited<ReturnType<typeof Route.options.loader>>;
   const navigate = useNavigate();
   const [pendingKey, setPendingKey] = useState("");
+  const account = dashboard.account;
 
   const startPayment = async (planKey: PricingPlan["key"], paymentMethod: PaymentMethod) => {
     setPendingKey(`${planKey}:${paymentMethod}`);
@@ -50,8 +54,51 @@ function Pricing() {
           <p className="text-sm font-black uppercase tracking-[0.25em] text-[#FACC15]">
             AI-Sana Premium
           </p>
-          <h1 className="mt-3 text-4xl font-black md:text-6xl">Толық дайындықты ашыңыз</h1>
+          <h1 className="mt-3 text-4xl font-black md:text-6xl">
+            {account.diagnosticCompleted ? "Диагностика аяқталды!" : "Толық дайындықты ашыңыз"}
+          </h1>
           <p className="mt-4 max-w-2xl text-lg font-semibold text-[#EDE9FE]">
+            {account.diagnosticCompleted
+              ? "Толық дайындықты бастау үшін тариф таңдаңыз."
+              : "Kaspi Pay, Kaspi Red және Kaspi 0-0-12 қолжетімді"}
+          </p>
+        </GameCard>
+
+        {account.diagnosticCompleted ? (
+          <GameCard className="bg-white/95">
+            <div className="grid gap-4 md:grid-cols-3">
+              <div className="rounded-3xl bg-[#F5F3FF] p-5">
+                <p className="text-sm font-black uppercase tracking-[0.2em] text-[#8B5CF6]">
+                  Жалпы нәтиже
+                </p>
+                <p className="mt-2 text-4xl font-black text-[#6D28D9]">
+                  {account.diagnosticScore ?? 68}%
+                </p>
+              </div>
+              <div className="rounded-3xl bg-[#F5F3FF] p-5 md:col-span-2">
+                <p className="text-sm font-black uppercase tracking-[0.2em] text-[#8B5CF6]">
+                  Әлсіз тақырыптар
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {(account.diagnosticWeakTopics?.length ? account.diagnosticWeakTopics : ["Пайыздар", "Логика"]).map((topic) => (
+                    <span
+                      className="rounded-full bg-white px-4 py-2 font-black text-[#1E1B4B] shadow-[0_3px_0_rgba(109,40,217,0.12)]"
+                      key={topic}
+                    >
+                      {topic}
+                    </span>
+                  ))}
+                </div>
+                <p className="mt-4 font-semibold text-[#6B5E8F]">
+                  AI-Sana кеңесі: әлсіз тақырыптарды күн сайын 20 минут қайталап, қате сұрақтарды қайта шешіңіз.
+                </p>
+              </div>
+            </div>
+          </GameCard>
+        ) : null}
+
+        <GameCard className="border-[#FACC15] bg-[#FFFBEB]">
+          <p className="font-black text-[#1E1B4B]">
             Kaspi Pay, Kaspi Red және Kaspi 0-0-12 қолжетімді
           </p>
         </GameCard>

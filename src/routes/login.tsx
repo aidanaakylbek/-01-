@@ -58,14 +58,14 @@ function Login() {
   const submitLogin = async (form: HTMLFormElement) => {
     const formData = new FormData(form);
 
-    await loginAccount({
+    const result = await loginAccount({
       data: {
         email: String(formData.get("email") ?? ""),
         password: String(formData.get("password") ?? ""),
       },
     });
 
-    void navigate({ to: "/home" });
+    void navigate({ to: result.redirectTo as never });
   };
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {

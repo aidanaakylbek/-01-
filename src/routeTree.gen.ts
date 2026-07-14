@@ -27,8 +27,10 @@ import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as ExplainSolutionRouteImport } from './routes/explain-solution'
 import { Route as ExamRouteImport } from './routes/exam'
+import { Route as DiagnosticTestRouteImport } from './routes/diagnostic-test'
 import { Route as DiagnosticResultRouteImport } from './routes/diagnostic-result'
 import { Route as DiagnosticRouteImport } from './routes/diagnostic'
+import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CareersRouteImport } from './routes/careers'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
@@ -139,6 +141,11 @@ const ExamRoute = ExamRouteImport.update({
   path: '/exam',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DiagnosticTestRoute = DiagnosticTestRouteImport.update({
+  id: '/diagnostic-test',
+  path: '/diagnostic-test',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DiagnosticResultRoute = DiagnosticResultRouteImport.update({
   id: '/diagnostic-result',
   path: '/diagnostic-result',
@@ -147,6 +154,11 @@ const DiagnosticResultRoute = DiagnosticResultRouteImport.update({
 const DiagnosticRoute = DiagnosticRouteImport.update({
   id: '/diagnostic',
   path: '/diagnostic',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CareersRoute = CareersRouteImport.update({
@@ -251,8 +263,10 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/careers': typeof CareersRoute
+  '/dashboard': typeof DashboardRoute
   '/diagnostic': typeof DiagnosticRoute
   '/diagnostic-result': typeof DiagnosticResultRoute
+  '/diagnostic-test': typeof DiagnosticTestRoute
   '/exam': typeof ExamRoute
   '/explain-solution': typeof ExplainSolutionRoute
   '/home': typeof HomeRoute
@@ -292,8 +306,10 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/careers': typeof CareersRoute
+  '/dashboard': typeof DashboardRoute
   '/diagnostic': typeof DiagnosticRoute
   '/diagnostic-result': typeof DiagnosticResultRoute
+  '/diagnostic-test': typeof DiagnosticTestRoute
   '/exam': typeof ExamRoute
   '/explain-solution': typeof ExplainSolutionRoute
   '/home': typeof HomeRoute
@@ -334,8 +350,10 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/careers': typeof CareersRoute
+  '/dashboard': typeof DashboardRoute
   '/diagnostic': typeof DiagnosticRoute
   '/diagnostic-result': typeof DiagnosticResultRoute
+  '/diagnostic-test': typeof DiagnosticTestRoute
   '/exam': typeof ExamRoute
   '/explain-solution': typeof ExplainSolutionRoute
   '/home': typeof HomeRoute
@@ -377,8 +395,10 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/careers'
+    | '/dashboard'
     | '/diagnostic'
     | '/diagnostic-result'
+    | '/diagnostic-test'
     | '/exam'
     | '/explain-solution'
     | '/home'
@@ -418,8 +438,10 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/careers'
+    | '/dashboard'
     | '/diagnostic'
     | '/diagnostic-result'
+    | '/diagnostic-test'
     | '/exam'
     | '/explain-solution'
     | '/home'
@@ -459,8 +481,10 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/careers'
+    | '/dashboard'
     | '/diagnostic'
     | '/diagnostic-result'
+    | '/diagnostic-test'
     | '/exam'
     | '/explain-solution'
     | '/home'
@@ -501,8 +525,10 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   CareersRoute: typeof CareersRoute
+  DashboardRoute: typeof DashboardRoute
   DiagnosticRoute: typeof DiagnosticRoute
   DiagnosticResultRoute: typeof DiagnosticResultRoute
+  DiagnosticTestRoute: typeof DiagnosticTestRoute
   ExamRoute: typeof ExamRoute
   ExplainSolutionRoute: typeof ExplainSolutionRoute
   HomeRoute: typeof HomeRoute
@@ -666,6 +692,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ExamRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/diagnostic-test': {
+      id: '/diagnostic-test'
+      path: '/diagnostic-test'
+      fullPath: '/diagnostic-test'
+      preLoaderRoute: typeof DiagnosticTestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/diagnostic-result': {
       id: '/diagnostic-result'
       path: '/diagnostic-result'
@@ -678,6 +711,13 @@ declare module '@tanstack/react-router' {
       path: '/diagnostic'
       fullPath: '/diagnostic'
       preLoaderRoute: typeof DiagnosticRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/careers': {
@@ -832,8 +872,10 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   CareersRoute: CareersRoute,
+  DashboardRoute: DashboardRoute,
   DiagnosticRoute: DiagnosticRoute,
   DiagnosticResultRoute: DiagnosticResultRoute,
+  DiagnosticTestRoute: DiagnosticTestRoute,
   ExamRoute: ExamRoute,
   ExplainSolutionRoute: ExplainSolutionRoute,
   HomeRoute: HomeRoute,

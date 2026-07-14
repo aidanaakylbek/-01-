@@ -5,6 +5,7 @@ import {
   createPaymentRequest as createStoredPaymentRequest,
   duplicateEmailMessage,
   getDashboardAccount as readDashboardAccount,
+  getPostLoginRedirect,
   listPaymentRequests as listStoredPaymentRequests,
   loginAccount as loginStoredAccount,
   logoutAccount as logoutStoredAccount,
@@ -59,7 +60,10 @@ export const loginAccount = createServerFn({ method: "POST" })
       throw new Error("Invalid email or password");
     }
 
-    return account;
+    return {
+      account,
+      redirectTo: getPostLoginRedirect(account),
+    };
   });
 
 export const logoutAccount = createServerFn({ method: "POST" }).handler(async () => {

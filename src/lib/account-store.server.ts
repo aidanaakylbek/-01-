@@ -1,3 +1,9 @@
+import {
+  deleteCookie,
+  getCookie,
+  setCookie,
+} from "@tanstack/start-server-core/request-response";
+
 export type Account = {
   id: string;
   name: string;
@@ -175,6 +181,7 @@ type ParentWhatsAppVerification = {
   expiresAt: number;
 };
 
+const SESSION_COOKIE = "ai_sana_email";
 const sentWeeklyReportKeys = new Set<string>();
 
 const demoAccount: StoredAccount = {
@@ -269,7 +276,52 @@ function toPublicAccount(account: StoredAccount): Account {
 }
 
 function getActiveStoredAccount() {
-  return activeEmail ? (accounts.get(activeEmail) ?? null) : null;
+  const email = getSessionEmail();
+  return email ? (accounts.get(email) ?? null) : null;
+}
+
+function getSessionEmail() {
+  try {
+    const cookieEmail = getCookie(SESSION_COOKIE);
+
+    if (cookieEmail) {
+      return normalizeEmail(cookieEmail);
+    }
+  } catch {
+    // Cookie helpers are only available during server requests. The in-memory
+    // fallback keeps local non-request calls working during development.
+  }
+
+  return activeEmail;
+}
+
+function setSessionEmail(email: string) {
+  const normalizedEmail = normalizeEmail(email);
+  activeEmail = normalizedEmail;
+
+  try {
+    setCookie(SESSION_COOKIE, normalizedEmail, {
+      httpOnly: true,
+      maxAge: 60 * 60 * 24 * 30,
+      path: "/",
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+    });
+  } catch {
+    // See getSessionEmail fallback note.
+  }
+}
+
+function clearSessionEmail() {
+  activeEmail = null;
+
+  try {
+    deleteCookie(SESSION_COOKIE, {
+      path: "/",
+    });
+  } catch {
+    // See getSessionEmail fallback note.
+  }
 }
 
 export function getDashboardAccount(): DashboardAccount {
@@ -427,7 +479,7 @@ export function registerAccount(input: {
   };
 
   accounts.set(account.email, account);
-  activeEmail = account.email;
+  setSessionEmail(account.email);
 
   return toPublicAccount(account);
 }
@@ -648,12 +700,12 @@ export function loginAccount(input: { email: string; password: string }) {
     return null;
   }
 
-  activeEmail = account.email;
+  setSessionEmail(account.email);
   return toPublicAccount(account);
 }
 
 export function logoutAccount() {
-  activeEmail = null;
+  clearSessionEmail();
   return { ok: true };
 }
 
@@ -855,4 +907,20 @@ export function updatePaymentRequest(input: {
 
   paymentRequests.set(request.id, request);
   return request;
+}
+
+export function getPostLoginRedirect(account: Account | StoredAccount) {
+  if (!canEnterPlatform(account)) {
+    return "/verify-parent-telegram";
+  }
+
+  if (!account.diagnosticCompleted) {
+    return "/diagnostic";
+  }
+
+  if (!hasActiveSubscription(account)) {
+    return "/pricing";
+  }
+
+  return "/home";
 }

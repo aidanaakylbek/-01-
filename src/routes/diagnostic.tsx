@@ -1,5 +1,5 @@
 ﻿import { useMemo, useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { AIReviewPanel } from "@/components/ai-review-panel";
 import { GameCard, GameLayout, ProgressBar } from "@/components/gamified-platform";
 import { diagnosticQuestions } from "@/data/diagnostic-questions";
@@ -100,6 +100,7 @@ const copy = {
 
 function Diagnostic() {
   const { language } = useLanguage();
+  const navigate = useNavigate();
   const c = copy[language];
   const [status, setStatus] = useState<TestStatus>("intro");
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -158,15 +159,16 @@ function Diagnostic() {
     setAnswers((prev) => ({ ...prev, [currentQuestion.id]: answer }));
   };
 
-  const finishTest = () => {
+  const finishTest = async () => {
     if (answeredCount < totalQuestions) return;
-    void saveDiagnosticResult({
+    await saveDiagnosticResult({
       data: {
         score: result.score,
         weakTopics: result.weakTopics,
       },
     });
     setStatus("finished");
+    await navigate({ to: "/pricing" });
   };
 
   return (
@@ -304,7 +306,7 @@ function Diagnostic() {
                 <button
                   className="rounded-2xl bg-[#FACC15] px-6 py-3 font-black text-[#1E1B4B] shadow-[0_5px_0_#CA8A04] transition hover:-translate-y-0.5 disabled:opacity-40"
                   disabled={answeredCount < totalQuestions}
-                  onClick={finishTest}
+                  onClick={() => void finishTest()}
                   type="button"
                 >
                   {c.finish}
