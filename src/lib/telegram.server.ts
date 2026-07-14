@@ -18,7 +18,7 @@ export function buildParentTelegramInviteLink(inviteCode: string) {
     return "";
   }
 
-  return `https://t.me/${username}?start=parent_${encodeURIComponent(inviteCode)}`;
+  return `https://telegram.me/${username}?start=parent_${encodeURIComponent(inviteCode)}`;
 }
 
 export async function sendTelegramMessage({
