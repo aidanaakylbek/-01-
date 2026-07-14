@@ -31,6 +31,8 @@ export type SubscriptionStatus = "inactive" | "active" | "expired" | "cancelled"
 export type PlanKey = "monthly" | "three_months" | "yearly";
 export type PaymentMethod = "kaspi_pay" | "kaspi_red" | "kaspi_0_0_12";
 export type PaymentRequestStatus = "pending" | "invoice_sent" | "approved" | "rejected" | "expired";
+export const duplicateEmailMessage =
+  "Бұл email бұрын тіркелген. Басқа email қолданыңыз немесе аккаунтқа кіріңіз.";
 
 export type PricingPlan = {
   badge?: string;
@@ -386,7 +388,7 @@ export function registerAccount(input: {
   parentPhone: string;
   password: string;
 }) {
-  const normalizedEmail = input.email.trim().toLowerCase();
+  const normalizedEmail = normalizeEmail(input.email);
 
   if (accounts.has(normalizedEmail)) {
     throw new Error("EMAIL_ALREADY_EXISTS");
@@ -428,6 +430,14 @@ export function registerAccount(input: {
   activeEmail = account.email;
 
   return toPublicAccount(account);
+}
+
+export function normalizeEmail(email: string) {
+  return email.trim().toLowerCase();
+}
+
+export function emailExists(email: string) {
+  return accounts.has(normalizeEmail(email));
 }
 
 export function createOrReturnParentInvite() {

@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import {
   createPaymentRequest as createStoredPaymentRequest,
+  duplicateEmailMessage,
   getDashboardAccount as readDashboardAccount,
   listPaymentRequests as listStoredPaymentRequests,
   loginAccount as loginStoredAccount,
@@ -37,7 +38,7 @@ export const registerAccount = createServerFn({ method: "POST" })
       return registerStoredAccount(data);
     } catch (error) {
       if (error instanceof Error && error.message === "EMAIL_ALREADY_EXISTS") {
-        throw new Error("Бұл email бұрын тіркелген. Басқа email қолданыңыз немесе аккаунтқа кіріңіз.");
+        throw new Error(duplicateEmailMessage);
       }
 
       throw error;

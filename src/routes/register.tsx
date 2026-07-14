@@ -19,6 +19,7 @@ function Register() {
   const { language } = useLanguage();
   const [statusMessage, setStatusMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [emailError, setEmailError] = useState("");
   const [parentInvite, setParentInvite] = useState<{
     code: string;
     configured: boolean;
@@ -110,17 +111,24 @@ function Register() {
 
     try {
       setErrorMessage("");
+      setEmailError("");
+      const normalizedEmail = String(formData.get("email") ?? "").trim().toLowerCase();
 
       await registerAccount({
         data: {
           name: String(formData.get("name") ?? ""),
-          email: String(formData.get("email") ?? ""),
+          email: normalizedEmail,
           grade: String(formData.get("grade") ?? ""),
           parentName: String(formData.get("parentName") ?? ""),
           parentPhone: String(formData.get("parentPhone") ?? ""),
           password: String(formData.get("password") ?? ""),
         },
       });
+      const emailInput = form.elements.namedItem("email");
+
+      if (emailInput instanceof HTMLInputElement) {
+        emailInput.value = normalizedEmail;
+      }
 
       setStatusMessage(copy.success);
       const invite = (await fetch("/api/parent/create-invite", { method: "POST" }).then((response) =>
@@ -134,7 +142,15 @@ function Register() {
         webhookError: invite.webhookStatus?.error,
       });
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : copy.submitError);
+      const message = error instanceof Error ? error.message : copy.submitError;
+
+      if (message.includes("Бұл email бұрын тіркелген")) {
+        setEmailError(message);
+        setErrorMessage("");
+        return;
+      }
+
+      setErrorMessage(message);
     }
   };
 
@@ -194,7 +210,13 @@ function Register() {
 
           <form className={`flex flex-col gap-5 ${parentInvite ? "mt-6" : ""}`} onSubmit={handleSubmit}>
             <RegisterInput autoComplete="name" label={copy.name} name="name" type="text" />
-            <RegisterInput autoComplete="email" label={copy.email} name="email" type="email" />
+            <RegisterInput
+              autoComplete="email"
+              error={emailError}
+              label={copy.email}
+              name="email"
+              type="email"
+            />
 
             <label className="flex flex-col gap-2 font-black text-[#1E1B4B]">
               {copy.grade}
@@ -242,6 +264,15 @@ function Register() {
               </p>
             ) : null}
 
+            {emailError ? (
+              <Link
+                className="-mt-2 inline-flex w-fit rounded-2xl border-2 border-[#DDD6FE] bg-white px-4 py-2 text-sm font-black text-[#6D28D9] hover:bg-[#F5F3FF]"
+                to="/login"
+              >
+                {copy.signIn}
+              </Link>
+            ) : null}
+
             <button
               className="mt-2 h-13 rounded-2xl bg-[#6D28D9] font-black text-white shadow-[0_6px_0_#4C1D95] transition hover:-translate-y-0.5"
               type="submit"
@@ -274,12 +305,14 @@ type ParentInviteResponse = {
 
 function RegisterInput({
   autoComplete,
+  error,
   label,
   minLength,
   name,
   type,
 }: {
   autoComplete: string;
+  error?: string;
   label: string;
   minLength?: number;
   name: string;
@@ -289,13 +322,16 @@ function RegisterInput({
     <label className="flex flex-col gap-2 font-black text-[#1E1B4B]">
       {label}
       <input
-        className="h-13 rounded-2xl border-2 border-[#DDD6FE] bg-[#F5F3FF] px-4 font-semibold text-[#1E1B4B] focus:border-[#8B5CF6] focus:outline-none"
+        className={`h-13 rounded-2xl border-2 bg-[#F5F3FF] px-4 font-semibold text-[#1E1B4B] focus:outline-none ${
+          error ? "border-[#EF4444] focus:border-[#EF4444]" : "border-[#DDD6FE] focus:border-[#8B5CF6]"
+        }`}
         name={name}
         type={type}
         autoComplete={autoComplete}
         minLength={minLength}
         required
       />
+      {error ? <span className="text-sm font-bold text-[#EF4444]">{error}</span> : null}
     </label>
   );
 }
