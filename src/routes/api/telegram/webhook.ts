@@ -101,23 +101,28 @@ async function verifyParentOrSendInvalidMessage(chatId: string, inviteCode: stri
 }
 
 function isPlainStart(text: string) {
-  return text.trim().toLowerCase() === "/start";
+  const payload = getStartPayload(text);
+  return payload !== null && payload === "";
 }
 
 function extractStartParentInviteCode(text: string) {
-  const trimmedText = text.trim();
-
-  if (!trimmedText.toLowerCase().startsWith("/start")) {
-    return "";
-  }
-
-  const [, payload] = trimmedText.split(/\s+/, 2);
+  const payload = getStartPayload(text);
 
   if (!payload?.toLowerCase().startsWith("parent_")) {
     return "";
   }
 
   return normalizeInviteCode(payload.replace(/^parent_/i, ""));
+}
+
+function getStartPayload(text: string) {
+  const match = text.trim().match(/^\/start(?:@[A-Za-z0-9_]+)?(?:\s+(.+))?$/i);
+
+  if (!match) {
+    return null;
+  }
+
+  return match[1]?.trim() ?? "";
 }
 
 function extractManualInviteCode(text: string) {
