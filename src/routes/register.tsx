@@ -133,8 +133,8 @@ function Register() {
         webhookConnected: Boolean(invite.webhookStatus?.connected),
         webhookError: invite.webhookStatus?.error,
       });
-    } catch {
-      setErrorMessage(copy.submitError);
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : copy.submitError);
     }
   };
 
@@ -184,7 +184,7 @@ function Register() {
                 <button
                   className="rounded-2xl bg-[#6D28D9] px-5 py-4 font-black text-white shadow-[0_6px_0_#4C1D95]"
                   type="button"
-                  onClick={() => void navigate({ to: "/diagnostic" })}
+                  onClick={() => void navigate({ to: "/verify-parent-telegram" })}
                 >
                   {copy.continue}
                 </button>

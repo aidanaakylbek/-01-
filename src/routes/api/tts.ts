@@ -2,6 +2,7 @@ import { GoogleGenAI } from "@google/genai";
 import { createFileRoute } from "@tanstack/react-router";
 import { MsEdgeTTS, OUTPUT_FORMAT } from "msedge-tts";
 import { z } from "zod";
+import { getAccessError } from "@/lib/account-store.server";
 
 const ttsRequestSchema = z.object({
   language: z.enum(["EN", "KZ", "RU"]).optional(),
@@ -24,6 +25,12 @@ export const Route = createFileRoute("/api/tts")({
 
         if (!parsed.success) {
           return Response.json({ error: "Please send valid text." }, { status: 400 });
+        }
+
+        const accessError = getAccessError("ai_tutor");
+
+        if (accessError) {
+          return Response.json(accessError, { status: 403 });
         }
 
         try {

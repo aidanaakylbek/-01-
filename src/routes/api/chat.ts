@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { buildMentorSystemPrompt } from "@/lib/ai-mentor";
-import { getDashboardAccount } from "@/lib/account-store.server";
+import { getAccessError, getDashboardAccount } from "@/lib/account-store.server";
 
 const TUTOR_BEHAVIOR_PROMPT =
   "Answer any normal study question naturally, like ChatGPT, but in a tutor style for pupils aged 10-14. Understand short, misspelled, mixed Kazakh/Russian/English messages by context. Do not give canned template answers. Do not keep asking the pupil to rewrite the question. If the question is unclear, make the most helpful reasonable assumption, answer with an example, and ask only one focused follow-up question. For math and logic, explain the method first, then give the answer. If the pupil answers a test question, check it and give a full explanation whether it is right or wrong. Keep answers clear, compact, and useful.";
@@ -54,6 +54,12 @@ export const Route = createFileRoute("/api/chat")({
             { error: "Please send at least one valid message." },
             { status: 400 },
           );
+        }
+
+        const accessError = getAccessError("ai_tutor");
+
+        if (accessError) {
+          return Response.json(accessError, { status: 403 });
         }
 
         const recentMessages = parsed.data.messages.slice(-12);

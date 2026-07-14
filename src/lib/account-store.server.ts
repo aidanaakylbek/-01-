@@ -4,6 +4,7 @@ export type Account = {
   email: string;
   grade: string;
   initials: string;
+  role: "student" | "admin";
   parentName: string;
   parentPhone: string;
   parentPhoneVerified: boolean;
@@ -14,10 +15,52 @@ export type Account = {
   parentLastReportSentAt?: string;
   parentWhatsApp: string;
   parentWhatsAppVerified: boolean;
+  telegramParentVerified: boolean;
+  subscriptionStatus: SubscriptionStatus;
+  subscriptionPlan?: PlanKey;
+  subscriptionStartedAt?: string;
+  subscriptionExpiresAt?: string;
+  diagnosticCompleted: boolean;
+  diagnosticScore?: number;
+  diagnosticWeakTopics?: string[];
   mentorStyle: MentorStyle;
 };
 
 export type MentorStyle = "soft" | "strict" | "friendly" | "olympiad";
+export type SubscriptionStatus = "inactive" | "active" | "expired" | "cancelled";
+export type PlanKey = "monthly" | "three_months" | "yearly";
+export type PaymentMethod = "kaspi_pay" | "kaspi_red" | "kaspi_0_0_12";
+export type PaymentRequestStatus = "pending" | "invoice_sent" | "approved" | "rejected" | "expired";
+
+export type PricingPlan = {
+  badge?: string;
+  description: string;
+  durationLabel: string;
+  durationMonths: number;
+  key: PlanKey;
+  name: string;
+  price: number;
+};
+
+export type PaymentRequest = {
+  id: string;
+  userId: string;
+  studentName: string;
+  studentEmail: string;
+  parentPhone: string;
+  planKey: PlanKey;
+  planName: string;
+  amount: number;
+  currency: "KZT";
+  paymentMethod: PaymentMethod;
+  status: PaymentRequestStatus;
+  kaspiInvoiceReference?: string;
+  kaspiPaymentLink?: string;
+  adminNote?: string;
+  createdAt: string;
+  confirmedAt?: string;
+  rejectedAt?: string;
+};
 
 export type ExamAttemptQuestion = {
   id: string;
@@ -137,6 +180,7 @@ const demoAccount: StoredAccount = {
   email: "aidana@aibi.kz",
   grade: "7",
   initials: "AA",
+  role: "student",
   parentName: "Айдананың ата-анасы",
   parentPhone: "+77001234567",
   parentPhoneVerified: false,
@@ -147,13 +191,51 @@ const demoAccount: StoredAccount = {
   parentLastReportSentAt: undefined,
   parentWhatsApp: "+77001234567",
   parentWhatsAppVerified: false,
+  telegramParentVerified: false,
+  subscriptionStatus: "inactive",
+  subscriptionPlan: undefined,
+  subscriptionStartedAt: undefined,
+  subscriptionExpiresAt: undefined,
+  diagnosticCompleted: false,
+  diagnosticScore: undefined,
+  diagnosticWeakTopics: undefined,
   mentorStyle: "friendly",
   password: "demo123",
 };
 
 const accounts = new Map<string, StoredAccount>([[demoAccount.email, demoAccount]]);
+const paymentRequests = new Map<string, PaymentRequest>();
 const parentWhatsAppVerifications = new Map<string, ParentWhatsAppVerification>();
 let activeEmail = demoAccount.email;
+
+export const pricingPlans: PricingPlan[] = [
+  {
+    key: "monthly",
+    name: "Sana Start",
+    durationLabel: "1 ай",
+    durationMonths: 1,
+    price: 9990,
+    description: "Бір айлық дайындықты бастау",
+  },
+  {
+    key: "three_months",
+    name: "Sana Plus",
+    durationLabel: "3 ай",
+    durationMonths: 3,
+    price: 24000,
+    badge: "Тиімді",
+    description: "Тұрақты дайындық үшін тиімді жоспар",
+  },
+  {
+    key: "yearly",
+    name: "Sana Pro",
+    durationLabel: "12 ай",
+    durationMonths: 12,
+    price: 89990,
+    badge: "Ең тиімді",
+    description: "Толық жылдық дайындық",
+  },
+];
 
 function getInitials(name: string) {
   const letters = name
@@ -169,6 +251,10 @@ function getInitials(name: string) {
 function toPublicAccount(account: StoredAccount): Account {
   const { password: _password, ...publicAccount } = account;
   return publicAccount;
+}
+
+function getActiveStoredAccount() {
+  return accounts.get(activeEmail) ?? demoAccount;
 }
 
 export function getDashboardAccount(): DashboardAccount {
@@ -285,15 +371,22 @@ export function registerAccount(input: {
   parentPhone: string;
   password: string;
 }) {
+  const normalizedEmail = input.email.trim().toLowerCase();
+
+  if (accounts.has(normalizedEmail)) {
+    throw new Error("EMAIL_ALREADY_EXISTS");
+  }
+
   const parentPhone = input.parentPhone.trim();
   const inviteCode = createUniqueParentInviteCode();
 
   const account: StoredAccount = {
     id: `account-${Date.now()}`,
     name: input.name.trim(),
-    email: input.email.trim().toLowerCase(),
+    email: normalizedEmail,
     grade: input.grade,
     initials: getInitials(input.name),
+    role: "student",
     parentName: input.parentName.trim(),
     parentPhone,
     parentPhoneVerified: false,
@@ -304,6 +397,14 @@ export function registerAccount(input: {
     parentLastReportSentAt: undefined,
     parentWhatsApp: parentPhone,
     parentWhatsAppVerified: false,
+    telegramParentVerified: false,
+    subscriptionStatus: "inactive",
+    subscriptionPlan: undefined,
+    subscriptionStartedAt: undefined,
+    subscriptionExpiresAt: undefined,
+    diagnosticCompleted: false,
+    diagnosticScore: undefined,
+    diagnosticWeakTopics: undefined,
     mentorStyle: "friendly",
     password: input.password,
   };
@@ -340,6 +441,7 @@ export function verifyParentTelegramInvite(inviteCode: string, telegramChatId: s
   account.parentTelegramChatId = telegramChatId;
   account.parentTelegramConnected = true;
   account.parentPhoneVerified = true;
+  account.telegramParentVerified = true;
   account.parentWhatsAppVerified = false;
   account.parentTelegramVerifiedAt = now;
   accounts.set(account.email, account);
@@ -353,7 +455,8 @@ export function getVerifiedParentReportTargets() {
       (account) =>
         Boolean(account.parentTelegramChatId) &&
         account.parentTelegramConnected &&
-        account.parentPhoneVerified,
+        account.parentPhoneVerified &&
+        hasActiveSubscription(account),
     )
     .map((account) => ({
       account: toPublicAccount(account),
@@ -364,7 +467,12 @@ export function getVerifiedParentReportTargets() {
 export function getCurrentParentReportTarget() {
   const account = accounts.get(activeEmail) ?? demoAccount;
 
-  if (!account.parentTelegramChatId || !account.parentTelegramConnected || !account.parentPhoneVerified) {
+  if (
+    !account.parentTelegramChatId ||
+    !account.parentTelegramConnected ||
+    !account.parentPhoneVerified ||
+    !hasActiveSubscription(account)
+  ) {
     return null;
   }
 
@@ -494,4 +602,178 @@ export function loginAccount(input: { email: string; password: string }) {
 export function logoutAccount() {
   activeEmail = demoAccount.email;
   return { ok: true };
+}
+
+export function getCurrentAccount() {
+  return toPublicAccount(getActiveStoredAccount());
+}
+
+export function canEnterPlatform(account: Account | StoredAccount = getActiveStoredAccount()) {
+  return Boolean(
+    account.telegramParentVerified ||
+      (account.parentTelegramConnected && account.parentPhoneVerified),
+  );
+}
+
+export function hasActiveSubscription(account: Account | StoredAccount = getActiveStoredAccount()) {
+  if (account.subscriptionStatus !== "active") {
+    return false;
+  }
+
+  if (!account.subscriptionExpiresAt) {
+    return true;
+  }
+
+  return new Date(account.subscriptionExpiresAt).getTime() > Date.now();
+}
+
+export type ContentType =
+  | "diagnostic_test"
+  | "diagnostic_result"
+  | "pricing_page"
+  | "payment_page"
+  | "paid_lesson"
+  | "practice"
+  | "ai_tutor"
+  | "progress_full"
+  | "parent_report"
+  | "weekly_challenge"
+  | "monthly_test"
+  | "shop";
+
+export function canAccessContent(
+  contentType: ContentType,
+  account: Account | StoredAccount = getActiveStoredAccount(),
+) {
+  if (!canEnterPlatform(account)) {
+    return false;
+  }
+
+  if (
+    contentType === "diagnostic_test" ||
+    contentType === "diagnostic_result" ||
+    contentType === "pricing_page" ||
+    contentType === "payment_page"
+  ) {
+    return true;
+  }
+
+  return hasActiveSubscription(account);
+}
+
+export function getAccessError(contentType: ContentType) {
+  const account = getActiveStoredAccount();
+
+  if (!canEnterPlatform(account)) {
+    return {
+      error: "TELEGRAM_VERIFICATION_REQUIRED",
+      message: "Платформаға кіру үшін ата-ана Telegram арқылы расталуы керек.",
+    };
+  }
+
+  if (!canAccessContent(contentType, account)) {
+    return {
+      error: "SUBSCRIPTION_REQUIRED",
+      message: "Бұл бөлімді қолдану үшін жазылым қажет.",
+    };
+  }
+
+  return null;
+}
+
+export function saveDiagnosticResult(input: { score: number; weakTopics: string[] }) {
+  const account = getActiveStoredAccount();
+  account.diagnosticCompleted = true;
+  account.diagnosticScore = input.score;
+  account.diagnosticWeakTopics = input.weakTopics;
+  accounts.set(account.email, account);
+  return toPublicAccount(account);
+}
+
+export function createPaymentRequest(input: { planKey: PlanKey; paymentMethod: PaymentMethod }) {
+  const account = getActiveStoredAccount();
+  const plan = pricingPlans.find((item) => item.key === input.planKey);
+
+  if (!plan) {
+    throw new Error("INVALID_PLAN");
+  }
+
+  if (!canAccessContent("payment_page", account)) {
+    throw new Error("TELEGRAM_VERIFICATION_REQUIRED");
+  }
+
+  const request: PaymentRequest = {
+    id: `pay-${Date.now()}`,
+    userId: account.id,
+    studentName: account.name,
+    studentEmail: account.email,
+    parentPhone: account.parentPhone,
+    planKey: plan.key,
+    planName: plan.name,
+    amount: plan.price,
+    currency: "KZT",
+    paymentMethod: input.paymentMethod,
+    status: "pending",
+    createdAt: new Date().toISOString(),
+  };
+
+  paymentRequests.set(request.id, request);
+  return request;
+}
+
+export function listPaymentRequests() {
+  return [...paymentRequests.values()].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  );
+}
+
+export function updatePaymentRequest(input: {
+  id: string;
+  action: "invoice_sent" | "approve" | "reject";
+  adminNote?: string;
+  kaspiInvoiceReference?: string;
+  kaspiPaymentLink?: string;
+}) {
+  const request = paymentRequests.get(input.id);
+
+  if (!request) {
+    throw new Error("PAYMENT_REQUEST_NOT_FOUND");
+  }
+
+  request.adminNote = input.adminNote?.trim() || request.adminNote;
+  request.kaspiInvoiceReference = input.kaspiInvoiceReference?.trim() || request.kaspiInvoiceReference;
+  request.kaspiPaymentLink = input.kaspiPaymentLink?.trim() || request.kaspiPaymentLink;
+
+  if (input.action === "invoice_sent") {
+    request.status = "invoice_sent";
+  }
+
+  if (input.action === "reject") {
+    request.status = "rejected";
+    request.rejectedAt = new Date().toISOString();
+  }
+
+  if (input.action === "approve") {
+    const account = [...accounts.values()].find((item) => item.id === request.userId);
+    const plan = pricingPlans.find((item) => item.key === request.planKey);
+
+    if (!account || !plan) {
+      throw new Error("PAYMENT_APPROVAL_TARGET_NOT_FOUND");
+    }
+
+    const now = new Date();
+    const expiresAt = new Date(now);
+    expiresAt.setMonth(expiresAt.getMonth() + plan.durationMonths);
+
+    request.status = "approved";
+    request.confirmedAt = now.toISOString();
+    account.subscriptionStatus = "active";
+    account.subscriptionPlan = plan.key;
+    account.subscriptionStartedAt = now.toISOString();
+    account.subscriptionExpiresAt = expiresAt.toISOString();
+    accounts.set(account.email, account);
+  }
+
+  paymentRequests.set(request.id, request);
+  return request;
 }

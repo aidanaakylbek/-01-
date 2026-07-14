@@ -1,7 +1,9 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { AibiMark } from "@/components/aibi-mark";
 import { Lang, useLanguage } from "@/hooks/use-language";
+import { getAccountDashboard } from "@/lib/api/account.functions";
+import type { Account } from "@/lib/account-store.server";
 
 type NavItem = {
   label: string;
@@ -76,16 +78,137 @@ export function GameLayout({
   children: ReactNode;
   right?: ReactNode;
 }) {
+  const access = useAccessGate();
+
+  if (access.redirecting) {
+    return (
+      <div className="grid min-h-screen place-items-center bg-[#F5F3FF] px-4 text-center text-[#1E1B4B]">
+        <GameCard>
+          <p className="text-lg font-black">Ата-ананы Telegram арқылы растау қажет</p>
+          <p className="mt-2 font-semibold text-[#6B5E8F]">Растау бетіне жіберіп жатырмыз...</p>
+        </GameCard>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#F5F3FF] text-[#1E1B4B]">
       <GameTopBar />
       <div className="mx-auto grid w-full max-w-[1440px] gap-5 px-3 pb-24 pt-4 md:grid-cols-[216px_minmax(0,1fr)] md:px-5 lg:grid-cols-[220px_minmax(0,1fr)_300px] xl:grid-cols-[232px_minmax(0,1fr)_316px]">
         <GameSidebar />
-        <main className="min-w-0 space-y-5">{children}</main>
+        <main className="min-w-0 space-y-5">
+          {access.paywalled ? <PaywallCard /> : null}
+          {children}
+        </main>
         <aside className="hidden lg:block">{right ?? <RightWidgets />}</aside>
       </div>
       <MobileGameNav />
     </div>
+  );
+}
+
+function useAccessGate() {
+  const location = useLocation();
+  const [account, setAccount] = useState<Account | null>(null);
+  const [redirecting, setRedirecting] = useState(false);
+  const pathname = location.pathname;
+
+  useEffect(() => {
+    let mounted = true;
+    void getAccountDashboard().then((dashboard) => {
+      if (mounted) {
+        setAccount(dashboard.account);
+      }
+    });
+
+    return () => {
+      mounted = false;
+    };
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!account || typeof window === "undefined") {
+      return;
+    }
+
+    if (!isTelegramVerified(account) && isProtectedBeforeTelegram(pathname)) {
+      setRedirecting(true);
+      window.location.href = "/verify-parent-telegram";
+    }
+  }, [account, pathname]);
+
+  return {
+    redirecting,
+    paywalled: Boolean(account && isTelegramVerified(account) && isPaidRoute(pathname) && !hasActiveSubscription(account)),
+  };
+}
+
+function isTelegramVerified(account: Account) {
+  return account.telegramParentVerified || (account.parentTelegramConnected && account.parentPhoneVerified);
+}
+
+function hasActiveSubscription(account: Account) {
+  if (account.subscriptionStatus !== "active") {
+    return false;
+  }
+
+  if (!account.subscriptionExpiresAt) {
+    return true;
+  }
+
+  return new Date(account.subscriptionExpiresAt).getTime() > Date.now();
+}
+
+function isProtectedBeforeTelegram(pathname: string) {
+  return ![
+    "/login",
+    "/register",
+    "/verify-parent-telegram",
+    "/admin/payments",
+    "/about",
+    "/careers",
+    "/privacy",
+  ].includes(pathname);
+}
+
+function isPaidRoute(pathname: string) {
+  if (["/", "/home", "/diagnostic", "/diagnostic-result", "/pricing", "/payment", "/verify-parent-telegram"].includes(pathname)) {
+    return false;
+  }
+
+  return (
+    pathname.startsWith("/lesson") ||
+    pathname.startsWith("/subjects") ||
+    pathname.startsWith("/plan") ||
+    pathname.startsWith("/progress") ||
+    pathname.startsWith("/reports") ||
+    pathname.startsWith("/shop") ||
+    pathname.startsWith("/topic-challenge") ||
+    pathname.startsWith("/exam") ||
+    pathname.startsWith("/explain-solution")
+  );
+}
+
+function PaywallCard() {
+  return (
+    <GameCard className="border-[#FACC15] bg-[#FFFBEB]">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h2 className="text-2xl font-black text-[#1E1B4B]">Жазылым қажет</h2>
+          <p className="mt-2 font-semibold text-[#6B5E8F]">
+            Диагностикалық тест тегін. Толық сабақтар, жаттығулар және AI түсіндірмелерін ашу үшін тариф таңдаңыз.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-3">
+          <Link className="rounded-2xl bg-[#6D28D9] px-5 py-3 font-black text-white shadow-[0_5px_0_#4C1D95]" to="/pricing">
+            Тарифтерді көру
+          </Link>
+          <Link className="rounded-2xl border-2 border-[#DDD6FE] bg-white px-5 py-3 font-black text-[#6D28D9]" to="/diagnostic">
+            Диагностикалық тестке өту
+          </Link>
+        </div>
+      </div>
+    </GameCard>
   );
 }
 

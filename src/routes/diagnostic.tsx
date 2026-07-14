@@ -4,6 +4,7 @@ import { AIReviewPanel } from "@/components/ai-review-panel";
 import { GameCard, GameLayout, ProgressBar } from "@/components/gamified-platform";
 import { diagnosticQuestions } from "@/data/diagnostic-questions";
 import { useLanguage } from "@/hooks/use-language";
+import { saveDiagnosticResult } from "@/lib/api/account.functions";
 
 export const Route = createFileRoute("/diagnostic")({
   head: () => ({
@@ -43,6 +44,7 @@ const copy = {
     retry: "Try again",
     home: "Go to dashboard",
     review: "Get full AI review",
+    pricing: "View pricing plans",
     strong: "Good start. Now check the AI review to understand every mistake.",
     weakTopics: "Topics to improve",
   },
@@ -66,6 +68,7 @@ const copy = {
     retry: "Қайта өту",
     home: "Дашбордқа өту",
     review: "Толық AI разбор алу",
+    pricing: "Тариф таңдау",
     strong: "Жақсы бастама. Енді әр қатені түсіну үшін AI разборды қараңыз.",
     weakTopics: "Жақсартатын тақырыптар",
   },
@@ -89,6 +92,7 @@ const copy = {
     retry: "Пройти снова",
     home: "Перейти в дашборд",
     review: "Получить полный AI-разбор",
+    pricing: "Выбрать тариф",
     strong: "Хорошее начало. Теперь посмотрите AI-разбор, чтобы понять каждую ошибку.",
     weakTopics: "Темы для улучшения",
   },
@@ -156,6 +160,12 @@ function Diagnostic() {
 
   const finishTest = () => {
     if (answeredCount < totalQuestions) return;
+    void saveDiagnosticResult({
+      data: {
+        score: result.score,
+        weakTopics: result.weakTopics,
+      },
+    });
     setStatus("finished");
   };
 
@@ -348,9 +358,9 @@ function Diagnostic() {
                 </button>
                 <Link
                   className="w-full rounded-2xl bg-[#6D28D9] px-6 py-3 text-center font-black text-white shadow-[0_5px_0_#4C1D95]"
-                  to="/home"
+                  to="/pricing"
                 >
-                  {c.home}
+                  {c.pricing}
                 </Link>
               </div>
             </GameCard>

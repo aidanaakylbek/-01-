@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { buildMentorSystemPrompt } from "@/lib/ai-mentor";
-import { getDashboardAccount, saveSolutionExplanationLog } from "@/lib/account-store.server";
+import { getAccessError, getDashboardAccount, saveSolutionExplanationLog } from "@/lib/account-store.server";
 
 const requestSchema = z.object({
   language: z.enum(["EN", "KZ", "RU"]).default("EN"),
@@ -24,6 +24,12 @@ export const Route = createFileRoute("/api/explain-solution")({
         const parsed = requestSchema.safeParse(body);
         if (!parsed.success) {
           return Response.json({ error: "Please send question, solution, and explanation." }, { status: 400 });
+        }
+
+        const accessError = getAccessError("ai_tutor");
+
+        if (accessError) {
+          return Response.json(accessError, { status: 403 });
         }
 
         const apiKey = process.env.OPENAI_API_KEY;

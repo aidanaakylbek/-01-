@@ -93,7 +93,7 @@ async function verifyParentOrSendInvalidMessage(chatId: string, inviteCode: stri
     chatId,
     [
       "Сіз AI-Sana ата-ана есебіне қосылдыңыз ✅",
-      "Енді балаңыздың апталық оқу нәтижесі Telegram арқылы келеді.",
+      "Енді балаңыз AI-Sana платформасын қолдана алады және апталық есептер Telegram арқылы келеді.",
     ].join("\n"),
   );
 

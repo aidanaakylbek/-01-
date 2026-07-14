@@ -2,13 +2,18 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import {
+  createPaymentRequest as createStoredPaymentRequest,
   getDashboardAccount as readDashboardAccount,
+  listPaymentRequests as listStoredPaymentRequests,
   loginAccount as loginStoredAccount,
   logoutAccount as logoutStoredAccount,
+  pricingPlans,
   registerAccount as registerStoredAccount,
+  saveDiagnosticResult as saveStoredDiagnosticResult,
   saveExamAttempt as saveStoredExamAttempt,
   saveSolutionExplanationLog as saveStoredSolutionExplanationLog,
   saveWeakTopicProgress as saveStoredWeakTopicProgress,
+  updatePaymentRequest as updateStoredPaymentRequest,
   updateMentorStyle as updateStoredMentorStyle,
 } from "../account-store.server";
 
@@ -28,7 +33,15 @@ export const registerAccount = createServerFn({ method: "POST" })
     }),
   )
   .handler(async ({ data }) => {
-    return registerStoredAccount(data);
+    try {
+      return registerStoredAccount(data);
+    } catch (error) {
+      if (error instanceof Error && error.message === "EMAIL_ALREADY_EXISTS") {
+        throw new Error("Бұл email бұрын тіркелген. Басқа email қолданыңыз немесе аккаунтқа кіріңіз.");
+      }
+
+      throw error;
+    }
   });
 
 export const loginAccount = createServerFn({ method: "POST" })
@@ -88,6 +101,50 @@ export const saveExamAttempt = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     return saveStoredExamAttempt(data);
+  });
+
+export const saveDiagnosticResult = createServerFn({ method: "POST" })
+  .inputValidator(
+    z.object({
+      score: z.number().min(0).max(100),
+      weakTopics: z.array(z.string().min(1)).max(10),
+    }),
+  )
+  .handler(async ({ data }) => {
+    return saveStoredDiagnosticResult(data);
+  });
+
+export const getPricingPlans = createServerFn({ method: "GET" }).handler(async () => {
+  return pricingPlans;
+});
+
+export const createPaymentRequest = createServerFn({ method: "POST" })
+  .inputValidator(
+    z.object({
+      planKey: z.enum(["monthly", "three_months", "yearly"]),
+      paymentMethod: z.enum(["kaspi_pay", "kaspi_red", "kaspi_0_0_12"]),
+    }),
+  )
+  .handler(async ({ data }) => {
+    return createStoredPaymentRequest(data);
+  });
+
+export const listPaymentRequests = createServerFn({ method: "GET" }).handler(async () => {
+  return listStoredPaymentRequests();
+});
+
+export const updatePaymentRequest = createServerFn({ method: "POST" })
+  .inputValidator(
+    z.object({
+      id: z.string().min(1),
+      action: z.enum(["invoice_sent", "approve", "reject"]),
+      adminNote: z.string().optional(),
+      kaspiInvoiceReference: z.string().optional(),
+      kaspiPaymentLink: z.string().optional(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    return updateStoredPaymentRequest(data);
   });
 
 export const saveWeakTopicProgress = createServerFn({ method: "POST" })

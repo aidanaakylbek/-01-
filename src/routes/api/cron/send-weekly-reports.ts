@@ -55,7 +55,7 @@ function isAuthorizedCronRequest(request: Request) {
   const secret = process.env.CRON_SECRET;
 
   if (!secret) {
-    return true;
+    return false;
   }
 
   const authorization = request.headers.get("authorization");

@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VerifyParentTelegramRouteImport } from './routes/verify-parent-telegram'
 import { Route as TopicChallengeRouteImport } from './routes/topic-challenge'
 import { Route as SubjectsRouteImport } from './routes/subjects'
 import { Route as ShopRouteImport } from './routes/shop'
@@ -18,12 +19,15 @@ import { Route as RegisterRouteImport } from './routes/register'
 import { Route as ProgressRouteImport } from './routes/progress'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PlanRouteImport } from './routes/plan'
+import { Route as PaymentRouteImport } from './routes/payment'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as ExplainSolutionRouteImport } from './routes/explain-solution'
 import { Route as ExamRouteImport } from './routes/exam'
+import { Route as DiagnosticResultRouteImport } from './routes/diagnostic-result'
 import { Route as DiagnosticRouteImport } from './routes/diagnostic'
 import { Route as CareersRouteImport } from './routes/careers'
 import { Route as AboutRouteImport } from './routes/about'
@@ -34,6 +38,7 @@ import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as ApiReviewRouteImport } from './routes/api/review'
 import { Route as ApiExplainSolutionRouteImport } from './routes/api/explain-solution'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as AdminPaymentsRouteImport } from './routes/admin.payments'
 import { Route as LessonSubjectIdTopicIdRouteImport } from './routes/lesson.$subjectId.$topicId'
 import { Route as ApiTelegramWebhookInfoRouteImport } from './routes/api/telegram/webhook-info'
 import { Route as ApiTelegramWebhookRouteImport } from './routes/api/telegram/webhook'
@@ -43,6 +48,11 @@ import { Route as ApiParentSendTestMessageRouteImport } from './routes/api/paren
 import { Route as ApiParentCreateInviteRouteImport } from './routes/api/parent/create-invite'
 import { Route as ApiCronSendWeeklyReportsRouteImport } from './routes/api/cron/send-weekly-reports'
 
+const VerifyParentTelegramRoute = VerifyParentTelegramRouteImport.update({
+  id: '/verify-parent-telegram',
+  path: '/verify-parent-telegram',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TopicChallengeRoute = TopicChallengeRouteImport.update({
   id: '/topic-challenge',
   path: '/topic-challenge',
@@ -88,9 +98,19 @@ const PrivacyRoute = PrivacyRouteImport.update({
   path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PlanRoute = PlanRouteImport.update({
   id: '/plan',
   path: '/plan',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PaymentRoute = PaymentRouteImport.update({
+  id: '/payment',
+  path: '/payment',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -116,6 +136,11 @@ const ExplainSolutionRoute = ExplainSolutionRouteImport.update({
 const ExamRoute = ExamRouteImport.update({
   id: '/exam',
   path: '/exam',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DiagnosticResultRoute = DiagnosticResultRouteImport.update({
+  id: '/diagnostic-result',
+  path: '/diagnostic-result',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DiagnosticRoute = DiagnosticRouteImport.update({
@@ -168,6 +193,11 @@ const ApiChatRoute = ApiChatRouteImport.update({
   path: '/api/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminPaymentsRoute = AdminPaymentsRouteImport.update({
+  id: '/admin/payments',
+  path: '/admin/payments',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LessonSubjectIdTopicIdRoute = LessonSubjectIdTopicIdRouteImport.update({
   id: '/lesson/$subjectId/$topicId',
   path: '/lesson/$subjectId/$topicId',
@@ -216,12 +246,15 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/careers': typeof CareersRoute
   '/diagnostic': typeof DiagnosticRoute
+  '/diagnostic-result': typeof DiagnosticResultRoute
   '/exam': typeof ExamRoute
   '/explain-solution': typeof ExplainSolutionRoute
   '/home': typeof HomeRoute
   '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
+  '/payment': typeof PaymentRoute
   '/plan': typeof PlanRoute
+  '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
   '/progress': typeof ProgressRoute
@@ -231,6 +264,8 @@ export interface FileRoutesByFullPath {
   '/shop': typeof ShopRoute
   '/subjects': typeof SubjectsRouteWithChildren
   '/topic-challenge': typeof TopicChallengeRoute
+  '/verify-parent-telegram': typeof VerifyParentTelegramRoute
+  '/admin/payments': typeof AdminPaymentsRoute
   '/api/chat': typeof ApiChatRoute
   '/api/explain-solution': typeof ApiExplainSolutionRoute
   '/api/review': typeof ApiReviewRoute
@@ -251,12 +286,15 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/careers': typeof CareersRoute
   '/diagnostic': typeof DiagnosticRoute
+  '/diagnostic-result': typeof DiagnosticResultRoute
   '/exam': typeof ExamRoute
   '/explain-solution': typeof ExplainSolutionRoute
   '/home': typeof HomeRoute
   '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
+  '/payment': typeof PaymentRoute
   '/plan': typeof PlanRoute
+  '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
   '/progress': typeof ProgressRoute
@@ -266,6 +304,8 @@ export interface FileRoutesByTo {
   '/shop': typeof ShopRoute
   '/subjects': typeof SubjectsRouteWithChildren
   '/topic-challenge': typeof TopicChallengeRoute
+  '/verify-parent-telegram': typeof VerifyParentTelegramRoute
+  '/admin/payments': typeof AdminPaymentsRoute
   '/api/chat': typeof ApiChatRoute
   '/api/explain-solution': typeof ApiExplainSolutionRoute
   '/api/review': typeof ApiReviewRoute
@@ -287,12 +327,15 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/careers': typeof CareersRoute
   '/diagnostic': typeof DiagnosticRoute
+  '/diagnostic-result': typeof DiagnosticResultRoute
   '/exam': typeof ExamRoute
   '/explain-solution': typeof ExplainSolutionRoute
   '/home': typeof HomeRoute
   '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
+  '/payment': typeof PaymentRoute
   '/plan': typeof PlanRoute
+  '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
   '/progress': typeof ProgressRoute
@@ -302,6 +345,8 @@ export interface FileRoutesById {
   '/shop': typeof ShopRoute
   '/subjects': typeof SubjectsRouteWithChildren
   '/topic-challenge': typeof TopicChallengeRoute
+  '/verify-parent-telegram': typeof VerifyParentTelegramRoute
+  '/admin/payments': typeof AdminPaymentsRoute
   '/api/chat': typeof ApiChatRoute
   '/api/explain-solution': typeof ApiExplainSolutionRoute
   '/api/review': typeof ApiReviewRoute
@@ -324,12 +369,15 @@ export interface FileRouteTypes {
     | '/about'
     | '/careers'
     | '/diagnostic'
+    | '/diagnostic-result'
     | '/exam'
     | '/explain-solution'
     | '/home'
     | '/leaderboard'
     | '/login'
+    | '/payment'
     | '/plan'
+    | '/pricing'
     | '/privacy'
     | '/profile'
     | '/progress'
@@ -339,6 +387,8 @@ export interface FileRouteTypes {
     | '/shop'
     | '/subjects'
     | '/topic-challenge'
+    | '/verify-parent-telegram'
+    | '/admin/payments'
     | '/api/chat'
     | '/api/explain-solution'
     | '/api/review'
@@ -359,12 +409,15 @@ export interface FileRouteTypes {
     | '/about'
     | '/careers'
     | '/diagnostic'
+    | '/diagnostic-result'
     | '/exam'
     | '/explain-solution'
     | '/home'
     | '/leaderboard'
     | '/login'
+    | '/payment'
     | '/plan'
+    | '/pricing'
     | '/privacy'
     | '/profile'
     | '/progress'
@@ -374,6 +427,8 @@ export interface FileRouteTypes {
     | '/shop'
     | '/subjects'
     | '/topic-challenge'
+    | '/verify-parent-telegram'
+    | '/admin/payments'
     | '/api/chat'
     | '/api/explain-solution'
     | '/api/review'
@@ -394,12 +449,15 @@ export interface FileRouteTypes {
     | '/about'
     | '/careers'
     | '/diagnostic'
+    | '/diagnostic-result'
     | '/exam'
     | '/explain-solution'
     | '/home'
     | '/leaderboard'
     | '/login'
+    | '/payment'
     | '/plan'
+    | '/pricing'
     | '/privacy'
     | '/profile'
     | '/progress'
@@ -409,6 +467,8 @@ export interface FileRouteTypes {
     | '/shop'
     | '/subjects'
     | '/topic-challenge'
+    | '/verify-parent-telegram'
+    | '/admin/payments'
     | '/api/chat'
     | '/api/explain-solution'
     | '/api/review'
@@ -430,12 +490,15 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   CareersRoute: typeof CareersRoute
   DiagnosticRoute: typeof DiagnosticRoute
+  DiagnosticResultRoute: typeof DiagnosticResultRoute
   ExamRoute: typeof ExamRoute
   ExplainSolutionRoute: typeof ExplainSolutionRoute
   HomeRoute: typeof HomeRoute
   LeaderboardRoute: typeof LeaderboardRoute
   LoginRoute: typeof LoginRoute
+  PaymentRoute: typeof PaymentRoute
   PlanRoute: typeof PlanRoute
+  PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   ProfileRoute: typeof ProfileRoute
   ProgressRoute: typeof ProgressRoute
@@ -445,6 +508,8 @@ export interface RootRouteChildren {
   ShopRoute: typeof ShopRoute
   SubjectsRoute: typeof SubjectsRouteWithChildren
   TopicChallengeRoute: typeof TopicChallengeRoute
+  VerifyParentTelegramRoute: typeof VerifyParentTelegramRoute
+  AdminPaymentsRoute: typeof AdminPaymentsRoute
   ApiChatRoute: typeof ApiChatRoute
   ApiExplainSolutionRoute: typeof ApiExplainSolutionRoute
   ApiReviewRoute: typeof ApiReviewRoute
@@ -462,6 +527,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/verify-parent-telegram': {
+      id: '/verify-parent-telegram'
+      path: '/verify-parent-telegram'
+      fullPath: '/verify-parent-telegram'
+      preLoaderRoute: typeof VerifyParentTelegramRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/topic-challenge': {
       id: '/topic-challenge'
       path: '/topic-challenge'
@@ -525,11 +597,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/plan': {
       id: '/plan'
       path: '/plan'
       fullPath: '/plan'
       preLoaderRoute: typeof PlanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/payment': {
+      id: '/payment'
+      path: '/payment'
+      fullPath: '/payment'
+      preLoaderRoute: typeof PaymentRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -565,6 +651,13 @@ declare module '@tanstack/react-router' {
       path: '/exam'
       fullPath: '/exam'
       preLoaderRoute: typeof ExamRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/diagnostic-result': {
+      id: '/diagnostic-result'
+      path: '/diagnostic-result'
+      fullPath: '/diagnostic-result'
+      preLoaderRoute: typeof DiagnosticResultRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/diagnostic': {
@@ -635,6 +728,13 @@ declare module '@tanstack/react-router' {
       path: '/api/chat'
       fullPath: '/api/chat'
       preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/payments': {
+      id: '/admin/payments'
+      path: '/admin/payments'
+      fullPath: '/admin/payments'
+      preLoaderRoute: typeof AdminPaymentsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/lesson/$subjectId/$topicId': {
@@ -713,12 +813,15 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   CareersRoute: CareersRoute,
   DiagnosticRoute: DiagnosticRoute,
+  DiagnosticResultRoute: DiagnosticResultRoute,
   ExamRoute: ExamRoute,
   ExplainSolutionRoute: ExplainSolutionRoute,
   HomeRoute: HomeRoute,
   LeaderboardRoute: LeaderboardRoute,
   LoginRoute: LoginRoute,
+  PaymentRoute: PaymentRoute,
   PlanRoute: PlanRoute,
+  PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   ProfileRoute: ProfileRoute,
   ProgressRoute: ProgressRoute,
@@ -728,6 +831,8 @@ const rootRouteChildren: RootRouteChildren = {
   ShopRoute: ShopRoute,
   SubjectsRoute: SubjectsRouteWithChildren,
   TopicChallengeRoute: TopicChallengeRoute,
+  VerifyParentTelegramRoute: VerifyParentTelegramRoute,
+  AdminPaymentsRoute: AdminPaymentsRoute,
   ApiChatRoute: ApiChatRoute,
   ApiExplainSolutionRoute: ApiExplainSolutionRoute,
   ApiReviewRoute: ApiReviewRoute,
