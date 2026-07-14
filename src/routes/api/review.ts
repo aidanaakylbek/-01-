@@ -58,7 +58,7 @@ export const Route = createFileRoute("/api/review")({
           );
         }
 
-        const accessError = getAccessError(
+        const accessError = await getAccessError(
           parsed.data.taskType === "diagnostic" ? "diagnostic_result" : "ai_tutor",
         );
 
@@ -77,7 +77,8 @@ export const Route = createFileRoute("/api/review")({
         }
 
         const result = parsed.data;
-        const mentorPrompt = `${buildMentorSystemPrompt(getDashboardAccount().account.mentorStyle)}\n\n${REVIEW_PROMPT}`;
+        const dashboard = await getDashboardAccount();
+        const mentorPrompt = `${buildMentorSystemPrompt(dashboard.account.mentorStyle)}\n\n${REVIEW_PROMPT}`;
         const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_API_KEY });
         const contents = [
           `Review language: ${languageName[result.language]}`,

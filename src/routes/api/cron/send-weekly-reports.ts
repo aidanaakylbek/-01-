@@ -17,22 +17,22 @@ export const Route = createFileRoute("/api/cron/send-weekly-reports")({
         }
 
         const weekKey = getWeekKey();
-        const targets = getVerifiedParentReportTargets();
+        const targets = await getVerifiedParentReportTargets();
         const results = [];
 
         for (const target of targets) {
-          if (wasWeeklyReportSent(target.account.id, weekKey)) {
+          if (await wasWeeklyReportSent(target.account.id, weekKey)) {
             results.push({ studentId: target.account.id, status: "skipped_duplicate" });
             continue;
           }
 
           const result = await sendTelegramMessage({
             chatId: target.telegramChatId,
-            text: generateWeeklyReport(target.account.id),
+            text: await generateWeeklyReport(target.account.id, target.account),
           });
 
           if (result.ok) {
-            markWeeklyReportSent(target.account.id, weekKey);
+            await markWeeklyReportSent(target.account.id, weekKey);
             results.push({ messageId: result.messageId, studentId: target.account.id, status: "sent" });
           } else {
             results.push({ reason: result, studentId: target.account.id, status: "not_sent" });

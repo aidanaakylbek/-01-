@@ -3,7 +3,7 @@ import { useState } from "react";
 
 import { GameCard, GameLayout } from "@/components/gamified-platform";
 import { createPaymentRequest, getAccountDashboard, getPricingPlans } from "@/lib/api/account.functions";
-import type { PaymentMethod, PricingPlan } from "@/lib/account-store.server";
+import type { DashboardAccount, PaymentMethod, PricingPlan } from "@/lib/account-store.server";
 
 export const Route = createFileRoute("/pricing")({
   loader: async () => {
@@ -35,8 +35,13 @@ const features = [
   "Қате сұрақтарды қайта шешу",
 ];
 
+type PricingLoaderData = {
+  dashboard: DashboardAccount;
+  plans: PricingPlan[];
+};
+
 function Pricing() {
-  const { plans, dashboard } = Route.useLoaderData() as Awaited<ReturnType<typeof Route.options.loader>>;
+  const { plans, dashboard } = Route.useLoaderData() as PricingLoaderData;
   const navigate = useNavigate();
   const [pendingKey, setPendingKey] = useState("");
   const account = dashboard.account;

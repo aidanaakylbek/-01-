@@ -26,7 +26,7 @@ export const Route = createFileRoute("/api/explain-solution")({
           return Response.json({ error: "Please send question, solution, and explanation." }, { status: 400 });
         }
 
-        const accessError = getAccessError("ai_tutor");
+        const accessError = await getAccessError("ai_tutor");
 
         if (accessError) {
           return Response.json(accessError, { status: 403 });
@@ -53,6 +53,7 @@ export const Route = createFileRoute("/api/explain-solution")({
         ].join("\n");
 
         try {
+          const dashboard = await getDashboardAccount();
           const response = await fetch("https://api.openai.com/v1/responses", {
             method: "POST",
             headers: {
@@ -61,7 +62,7 @@ export const Route = createFileRoute("/api/explain-solution")({
             },
             body: JSON.stringify({
               model: "gpt-5.4-mini",
-              instructions: `${buildMentorSystemPrompt(getDashboardAccount().account.mentorStyle)}\n\n${languageInstruction}`,
+              instructions: `${buildMentorSystemPrompt(dashboard.account.mentorStyle)}\n\n${languageInstruction}`,
               input: prompt,
               max_output_tokens: 1800,
               temperature: 0.35,
@@ -78,7 +79,7 @@ export const Route = createFileRoute("/api/explain-solution")({
             return Response.json({ error: "AI returned an empty analysis." }, { status: 502 });
           }
 
-          saveSolutionExplanationLog({
+          await saveSolutionExplanationLog({
             question: data.question,
             correctSolution: data.correctSolution,
             transcript: data.transcript,

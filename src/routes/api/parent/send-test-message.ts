@@ -7,7 +7,7 @@ export const Route = createFileRoute("/api/parent/send-test-message")({
   server: {
     handlers: {
       POST: async () => {
-        const target = getCurrentParentReportTarget();
+        const target = await getCurrentParentReportTarget();
 
         if (!target) {
           return Response.json(

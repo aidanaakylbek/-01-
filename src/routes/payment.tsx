@@ -10,7 +10,8 @@ export const Route = createFileRoute("/payment")({
   }),
   loader: async ({ location }) => {
     const requests = await listPaymentRequests();
-    return requests.find((request) => request.id === location.search.requestId) ?? requests[0] ?? null;
+    const search = location.search as { requestId?: string };
+    return requests.find((request) => request.id === search.requestId) ?? requests[0] ?? null;
   },
   head: () => ({
     meta: [

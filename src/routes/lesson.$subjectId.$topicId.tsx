@@ -22,7 +22,7 @@ export const Route = createFileRoute("/lesson/$subjectId/$topicId")({
 function TopicLessonPage() {
   const { subject, module, topic } = Route.useLoaderData();
   const { language } = useLanguage();
-  const lesson = topic.lesson;
+  const lesson = topic.lesson!;
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [submitted, setSubmitted] = useState(false);
   const score = useMemo(

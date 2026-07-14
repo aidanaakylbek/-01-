@@ -1,6 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { getCurrentParentReportTarget, getDashboardAccount } from "@/lib/account-store.server";
+import {
+  getCurrentParentReportTarget,
+  getDashboardAccount,
+  type Account,
+  type DashboardAccount,
+} from "@/lib/account-store.server";
 import { sendTelegramMessage } from "@/lib/telegram.server";
 
 export const Route = createFileRoute("/api/whatsapp-weekly-report")({
@@ -11,7 +16,7 @@ export const Route = createFileRoute("/api/whatsapp-weekly-report")({
           return Response.json({ error: "Unauthorized weekly report request." }, { status: 401 });
         }
 
-        const target = getCurrentParentReportTarget();
+        const target = await getCurrentParentReportTarget();
 
         if (!target) {
           return Response.json({
@@ -20,7 +25,7 @@ export const Route = createFileRoute("/api/whatsapp-weekly-report")({
           });
         }
 
-        const reportText = generateWeeklyReport(target.account.id);
+        const reportText = await generateWeeklyReport(target.account.id, target.account);
         const result = await sendTelegramMessage({
           chatId: target.telegramChatId,
           text: reportText,
@@ -61,8 +66,9 @@ function isAuthorizedCronRequest(request: Request) {
   return authorization === `Bearer ${secret}` || headerSecret === secret || urlSecret === secret;
 }
 
-export function generateWeeklyReport(studentId?: string) {
-  const dashboard = getDashboardAccount();
+export async function generateWeeklyReport(studentId?: string, account?: Account) {
+  const dashboard = await getDashboardAccount();
+  const reportAccount = account ?? dashboard.account;
   const weekRange = getCurrentWeekRange();
   const weeklyChange = getWeeklyChange(dashboard.accuracyTrend);
   const activity = getWeeklyActivity(dashboard);
@@ -72,7 +78,7 @@ export function generateWeeklyReport(studentId?: string) {
   const level = getLevel(dashboard.averageAccuracy);
   const status = getStatus(weeklyChange.value);
   const nextGoal = Math.min(95, Math.max(70, dashboard.averageAccuracy + 7));
-  const studentLabel = studentId ? dashboard.account.name : dashboard.account.name;
+  const studentLabel = studentId ? reportAccount.name : reportAccount.name;
 
   return [
     `📊 AI-Sana апталық есебі`,
@@ -175,7 +181,7 @@ function formatKazakhDate(date: Date) {
   }).format(date);
 }
 
-function getWeeklyChange(trend: ReturnType<typeof getDashboardAccount>["accuracyTrend"]): WeeklyChange {
+function getWeeklyChange(trend: DashboardAccount["accuracyTrend"]): WeeklyChange {
   if (trend.length < 2) {
     return { label: "Дерек әлі жеткіліксіз", value: 0 };
   }
@@ -187,7 +193,7 @@ function getWeeklyChange(trend: ReturnType<typeof getDashboardAccount>["accuracy
   return { label: `${sign}${value}% (${direction})`, value };
 }
 
-function getWeeklyActivity(dashboard: ReturnType<typeof getDashboardAccount>) {
+function getWeeklyActivity(dashboard: DashboardAccount) {
   const attempts = dashboard.examAttempts;
   const solvedQuestions =
     attempts.reduce((sum, attempt) => sum + attempt.totalQuestions, 0) || dashboard.completedLessons * 10;
@@ -205,7 +211,7 @@ function getWeeklyActivity(dashboard: ReturnType<typeof getDashboardAccount>) {
   };
 }
 
-function getSubjectPerformance(dashboard: ReturnType<typeof getDashboardAccount>) {
+function getSubjectPerformance(dashboard: DashboardAccount) {
   const logic = dashboard.subjects.find((subject) => subject.id === "logic");
   const language = dashboard.subjects.find((subject) => subject.id === "languages");
 
@@ -228,7 +234,7 @@ function getSubjectPerformance(dashboard: ReturnType<typeof getDashboardAccount>
   };
 }
 
-function getWeakTopics(dashboard: ReturnType<typeof getDashboardAccount>): TopicSummary[] {
+function getWeakTopics(dashboard: DashboardAccount): TopicSummary[] {
   const risks = dashboard.risks.slice(0, 3).map((risk) => ({
     accuracy: risk.accuracy,
     explanation: risk.detail,
@@ -254,7 +260,7 @@ function getWeakTopics(dashboard: ReturnType<typeof getDashboardAccount>): Topic
   ].slice(0, 3);
 }
 
-function getCommonMistakes(dashboard: ReturnType<typeof getDashboardAccount>) {
+function getCommonMistakes(dashboard: DashboardAccount) {
   const wrongQuestions = dashboard.examAttempts.flatMap((attempt) =>
     attempt.questions.filter((question) => !question.isCorrect),
   );
@@ -271,7 +277,7 @@ function getCommonMistakes(dashboard: ReturnType<typeof getDashboardAccount>) {
 }
 
 function getAiAnalysis(
-  dashboard: ReturnType<typeof getDashboardAccount>,
+  dashboard: DashboardAccount,
   weeklyChange: number,
   weakTopics: TopicSummary[],
 ) {
@@ -292,7 +298,7 @@ function getNextWeekPlan(weakTopics: TopicSummary[]) {
   ];
 }
 
-function getParentAdvice(dashboard: ReturnType<typeof getDashboardAccount>, weakTopics: TopicSummary[]) {
+function getParentAdvice(dashboard: DashboardAccount, weakTopics: TopicSummary[]) {
   const topic = weakTopics[0]?.name ?? dashboard.focus.title;
 
   return `Балаңыздан "${topic}" бойынша екі қате сұрақты өз сөзімен түсіндіруін сұраңыз. Күніне 15 минут бірге тексеру жеткілікті: бастысы жауапты жаттау емес, шешу қадамын түсіндіру.`;

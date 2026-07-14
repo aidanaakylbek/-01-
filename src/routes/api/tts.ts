@@ -27,7 +27,7 @@ export const Route = createFileRoute("/api/tts")({
           return Response.json({ error: "Please send valid text." }, { status: 400 });
         }
 
-        const accessError = getAccessError("ai_tutor");
+        const accessError = await getAccessError("ai_tutor");
 
         if (accessError) {
           return Response.json(accessError, { status: 403 });

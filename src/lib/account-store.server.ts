@@ -3,6 +3,22 @@ import {
   getCookie,
   setCookie,
 } from "@tanstack/start-server-core/request-response";
+import {
+  activateSubscription,
+  createAccountWithParent,
+  createPaymentRequestRow,
+  findAccountByEmail,
+  getVerifiedReportTargets,
+  hashPassword,
+  isSupabaseConfigured,
+  listPaymentRequestRows,
+  markReportSent,
+  updateDiagnosticResult,
+  updateMentor,
+  updatePaymentRequestRow,
+  verifyParentTelegram,
+  wasReportSent,
+} from "./supabase-db.server";
 
 export type Account = {
   id: string;
@@ -169,7 +185,7 @@ export type DashboardAccount = {
   solutionExplanationLogs: SolutionExplanationLog[];
 };
 
-type StoredAccount = Account & {
+export type StoredAccount = Account & {
   examAttempts?: ExamAttempt[];
   password: string;
   solutionExplanationLogs?: SolutionExplanationLog[];
@@ -275,9 +291,18 @@ function toPublicAccount(account: StoredAccount): Account {
   return publicAccount;
 }
 
-function getActiveStoredAccount() {
+async function getActiveStoredAccount() {
   const email = getSessionEmail();
-  return email ? (accounts.get(email) ?? null) : null;
+
+  if (!email) {
+    return null;
+  }
+
+  if (isSupabaseConfigured()) {
+    return findAccountByEmail(email);
+  }
+
+  return accounts.get(email) ?? null;
 }
 
 function getSessionEmail() {
@@ -324,8 +349,8 @@ function clearSessionEmail() {
   }
 }
 
-export function getDashboardAccount(): DashboardAccount {
-  const activeAccount = getActiveStoredAccount();
+export async function getDashboardAccount(): Promise<DashboardAccount> {
+  const activeAccount = await getActiveStoredAccount();
   const account = activeAccount ?? guestAccount;
 
   return {
@@ -432,7 +457,7 @@ export function getDashboardAccount(): DashboardAccount {
   };
 }
 
-export function registerAccount(input: {
+export async function registerAccount(input: {
   name: string;
   email: string;
   grade: string;
@@ -442,12 +467,31 @@ export function registerAccount(input: {
 }) {
   const normalizedEmail = normalizeEmail(input.email);
 
-  if (accounts.has(normalizedEmail)) {
+  if (isSupabaseConfigured() && (await findAccountByEmail(normalizedEmail))) {
+    throw new Error("EMAIL_ALREADY_EXISTS");
+  }
+
+  if (!isSupabaseConfigured() && accounts.has(normalizedEmail)) {
     throw new Error("EMAIL_ALREADY_EXISTS");
   }
 
   const parentPhone = input.parentPhone.trim();
   const inviteCode = createUniqueParentInviteCode();
+
+  if (isSupabaseConfigured()) {
+    const account = await createAccountWithParent({
+      name: input.name.trim(),
+      email: normalizedEmail,
+      grade: input.grade,
+      initials: getInitials(input.name),
+      parentName: input.parentName.trim(),
+      parentPhone,
+      password: input.password,
+      inviteCode,
+    });
+    setSessionEmail(account.email);
+    return toPublicAccount(account);
+  }
 
   const account: StoredAccount = {
     id: `account-${Date.now()}`,
@@ -492,8 +536,8 @@ export function emailExists(email: string) {
   return accounts.has(normalizeEmail(email));
 }
 
-export function createOrReturnParentInvite() {
-  const account = getActiveStoredAccount();
+export async function createOrReturnParentInvite() {
+  const account = await getActiveStoredAccount();
 
   if (!account) {
     throw new Error("AUTH_REQUIRED");
@@ -511,7 +555,12 @@ export function createOrReturnParentInvite() {
   };
 }
 
-export function verifyParentTelegramInvite(inviteCode: string, telegramChatId: string) {
+export async function verifyParentTelegramInvite(inviteCode: string, telegramChatId: string) {
+  if (isSupabaseConfigured()) {
+    const account = await verifyParentTelegram(inviteCode, telegramChatId);
+    return account ? toPublicAccount(account) : null;
+  }
+
   const account = [...accounts.values()].find((item) => item.parentInviteCode === inviteCode);
 
   if (!account) {
@@ -530,7 +579,15 @@ export function verifyParentTelegramInvite(inviteCode: string, telegramChatId: s
   return toPublicAccount(account);
 }
 
-export function getVerifiedParentReportTargets() {
+export async function getVerifiedParentReportTargets() {
+  if (isSupabaseConfigured()) {
+    const targets = await getVerifiedReportTargets();
+    return targets.map((target) => ({
+      account: toPublicAccount(target.account),
+      telegramChatId: target.telegramChatId,
+    }));
+  }
+
   return [...accounts.values()]
     .filter(
       (account) =>
@@ -545,8 +602,8 @@ export function getVerifiedParentReportTargets() {
     }));
 }
 
-export function getCurrentParentReportTarget() {
-  const account = getActiveStoredAccount();
+export async function getCurrentParentReportTarget() {
+  const account = await getActiveStoredAccount();
 
   if (!account) {
     return null;
@@ -567,11 +624,20 @@ export function getCurrentParentReportTarget() {
   };
 }
 
-export function wasWeeklyReportSent(studentId: string, weekKey: string) {
+export async function wasWeeklyReportSent(studentId: string, weekKey: string) {
+  if (isSupabaseConfigured()) {
+    return wasReportSent(studentId, weekKey);
+  }
+
   return sentWeeklyReportKeys.has(`${studentId}:${weekKey}`);
 }
 
-export function markWeeklyReportSent(studentId: string, weekKey: string) {
+export async function markWeeklyReportSent(studentId: string, weekKey: string) {
+  if (isSupabaseConfigured()) {
+    await markReportSent(studentId, weekKey);
+    return;
+  }
+
   sentWeeklyReportKeys.add(`${studentId}:${weekKey}`);
   const account = [...accounts.values()].find((item) => item.id === studentId);
 
@@ -592,11 +658,16 @@ function createUniqueParentInviteCode() {
   return inviteCode;
 }
 
-export function updateMentorStyle(style: MentorStyle) {
-  const account = getActiveStoredAccount();
+export async function updateMentorStyle(style: MentorStyle) {
+  const account = await getActiveStoredAccount();
 
   if (!account) {
     throw new Error("AUTH_REQUIRED");
+  }
+
+  if (isSupabaseConfigured()) {
+    const updated = await updateMentor(account.id, style);
+    return toPublicAccount(updated);
   }
 
   account.mentorStyle = style;
@@ -604,8 +675,8 @@ export function updateMentorStyle(style: MentorStyle) {
   return toPublicAccount(account);
 }
 
-export function saveExamAttempt(attempt: Omit<ExamAttempt, "id" | "createdAt">) {
-  const account = getActiveStoredAccount();
+export async function saveExamAttempt(attempt: Omit<ExamAttempt, "id" | "createdAt">) {
+  const account = await getActiveStoredAccount();
 
   if (!account) {
     throw new Error("AUTH_REQUIRED");
@@ -621,8 +692,8 @@ export function saveExamAttempt(attempt: Omit<ExamAttempt, "id" | "createdAt">) 
   return saved;
 }
 
-export function saveWeakTopicProgress(progress: WeakTopicProgress) {
-  const account = getActiveStoredAccount();
+export async function saveWeakTopicProgress(progress: WeakTopicProgress) {
+  const account = await getActiveStoredAccount();
 
   if (!account) {
     throw new Error("AUTH_REQUIRED");
@@ -637,8 +708,8 @@ export function saveWeakTopicProgress(progress: WeakTopicProgress) {
   return progress;
 }
 
-export function saveSolutionExplanationLog(log: Omit<SolutionExplanationLog, "id" | "createdAt">) {
-  const account = getActiveStoredAccount();
+export async function saveSolutionExplanationLog(log: Omit<SolutionExplanationLog, "id" | "createdAt">) {
+  const account = await getActiveStoredAccount();
 
   if (!account) {
     throw new Error("AUTH_REQUIRED");
@@ -692,8 +763,20 @@ function normalizePhone(phone: string) {
   return phone.replace(/[^\d]/g, "");
 }
 
-export function loginAccount(input: { email: string; password: string }) {
+export async function loginAccount(input: { email: string; password: string }) {
   const email = input.email.trim().toLowerCase();
+
+  if (isSupabaseConfigured()) {
+    const account = await findAccountByEmail(email);
+
+    if (!account || account.password !== hashPassword(input.password)) {
+      return null;
+    }
+
+    setSessionEmail(account.email);
+    return toPublicAccount(account);
+  }
+
   const account = accounts.get(email);
 
   if (!account || account.password !== input.password) {
@@ -709,12 +792,12 @@ export function logoutAccount() {
   return { ok: true };
 }
 
-export function getCurrentAccount() {
-  const account = getActiveStoredAccount();
+export async function getCurrentAccount() {
+  const account = await getActiveStoredAccount();
   return account ? toPublicAccount(account) : null;
 }
 
-export function canEnterPlatform(account: Account | StoredAccount | null = getActiveStoredAccount()) {
+export function canEnterPlatform(account: Account | StoredAccount | null) {
   if (!account) {
     return false;
   }
@@ -725,7 +808,7 @@ export function canEnterPlatform(account: Account | StoredAccount | null = getAc
   );
 }
 
-export function hasActiveSubscription(account: Account | StoredAccount | null = getActiveStoredAccount()) {
+export function hasActiveSubscription(account: Account | StoredAccount | null) {
   if (!account) {
     return false;
   }
@@ -757,7 +840,7 @@ export type ContentType =
 
 export function canAccessContent(
   contentType: ContentType,
-  account: Account | StoredAccount | null = getActiveStoredAccount(),
+  account: Account | StoredAccount | null,
 ) {
   if (!canEnterPlatform(account)) {
     return false;
@@ -775,8 +858,8 @@ export function canAccessContent(
   return hasActiveSubscription(account);
 }
 
-export function getAccessError(contentType: ContentType) {
-  const account = getActiveStoredAccount();
+export async function getAccessError(contentType: ContentType) {
+  const account = await getActiveStoredAccount();
 
   if (!account) {
     return {
@@ -802,11 +885,16 @@ export function getAccessError(contentType: ContentType) {
   return null;
 }
 
-export function saveDiagnosticResult(input: { score: number; weakTopics: string[] }) {
-  const account = getActiveStoredAccount();
+export async function saveDiagnosticResult(input: { score: number; weakTopics: string[] }) {
+  const account = await getActiveStoredAccount();
 
   if (!account) {
     throw new Error("AUTH_REQUIRED");
+  }
+
+  if (isSupabaseConfigured()) {
+    const updated = await updateDiagnosticResult(account.id, input);
+    return toPublicAccount(updated);
   }
 
   account.diagnosticCompleted = true;
@@ -816,8 +904,8 @@ export function saveDiagnosticResult(input: { score: number; weakTopics: string[
   return toPublicAccount(account);
 }
 
-export function createPaymentRequest(input: { planKey: PlanKey; paymentMethod: PaymentMethod }) {
-  const account = getActiveStoredAccount();
+export async function createPaymentRequest(input: { planKey: PlanKey; paymentMethod: PaymentMethod }) {
+  const account = await getActiveStoredAccount();
 
   if (!account) {
     throw new Error("AUTH_REQUIRED");
@@ -848,24 +936,34 @@ export function createPaymentRequest(input: { planKey: PlanKey; paymentMethod: P
     createdAt: new Date().toISOString(),
   };
 
+  if (isSupabaseConfigured()) {
+    return createPaymentRequestRow(request);
+  }
+
   paymentRequests.set(request.id, request);
   return request;
 }
 
-export function listPaymentRequests() {
+export async function listPaymentRequests() {
+  if (isSupabaseConfigured()) {
+    return listPaymentRequestRows();
+  }
+
   return [...paymentRequests.values()].sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
   );
 }
 
-export function updatePaymentRequest(input: {
+export async function updatePaymentRequest(input: {
   id: string;
   action: "invoice_sent" | "approve" | "reject";
   adminNote?: string;
   kaspiInvoiceReference?: string;
   kaspiPaymentLink?: string;
 }) {
-  const request = paymentRequests.get(input.id);
+  const request = isSupabaseConfigured()
+    ? (await listPaymentRequestRows()).find((item) => item.id === input.id)
+    : paymentRequests.get(input.id);
 
   if (!request) {
     throw new Error("PAYMENT_REQUEST_NOT_FOUND");
@@ -885,10 +983,9 @@ export function updatePaymentRequest(input: {
   }
 
   if (input.action === "approve") {
-    const account = [...accounts.values()].find((item) => item.id === request.userId);
     const plan = pricingPlans.find((item) => item.key === request.planKey);
 
-    if (!account || !plan) {
+    if (!plan) {
       throw new Error("PAYMENT_APPROVAL_TARGET_NOT_FOUND");
     }
 
@@ -898,11 +995,33 @@ export function updatePaymentRequest(input: {
 
     request.status = "approved";
     request.confirmedAt = now.toISOString();
-    account.subscriptionStatus = "active";
-    account.subscriptionPlan = plan.key;
-    account.subscriptionStartedAt = now.toISOString();
-    account.subscriptionExpiresAt = expiresAt.toISOString();
-    accounts.set(account.email, account);
+
+    if (isSupabaseConfigured()) {
+      await activateSubscription(request.userId, plan.key, plan.durationMonths);
+    } else {
+      const account = [...accounts.values()].find((item) => item.id === request.userId);
+
+      if (!account) {
+        throw new Error("PAYMENT_APPROVAL_TARGET_NOT_FOUND");
+      }
+
+      account.subscriptionStatus = "active";
+      account.subscriptionPlan = plan.key;
+      account.subscriptionStartedAt = now.toISOString();
+      account.subscriptionExpiresAt = expiresAt.toISOString();
+      accounts.set(account.email, account);
+    }
+  }
+
+  if (isSupabaseConfigured()) {
+    return updatePaymentRequestRow(request.id, {
+      admin_note: request.adminNote ?? null,
+      kaspi_invoice_reference: request.kaspiInvoiceReference ?? null,
+      kaspi_payment_link: request.kaspiPaymentLink ?? null,
+      status: request.status,
+      confirmed_at: request.confirmedAt ?? null,
+      rejected_at: request.rejectedAt ?? null,
+    });
   }
 
   paymentRequests.set(request.id, request);

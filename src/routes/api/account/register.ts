@@ -33,7 +33,7 @@ export const Route = createFileRoute("/api/account/register")({
         }
 
         try {
-          const account = registerAccount(parsed.data);
+          const account = await registerAccount(parsed.data);
           return Response.json({ account }, { status: 201 });
         } catch (error) {
           if (error instanceof Error && error.message === "EMAIL_ALREADY_EXISTS") {

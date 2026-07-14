@@ -79,7 +79,7 @@ export const Route = createFileRoute("/api/telegram/webhook")({
 });
 
 async function verifyParentOrSendInvalidMessage(chatId: string, inviteCode: string) {
-  const account = verifyParentTelegramInvite(inviteCode, chatId);
+  const account = await verifyParentTelegramInvite(inviteCode, chatId);
 
   if (!account) {
     await sendTelegramMessage(

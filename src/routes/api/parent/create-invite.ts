@@ -22,8 +22,8 @@ export const Route = createFileRoute("/api/parent/create-invite")({
 });
 
 async function createParentInviteResponse(request: Request) {
-  const dashboard = getDashboardAccount();
-  const invite = createOrReturnParentInvite();
+  const dashboard = await getDashboardAccount();
+  const invite = await createOrReturnParentInvite();
   const telegramLink = buildParentTelegramInviteLink(invite.inviteCode);
   const webhookStatus = await ensureTelegramWebhook(request);
 
@@ -67,7 +67,7 @@ async function ensureTelegramWebhook(request: Request) {
   };
 }
 
-function getParentStatus(account: ReturnType<typeof getDashboardAccount>["account"]) {
+function getParentStatus(account: Awaited<ReturnType<typeof getDashboardAccount>>["account"]) {
   return {
     lastReportSentAt: account.parentLastReportSentAt ?? null,
     phoneVerified: account.parentPhoneVerified,

@@ -56,7 +56,7 @@ export const Route = createFileRoute("/api/chat")({
           );
         }
 
-        const accessError = getAccessError("ai_tutor");
+        const accessError = await getAccessError("ai_tutor");
 
         if (accessError) {
           return Response.json(accessError, { status: 403 });
@@ -72,7 +72,8 @@ export const Route = createFileRoute("/api/chat")({
         }
 
         try {
-          const mentorPrompt = `${buildMentorSystemPrompt(getDashboardAccount().account.mentorStyle)}\n\n${TUTOR_BEHAVIOR_PROMPT}`;
+          const dashboard = await getDashboardAccount();
+          const mentorPrompt = `${buildMentorSystemPrompt(dashboard.account.mentorStyle)}\n\n${TUTOR_BEHAVIOR_PROMPT}`;
           const conversation = buildConversation(recentMessages);
           const latestImages = lastUserImages(recentMessages);
           const models = getOpenAiModels(recentMessages, latestImages);

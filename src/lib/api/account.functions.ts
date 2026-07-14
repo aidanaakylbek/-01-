@@ -36,7 +36,7 @@ export const registerAccount = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     try {
-      return registerStoredAccount(data);
+      return await registerStoredAccount(data);
     } catch (error) {
       if (error instanceof Error && error.message === "EMAIL_ALREADY_EXISTS") {
         throw new Error(duplicateEmailMessage);
@@ -54,7 +54,7 @@ export const loginAccount = createServerFn({ method: "POST" })
     }),
   )
   .handler(async ({ data }) => {
-    const account = loginStoredAccount(data);
+    const account = await loginStoredAccount(data);
 
     if (!account) {
       throw new Error("Invalid email or password");
