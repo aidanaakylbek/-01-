@@ -23,6 +23,8 @@ function Register() {
     code: string;
     configured: boolean;
     link: string;
+    webhookConnected: boolean;
+    webhookError?: string;
   } | null>(null);
 
   const copy =
@@ -43,6 +45,8 @@ function Register() {
           inviteHint: "Отправьте код родителю. Родитель должен открыть Telegram bot и отправить этот код.",
           inviteConfigMissing:
             "Telegram bot username еще не настроен. Добавьте TELEGRAM_BOT_USERNAME в Vercel Environment Variables.",
+          webhookMissing:
+            "Telegram webhook не подключился. Проверьте TELEGRAM_BOT_TOKEN в Vercel и redeploy проект.",
           openTelegram: "Открыть Telegram bot",
           continue: "Продолжить",
           password: "Пароль",
@@ -66,6 +70,8 @@ function Register() {
             inviteHint: "Send this code to the parent. The parent should open the Telegram bot and send this code.",
             inviteConfigMissing:
               "Telegram bot username is not configured yet. Add TELEGRAM_BOT_USERNAME in Vercel Environment Variables.",
+            webhookMissing:
+              "Telegram webhook did not connect. Check TELEGRAM_BOT_TOKEN in Vercel and redeploy the project.",
             openTelegram: "Open Telegram bot",
             continue: "Continue",
             password: "Password",
@@ -89,6 +95,8 @@ function Register() {
             inviteHint: "Осы кодты ата-анаңызға жіберіңіз. Ата-ана Telegram bot-қа кіріп, осы кодты жібереді.",
             inviteConfigMissing:
               "Telegram bot username әлі қойылмаған. Vercel Environment Variables ішіне TELEGRAM_BOT_USERNAME қосыңыз.",
+            webhookMissing:
+              "Telegram webhook қосылмады. Vercel ішіндегі TELEGRAM_BOT_TOKEN дұрыс екенін тексеріп, жобаны қайта deploy жасаңыз.",
             openTelegram: "Telegram bot ашу",
             continue: "Жалғастыру",
             password: "Құпия сөз",
@@ -122,6 +130,8 @@ function Register() {
         code: invite.inviteCode,
         configured: invite.telegramConfigured,
         link: invite.telegramLink,
+        webhookConnected: Boolean(invite.webhookStatus?.connected),
+        webhookError: invite.webhookStatus?.error,
       });
     } catch {
       setErrorMessage(copy.submitError);
@@ -154,6 +164,12 @@ function Register() {
               <p className="mt-2 font-semibold text-[#6B5E8F]">
                 {parentInvite.configured ? copy.inviteHint : copy.inviteConfigMissing}
               </p>
+              {parentInvite.configured && !parentInvite.webhookConnected ? (
+                <p className="mt-3 rounded-2xl border-2 border-[#EF4444]/30 bg-[#FEE2E2] px-4 py-3 text-sm font-bold text-[#991B1B]">
+                  {copy.webhookMissing}
+                  {parentInvite.webhookError ? ` ${parentInvite.webhookError}` : ""}
+                </p>
+              ) : null}
               <div className="mt-5 grid gap-3">
                 {parentInvite.configured ? (
                   <a
@@ -250,6 +266,10 @@ type ParentInviteResponse = {
   inviteCode: string;
   telegramConfigured: boolean;
   telegramLink: string;
+  webhookStatus?: {
+    connected: boolean;
+    error?: string;
+  };
 };
 
 function RegisterInput({

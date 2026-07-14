@@ -6,6 +6,16 @@ export type TelegramWebhookResult =
   | { ok: true; webhookUrl: string; description?: string }
   | { ok: false; code: string; detail: string };
 
+export type TelegramWebhookInfoResult =
+  | {
+      ok: true;
+      webhookUrl: string;
+      pendingUpdateCount: number;
+      lastErrorDate?: number;
+      lastErrorMessage?: string;
+    }
+  | { ok: false; code: string; detail: string };
+
 export function getTelegramBotUsername() {
   const username = process.env.TELEGRAM_BOT_USERNAME || process.env.VITE_TELEGRAM_BOT_USERNAME || "";
   return username.replace(/^@/, "").trim();
@@ -116,6 +126,54 @@ export async function setTelegramWebhook(webhookUrl: string): Promise<TelegramWe
       ok: true,
       webhookUrl,
       description: data?.description,
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      code: "network_error",
+      detail: error instanceof Error ? error.message : "Could not reach Telegram API.",
+    };
+  }
+}
+
+export async function getTelegramWebhookInfo(): Promise<TelegramWebhookInfoResult> {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+
+  if (!token) {
+    return {
+      ok: false,
+      code: "missing_config",
+      detail: "Missing Telegram config: TELEGRAM_BOT_TOKEN.",
+    };
+  }
+
+  try {
+    const response = await fetch(`https://api.telegram.org/bot${token}/getWebhookInfo`);
+    const data = (await response.json().catch(() => null)) as {
+      ok?: boolean;
+      result?: {
+        last_error_date?: number;
+        last_error_message?: string;
+        pending_update_count?: number;
+        url?: string;
+      };
+      description?: string;
+    } | null;
+
+    if (!response.ok || data?.ok === false) {
+      return {
+        ok: false,
+        code: "telegram_api_error",
+        detail: data?.description ?? `Telegram API returned ${response.status}.`,
+      };
+    }
+
+    return {
+      ok: true,
+      webhookUrl: data?.result?.url ?? "",
+      pendingUpdateCount: data?.result?.pending_update_count ?? 0,
+      lastErrorDate: data?.result?.last_error_date,
+      lastErrorMessage: data?.result?.last_error_message,
     };
   } catch (error) {
     return {
