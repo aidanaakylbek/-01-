@@ -235,7 +235,6 @@ function isProtectedBeforeLogin(pathname: string) {
 
 function isProtectedBeforeTelegram(pathname: string) {
   return ![
-    "/",
     "/login",
     "/register",
     "/verify-parent-telegram",
@@ -247,7 +246,6 @@ function isProtectedBeforeTelegram(pathname: string) {
 
 function isProtectedBeforeDiagnostic(pathname: string) {
   return ![
-    "/",
     "/login",
     "/register",
     "/verify-parent-telegram",
@@ -261,7 +259,6 @@ function isProtectedBeforeDiagnostic(pathname: string) {
 
 function isPaidRoute(pathname: string) {
   if ([
-    "/",
     "/diagnostic",
     "/diagnostic-test",
     "/diagnostic-result",
@@ -273,6 +270,7 @@ function isPaidRoute(pathname: string) {
   }
 
   return (
+    pathname === "/" ||
     pathname.startsWith("/lesson") ||
     pathname.startsWith("/subjects") ||
     pathname.startsWith("/plan") ||
@@ -344,9 +342,6 @@ export function GameTopBar({ compact = false }: { compact?: boolean }) {
           </div>
         ) : (
           <nav className="hidden flex-1 items-center justify-center gap-6 text-sm font-black text-[#4B3D73] md:flex">
-            <Link className="transition hover:text-[#6D28D9]" to="/">
-              Басты бет
-            </Link>
             <Link className="transition hover:text-[#6D28D9]" to="/about">
               Біз туралы
             </Link>
