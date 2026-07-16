@@ -168,7 +168,7 @@ function Diagnostic() {
       },
     });
     setStatus("finished");
-    await navigate({ to: "/pricing" });
+    await navigate({ to: "/diagnostic-result" });
   };
 
   return (
