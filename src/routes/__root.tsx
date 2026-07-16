@@ -7,12 +7,14 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AIAssistant } from "../components/ai-assistant";
 import { LanguageProvider } from "../hooks/use-language";
+import { getAccountDashboard } from "../lib/api/account.functions";
+import type { Account } from "../lib/account-store.server";
 
 function NotFoundComponent() {
   return (
@@ -152,9 +154,50 @@ function RootComponent() {
       <LanguageProvider>
         {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
         <Outlet />
-        {/* AI Assistant available on all pages */}
-        <AIAssistant />
+        <PaidAssistantGate />
       </LanguageProvider>
     </QueryClientProvider>
   );
+}
+
+function PaidAssistantGate() {
+  const [account, setAccount] = useState<Account | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+
+    void getAccountDashboard()
+      .then((dashboard) => {
+        if (mounted) {
+          setAccount(dashboard.account);
+        }
+      })
+      .catch(() => {
+        if (mounted) {
+          setAccount(null);
+        }
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  if (!account || !hasActiveSubscription(account)) {
+    return null;
+  }
+
+  return <AIAssistant />;
+}
+
+function hasActiveSubscription(account: Account) {
+  if (account.subscriptionStatus !== "active") {
+    return false;
+  }
+
+  if (!account.subscriptionExpiresAt) {
+    return true;
+  }
+
+  return new Date(account.subscriptionExpiresAt).getTime() > Date.now();
 }
