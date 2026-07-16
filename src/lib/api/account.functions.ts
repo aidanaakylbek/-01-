@@ -51,6 +51,7 @@ export const loginAccount = createServerFn({ method: "POST" })
     z.object({
       email: z.string().email(),
       password: z.string().min(1),
+      remember: z.boolean().optional(),
     }),
   )
   .handler(async ({ data }) => {

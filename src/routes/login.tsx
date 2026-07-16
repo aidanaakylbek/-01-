@@ -62,6 +62,7 @@ function Login() {
       data: {
         email: String(formData.get("email") ?? ""),
         password: String(formData.get("password") ?? ""),
+        remember: formData.get("remember") === "on",
       },
     });
 

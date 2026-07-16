@@ -313,25 +313,30 @@ function getSessionEmail() {
       return normalizeEmail(cookieEmail);
     }
   } catch {
-    // Cookie helpers are only available during server requests. The in-memory
-    // fallback keeps local non-request calls working during development.
+    // Cookie helpers are only available during server requests. Without a
+    // request cookie we should treat the visitor as logged out.
   }
 
-  return activeEmail;
+  return null;
 }
 
-function setSessionEmail(email: string) {
+function setSessionEmail(email: string, remember = false) {
   const normalizedEmail = normalizeEmail(email);
   activeEmail = normalizedEmail;
 
   try {
-    setCookie(SESSION_COOKIE, normalizedEmail, {
+    const cookieOptions: Parameters<typeof setCookie>[2] = {
       httpOnly: true,
-      maxAge: 60 * 60 * 24 * 30,
       path: "/",
       sameSite: "lax",
       secure: process.env.NODE_ENV === "production",
-    });
+    };
+
+    if (remember) {
+      cookieOptions.maxAge = 60 * 60 * 24 * 30;
+    }
+
+    setCookie(SESSION_COOKIE, normalizedEmail, cookieOptions);
   } catch {
     // See getSessionEmail fallback note.
   }
@@ -782,7 +787,7 @@ function normalizePhone(phone: string) {
   return phone.replace(/[^\d]/g, "");
 }
 
-export async function loginAccount(input: { email: string; password: string }) {
+export async function loginAccount(input: { email: string; password: string; remember?: boolean }) {
   const email = input.email.trim().toLowerCase();
 
   if (isSupabaseConfigured()) {
@@ -792,7 +797,7 @@ export async function loginAccount(input: { email: string; password: string }) {
       return null;
     }
 
-    setSessionEmail(account.email);
+    setSessionEmail(account.email, Boolean(input.remember));
     return toPublicAccount(account);
   }
 
@@ -802,7 +807,7 @@ export async function loginAccount(input: { email: string; password: string }) {
     return null;
   }
 
-  setSessionEmail(account.email);
+  setSessionEmail(account.email, Boolean(input.remember));
   return toPublicAccount(account);
 }
 
