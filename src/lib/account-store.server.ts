@@ -488,6 +488,12 @@ export async function registerAccount(input: {
       parentPhone,
       password: input.password,
       inviteCode,
+    }).catch((error) => {
+      if (isDuplicateEmailError(error)) {
+        throw new Error("EMAIL_ALREADY_EXISTS");
+      }
+
+      throw error;
     });
     setSessionEmail(account.email);
     return toPublicAccount(account);
@@ -534,6 +540,19 @@ export function normalizeEmail(email: string) {
 
 export function emailExists(email: string) {
   return accounts.has(normalizeEmail(email));
+}
+
+function isDuplicateEmailError(error: unknown) {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  return (
+    error.message.includes("23505") ||
+    error.message.includes("duplicate key") ||
+    error.message.includes("users_email") ||
+    error.message.includes("users_email_unique")
+  );
 }
 
 export async function createOrReturnParentInvite() {

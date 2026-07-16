@@ -144,8 +144,8 @@ function Register() {
     } catch (error) {
       const message = error instanceof Error ? error.message : copy.submitError;
 
-      if (message.includes("Бұл email бұрын тіркелген")) {
-        setEmailError(message);
+      if (message.includes("EMAIL_ALREADY_EXISTS") || message.includes("Бұл email бұрын тіркелген")) {
+        setEmailError("Бұл email бұрын тіркелген. Басқа email қолданыңыз немесе аккаунтқа кіріңіз.");
         setErrorMessage("");
         return;
       }

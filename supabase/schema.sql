@@ -70,3 +70,5 @@ create table if not exists public.weekly_report_deliveries (
 create index if not exists parents_student_id_idx on public.parents(student_id);
 create index if not exists parents_invite_code_idx on public.parents(invite_code);
 create index if not exists payment_requests_user_id_idx on public.payment_requests(user_id);
+create unique index if not exists users_email_unique_idx on public.users(email);
+create unique index if not exists users_email_lower_unique_idx on public.users(lower(email));

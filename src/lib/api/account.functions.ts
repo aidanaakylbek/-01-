@@ -39,7 +39,7 @@ export const registerAccount = createServerFn({ method: "POST" })
       return await registerStoredAccount(data);
     } catch (error) {
       if (error instanceof Error && error.message === "EMAIL_ALREADY_EXISTS") {
-        throw new Error(duplicateEmailMessage);
+        throw new Error(`EMAIL_ALREADY_EXISTS:${duplicateEmailMessage}`);
       }
 
       throw error;
