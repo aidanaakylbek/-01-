@@ -1,5 +1,5 @@
 ﻿import { useMemo, useState } from "react";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { AIReviewPanel } from "@/components/ai-review-panel";
 import { GameCard, GameLayout, ProgressBar } from "@/components/gamified-platform";
 import { diagnosticQuestions } from "@/data/diagnostic-questions";
@@ -60,10 +60,6 @@ const copy = {
     pricing: "View pricing plans",
     strong: "Good start. Now check the AI review to understand every mistake.",
     weakTopics: "Topics to improve",
-    nisPdfTitle: "NIS practice PDF",
-    nisPdfDesc: "Open the ready practice test in Kazakh or Russian.",
-    nisPdfKz: "Kazakh PDF",
-    nisPdfRu: "Russian PDF",
   },
   KZ: {
     back: "Артқа оралу",
@@ -100,10 +96,6 @@ const copy = {
     pricing: "Тариф таңдау",
     strong: "Жақсы бастама. Енді әр қатені түсіну үшін AI разборды қараңыз.",
     weakTopics: "Жақсартатын тақырыптар",
-    nisPdfTitle: "НЗМ практикалық PDF тесті",
-    nisPdfDesc: "Дайын тест нұсқасын қазақша немесе орысша ашып орындаңыз.",
-    nisPdfKz: "Қазақша PDF",
-    nisPdfRu: "Орысша PDF",
   },
   RU: {
     back: "Вернуться назад",
@@ -140,10 +132,6 @@ const copy = {
     pricing: "Выбрать тариф",
     strong: "Хорошее начало. Теперь посмотрите AI-разбор, чтобы понять каждую ошибку.",
     weakTopics: "Темы для улучшения",
-    nisPdfTitle: "НИШ практический PDF тест",
-    nisPdfDesc: "Откройте готовый вариант теста на казахском или русском языке.",
-    nisPdfKz: "PDF на казахском",
-    nisPdfRu: "PDF на русском",
   },
 };
 
@@ -158,7 +146,6 @@ const questionsCountByTrack = diagnosticTracks.reduce(
 
 function Diagnostic() {
   const { language } = useLanguage();
-  const navigate = useNavigate();
   const c = copy[language];
   const [status, setStatus] = useState<TestStatus>("intro");
   const [selectedTrack, setSelectedTrack] = useState<DiagnosticTrack>("NIS");
@@ -231,7 +218,6 @@ function Diagnostic() {
       },
     });
     setStatus("finished");
-    await navigate({ to: "/diagnostic-result" });
   };
 
   return (
@@ -317,39 +303,6 @@ function Diagnostic() {
                   {c.trackDescriptions[selectedTrack]}
                 </p>
               </div>
-              {selectedTrack === "NIS" ? (
-                <div className="rounded-[26px] border-2 border-[#DDD6FE] bg-[#F5F3FF] p-4 shadow-[0_6px_0_rgba(109,40,217,0.10)]">
-                  <div className="flex items-start gap-3">
-                    <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#6D28D9] text-white shadow-[0_5px_0_#4C1D95]">
-                      <span className="material-symbols-outlined">picture_as_pdf</span>
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-black text-[#1E1B4B]">{c.nisPdfTitle}</h3>
-                      <p className="mt-1 text-sm font-semibold text-[#6B5E8F]">{c.nisPdfDesc}</p>
-                    </div>
-                  </div>
-                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                    <a
-                      href="/practice/nis-practice-test-kz.pdf"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#6D28D9] px-4 py-3 text-sm font-black text-white shadow-[0_5px_0_#4C1D95] transition hover:-translate-y-0.5"
-                    >
-                      {c.nisPdfKz}
-                      <span className="material-symbols-outlined text-lg">open_in_new</span>
-                    </a>
-                    <a
-                      href="/practice/nis-practice-test-ru.pdf"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center justify-center gap-2 rounded-2xl border-2 border-[#DDD6FE] bg-white px-4 py-3 text-sm font-black text-[#6D28D9] shadow-[0_5px_0_rgba(109,40,217,0.12)] transition hover:-translate-y-0.5"
-                    >
-                      {c.nisPdfRu}
-                      <span className="material-symbols-outlined text-lg">open_in_new</span>
-                    </a>
-                  </div>
-                </div>
-              ) : null}
               {questions.map((question, index) => (
                 <div
                   className="flex items-center gap-4 rounded-2xl border-2 border-[#DDD6FE] bg-[#F5F3FF] p-4"
