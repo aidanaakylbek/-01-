@@ -37,22 +37,17 @@ export const Route = createFileRoute("/api/telegram/webhook")({
           }
 
           const chatIdText = String(chatId);
-          const startInviteCode = extractStartParentInviteCode(text);
+          const startPayload = getStartPayload(text);
 
-          if (startInviteCode) {
-            await verifyParentOrSendInvalidMessage(chatIdText, startInviteCode);
-            return Response.json({ ok: true, handled: "parent_start" });
-          }
+          if (startPayload !== null) {
+            const startInviteCode = extractParentInviteCodeFromPayload(startPayload);
 
-          if (isPlainStart(text)) {
-            await sendTelegramMessage(
-              chatIdText,
-              [
-                "Сәлеметсіз бе! Бұл AI-Sana боты 🤖",
-                "Ата-ана есебін қосу үшін AI-Sana сайтындағы арнайы Telegram сілтемесі арқылы кіріңіз.",
-              ].join("\n"),
-            );
+            if (startInviteCode) {
+              await verifyParentOrSendInvalidMessage(chatIdText, startInviteCode);
+              return Response.json({ ok: true, handled: "parent_start" });
+            }
 
+            await sendTelegramMessage(chatIdText, getPlainStartMessage());
             return Response.json({ ok: true, handled: "plain_start" });
           }
 
@@ -100,15 +95,8 @@ async function verifyParentOrSendInvalidMessage(chatId: string, inviteCode: stri
   return account;
 }
 
-function isPlainStart(text: string) {
-  const payload = getStartPayload(text);
-  return payload !== null && payload === "";
-}
-
-function extractStartParentInviteCode(text: string) {
-  const payload = getStartPayload(text);
-
-  if (!payload?.toLowerCase().startsWith("parent_")) {
+function extractParentInviteCodeFromPayload(payload: string) {
+  if (!payload.toLowerCase().startsWith("parent_")) {
     return "";
   }
 
@@ -137,4 +125,13 @@ function normalizeInviteCode(value: string) {
   }
 
   return code;
+}
+
+function getPlainStartMessage() {
+  return [
+    "Сәлеметсіз бе! Бұл AI-Sana боты 🤖",
+    "Ата-ана есебін қосу үшін AI-Sana сайтындағы арнайы Telegram сілтемесі арқылы кіріңіз.",
+    "",
+    "Егер сізде invite code болса, оны осы чатқа бөлек жібере аласыз.",
+  ].join("\n");
 }
