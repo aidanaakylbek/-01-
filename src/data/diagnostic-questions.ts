@@ -2,7 +2,7 @@ import type { Lang } from "@/hooks/use-language";
 
 export type DiagnosticQuestion = {
   id: string;
-  exam: "NIS" | "BIL" | "NSPM";
+  exam: "NIS" | "BIL" | "RFMS";
   subject: string;
   topic: string;
   question: Record<Lang, string>;
@@ -40,7 +40,7 @@ export const diagnosticQuestions: DiagnosticQuestion[] = [
   },
   {
     id: "logic-double-sequence",
-    exam: "NSPM",
+    exam: "RFMS",
     subject: "Logic",
     topic: "Logic patterns",
     question: {
@@ -133,7 +133,7 @@ export const diagnosticQuestions: DiagnosticQuestion[] = [
   },
   {
     id: "logic-odd-one-out",
-    exam: "NSPM",
+    exam: "RFMS",
     subject: "Logic",
     topic: "Classification",
     question: {
@@ -155,6 +155,110 @@ export const diagnosticQuestions: DiagnosticQuestion[] = [
       EN: "All the other numbers are divisible by 3. 11 is not.",
       KZ: "Қалған сандардың бәрі 3-ке бөлінеді. 11 саны 3-ке бөлінбейді.",
       RU: "Все остальные числа делятся на 3. Число 11 не делится.",
+    },
+  },
+  {
+    id: "nis-number-comparison",
+    exam: "NIS",
+    subject: "Mathematics",
+    topic: "Number comparison",
+    question: {
+      EN: "Which number is greater: 0.7 or 2/3?",
+      KZ: "Қай сан үлкен: 0,7 ме әлде 2/3 пе?",
+      RU: "Какое число больше: 0,7 или 2/3?",
+    },
+    options: {
+      EN: ["0.7", "2/3", "They are equal", "Cannot compare"],
+      KZ: ["0,7", "2/3", "Екеуі тең", "Салыстыру мүмкін емес"],
+      RU: ["0,7", "2/3", "Они равны", "Нельзя сравнить"],
+    },
+    correctAnswer: {
+      EN: "0.7",
+      KZ: "0,7",
+      RU: "0,7",
+    },
+    explanation: {
+      EN: "2/3 is about 0.666..., so 0.7 is greater.",
+      KZ: "2/3 шамамен 0,666..., сондықтан 0,7 үлкен.",
+      RU: "2/3 примерно равно 0,666..., значит 0,7 больше.",
+    },
+  },
+  {
+    id: "bil-english-word",
+    exam: "BIL",
+    subject: "English",
+    topic: "Vocabulary",
+    question: {
+      EN: "Choose the synonym of 'begin'.",
+      KZ: "'Begin' сөзінің мағынасына жақын сөзді таңда.",
+      RU: "Выбери синоним слова 'begin'.",
+    },
+    options: {
+      EN: ["start", "finish", "break", "forget"],
+      KZ: ["start", "finish", "break", "forget"],
+      RU: ["start", "finish", "break", "forget"],
+    },
+    correctAnswer: {
+      EN: "start",
+      KZ: "start",
+      RU: "start",
+    },
+    explanation: {
+      EN: "'Begin' and 'start' both mean to do something from the first step.",
+      KZ: "'Begin' және 'start' екеуі де бір істі бастау дегенді білдіреді.",
+      RU: "'Begin' и 'start' означают начать что-то делать.",
+    },
+  },
+  {
+    id: "bil-reading-detail",
+    exam: "BIL",
+    subject: "Reading Literacy",
+    topic: "Detail",
+    question: {
+      EN: "Aigerim reads 10 pages every evening. How often does she read?",
+      KZ: "Айгерім әр кеш сайын 10 бет оқиды. Ол қаншалықты жиі оқиды?",
+      RU: "Айгерим читает 10 страниц каждый вечер. Как часто она читает?",
+    },
+    options: {
+      EN: ["Every evening", "Once a month", "Only on Sunday", "Never"],
+      KZ: ["Әр кеш сайын", "Айына бір рет", "Тек жексенбіде", "Ешқашан"],
+      RU: ["Каждый вечер", "Раз в месяц", "Только в воскресенье", "Никогда"],
+    },
+    correctAnswer: {
+      EN: "Every evening",
+      KZ: "Әр кеш сайын",
+      RU: "Каждый вечер",
+    },
+    explanation: {
+      EN: "The phrase 'every evening' directly tells us the frequency.",
+      KZ: "'Әр кеш сайын' деген сөз тіркесі жиілікті нақты көрсетеді.",
+      RU: "Фраза 'каждый вечер' прямо показывает частоту.",
+    },
+  },
+  {
+    id: "rfms-equation",
+    exam: "RFMS",
+    subject: "Mathematics",
+    topic: "Equations",
+    question: {
+      EN: "Solve: 3x + 5 = 20.",
+      KZ: "Теңдеуді шеш: 3x + 5 = 20.",
+      RU: "Реши уравнение: 3x + 5 = 20.",
+    },
+    options: {
+      EN: ["3", "5", "7", "15"],
+      KZ: ["3", "5", "7", "15"],
+      RU: ["3", "5", "7", "15"],
+    },
+    correctAnswer: {
+      EN: "5",
+      KZ: "5",
+      RU: "5",
+    },
+    explanation: {
+      EN: "Subtract 5 from both sides: 3x = 15. Divide by 3: x = 5.",
+      KZ: "Екі жақтан 5-ті азайтамыз: 3x = 15. 3-ке бөлеміз: x = 5.",
+      RU: "Вычитаем 5 с обеих сторон: 3x = 15. Делим на 3: x = 5.",
     },
   },
 ];

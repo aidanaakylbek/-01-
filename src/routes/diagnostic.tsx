@@ -22,11 +22,24 @@ export const Route = createFileRoute("/diagnostic")({
 
 type TestStatus = "intro" | "active" | "finished";
 type AnswerMap = Record<string, string>;
+type DiagnosticTrack = "NIS" | "BIL" | "RFMS";
 
 const copy = {
   EN: {
     back: "Go back",
     tracksLabel: "NIS • BIL • NSPM",
+    selectTrack: "Choose diagnostic type",
+    trackHint: "Each test checks the skills needed for that entrance exam.",
+    trackNames: {
+      NIS: "NIS",
+      BIL: "BIL",
+      RFMS: "RFMS",
+    },
+    trackDescriptions: {
+      NIS: "Math, logic and reading skills for NIS preparation.",
+      BIL: "Reading literacy, English and reasoning for BIL.",
+      RFMS: "Stronger math and logic for RFMS entrance preparation.",
+    },
     progress: "Diagnostic Progress",
     introTitle: "Find Your Level",
     introDesc:
@@ -51,6 +64,18 @@ const copy = {
   KZ: {
     back: "Артқа оралу",
     tracksLabel: "НЗМ • БИЛ • РФММ",
+    selectTrack: "Диагностика түрін таңдаңыз",
+    trackHint: "Әр тест сол емтиханға керек негізгі дағдыларды тексереді.",
+    trackNames: {
+      NIS: "НЗМ",
+      BIL: "БИЛ",
+      RFMS: "РФММ",
+    },
+    trackDescriptions: {
+      NIS: "НЗМ-ге керек математика, логика және оқу дағдылары.",
+      BIL: "БИЛ үшін оқу сауаттылығы, ағылшын және ойлау қабілеті.",
+      RFMS: "РФММ-ге керек тереңірек математика және логика.",
+    },
     progress: "Диагностика прогресі",
     introTitle: "Өз деңгейіңізді анықтаңыз",
     introDesc:
@@ -75,6 +100,18 @@ const copy = {
   RU: {
     back: "Вернуться назад",
     tracksLabel: "НИШ • БИЛ • РФМШ",
+    selectTrack: "Выберите тип диагностики",
+    trackHint: "Каждый тест проверяет навыки, нужные именно для этого экзамена.",
+    trackNames: {
+      NIS: "НИШ",
+      BIL: "БИЛ",
+      RFMS: "РФМШ",
+    },
+    trackDescriptions: {
+      NIS: "Математика, логика и чтение для подготовки к НИШ.",
+      BIL: "Читательская грамотность, английский и логика для БИЛ.",
+      RFMS: "Более сильная математика и логика для РФМШ.",
+    },
     progress: "Прогресс диагностики",
     introTitle: "Определите свой уровень",
     introDesc:
@@ -98,16 +135,30 @@ const copy = {
   },
 };
 
+const diagnosticTracks: DiagnosticTrack[] = ["NIS", "BIL", "RFMS"];
+const questionsCountByTrack = diagnosticTracks.reduce(
+  (counts, track) => ({
+    ...counts,
+    [track]: diagnosticQuestions.filter((question) => question.exam === track).length,
+  }),
+  {} as Record<DiagnosticTrack, number>,
+);
+
 function Diagnostic() {
   const { language } = useLanguage();
   const navigate = useNavigate();
   const c = copy[language];
   const [status, setStatus] = useState<TestStatus>("intro");
+  const [selectedTrack, setSelectedTrack] = useState<DiagnosticTrack>("NIS");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<AnswerMap>({});
 
-  const currentQuestion = diagnosticQuestions[currentIndex];
-  const totalQuestions = diagnosticQuestions.length;
+  const questions = useMemo(
+    () => diagnosticQuestions.filter((question) => question.exam === selectedTrack),
+    [selectedTrack],
+  );
+  const currentQuestion = questions[currentIndex];
+  const totalQuestions = questions.length;
   const answeredCount = Object.keys(answers).length;
   const progress =
     status === "finished"
@@ -117,7 +168,7 @@ function Diagnostic() {
         : 0;
 
   const result = useMemo(() => {
-    const attempts = diagnosticQuestions.map((question) => {
+    const attempts = questions.map((question) => {
       const userAnswer = answers[question.id] ?? "";
       const correctAnswer = question.correctAnswer[language];
 
@@ -146,7 +197,7 @@ function Diagnostic() {
       score: Math.round((correctAnswers / totalQuestions) * 100),
       weakTopics,
     };
-  }, [answers, language, totalQuestions]);
+  }, [answers, language, questions, totalQuestions]);
 
   const startTest = () => {
     setAnswers({});
@@ -206,6 +257,34 @@ function Diagnostic() {
               <p className="mt-5 max-w-xl text-lg font-semibold text-[#EDE9FE]">
                 {c.introDesc}
               </p>
+              <div className="mt-7 rounded-[28px] border-2 border-white/25 bg-white/10 p-4">
+                <p className="text-sm font-black uppercase tracking-[0.2em] text-[#FACC15]">
+                  {c.selectTrack}
+                </p>
+                <p className="mt-1 text-sm font-semibold text-[#EDE9FE]">{c.trackHint}</p>
+                <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                  {diagnosticTracks.map((track) => {
+                    const active = selectedTrack === track;
+                    return (
+                      <button
+                        className={`rounded-2xl border-2 px-4 py-4 text-left transition ${
+                          active
+                            ? "border-[#FACC15] bg-[#FACC15] text-[#1E1B4B] shadow-[0_5px_0_#CA8A04]"
+                            : "border-white/25 bg-white/10 text-white hover:bg-white/20"
+                        }`}
+                        key={track}
+                        onClick={() => setSelectedTrack(track)}
+                        type="button"
+                      >
+                        <span className="block text-xl font-black">{c.trackNames[track]}</span>
+                        <span className="mt-1 block text-xs font-bold opacity-85">
+                          {questionsCountByTrack[track]} сұрақ
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
               <button
                 className="mt-8 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#FACC15] px-8 py-4 font-black text-[#1E1B4B] shadow-[0_6px_0_#CA8A04] transition hover:-translate-y-0.5 sm:w-auto"
                 onClick={startTest}
@@ -218,7 +297,15 @@ function Diagnostic() {
             </GameCard>
 
             <GameCard className="flex flex-col gap-4">
-              {diagnosticQuestions.map((question, index) => (
+              <div>
+                <p className="text-sm font-black uppercase tracking-[0.22em] text-[#8B5CF6]">
+                  {c.trackNames[selectedTrack]}
+                </p>
+                <p className="mt-1 font-semibold text-[#6B5E8F]">
+                  {c.trackDescriptions[selectedTrack]}
+                </p>
+              </div>
+              {questions.map((question, index) => (
                 <div
                   className="flex items-center gap-4 rounded-2xl border-2 border-[#DDD6FE] bg-[#F5F3FF] p-4"
                   key={question.id}
@@ -373,6 +460,7 @@ function Diagnostic() {
                 taskTitle: c.resultTitle,
                 taskType: "diagnostic",
                 subject: "NIS/BIL/NSPM",
+                exam: selectedTrack,
                 score: result.score,
                 totalQuestions,
                 correctAnswers: result.correctAnswers,
