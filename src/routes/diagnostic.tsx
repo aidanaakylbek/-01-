@@ -3,6 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { AIReviewPanel } from "@/components/ai-review-panel";
 import { GameCard, GameLayout, ProgressBar } from "@/components/gamified-platform";
 import { diagnosticQuestions } from "@/data/diagnostic-questions";
+import { nisDiagnosticQuestions } from "@/data/nis-diagnostic-questions";
 import { useLanguage } from "@/hooks/use-language";
 import { saveDiagnosticResult } from "@/lib/api/account.functions";
 
@@ -139,7 +140,10 @@ const diagnosticTracks: DiagnosticTrack[] = ["NIS", "BIL", "RFMS"];
 const questionsCountByTrack = diagnosticTracks.reduce(
   (counts, track) => ({
     ...counts,
-    [track]: diagnosticQuestions.filter((question) => question.exam === track).length,
+    [track]:
+      track === "NIS"
+        ? nisDiagnosticQuestions.length
+        : diagnosticQuestions.filter((question) => question.exam === track).length,
   }),
   {} as Record<DiagnosticTrack, number>,
 );
@@ -153,7 +157,10 @@ function Diagnostic() {
   const [answers, setAnswers] = useState<AnswerMap>({});
 
   const questions = useMemo(
-    () => diagnosticQuestions.filter((question) => question.exam === selectedTrack),
+    () =>
+      selectedTrack === "NIS"
+        ? nisDiagnosticQuestions
+        : diagnosticQuestions.filter((question) => question.exam === selectedTrack),
     [selectedTrack],
   );
   const currentQuestion = questions[currentIndex];
