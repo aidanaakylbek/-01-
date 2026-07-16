@@ -1,6 +1,7 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
 import { AibiMark } from "@/components/aibi-mark";
+import { SiteFooter } from "@/components/site-footer";
 import { Lang, useLanguage } from "@/hooks/use-language";
 import { getAccountDashboard } from "@/lib/api/account.functions";
 import type { Account } from "@/lib/account-store.server";
@@ -78,7 +79,9 @@ export function GameLayout({
   children: ReactNode;
   right?: ReactNode;
 }) {
+  const location = useLocation();
   const access = useAccessGate();
+  const simpleShell = isSimpleShellRoute(location.pathname);
 
   if (access.redirecting) {
     return (
@@ -87,6 +90,18 @@ export function GameLayout({
           <p className="text-lg font-black">Ата-ананы Telegram арқылы растау қажет</p>
           <p className="mt-2 font-semibold text-[#6B5E8F]">Растау бетіне жіберіп жатырмыз...</p>
         </GameCard>
+      </div>
+    );
+  }
+
+  if (simpleShell) {
+    return (
+      <div className="min-h-screen bg-[#F5F3FF] text-[#1E1B4B]">
+        <GameTopBar compact />
+        <main className="mx-auto min-h-[calc(100vh-420px)] w-full max-w-6xl px-4 py-8 md:px-6 md:py-12">
+          {children}
+        </main>
+        <SiteFooter />
       </div>
     );
   }
@@ -102,6 +117,7 @@ export function GameLayout({
         </main>
         <aside className="hidden lg:block">{right ?? <RightWidgets />}</aside>
       </div>
+      <SiteFooter />
       <MobileGameNav />
     </div>
   );
@@ -168,9 +184,26 @@ function useAccessGate() {
   }, [account, authenticated, loadingAccess, pathname]);
 
   return {
-    redirecting: redirecting || loadingAccess,
+    redirecting,
     paywalled: Boolean(authenticated && account && isTelegramVerified(account) && isPaidRoute(pathname) && !hasActiveSubscription(account)),
   };
+}
+
+function isSimpleShellRoute(pathname: string) {
+  return [
+    "/",
+    "/login",
+    "/register",
+    "/verify-parent-telegram",
+    "/diagnostic",
+    "/diagnostic-test",
+    "/diagnostic-result",
+    "/pricing",
+    "/payment",
+    "/about",
+    "/careers",
+    "/privacy",
+  ].includes(pathname);
 }
 
 function isTelegramVerified(account: Account) {
@@ -275,7 +308,7 @@ function PaywallCard() {
   );
 }
 
-export function GameTopBar() {
+export function GameTopBar({ compact = false }: { compact?: boolean }) {
   const { language, setLanguage } = useLanguage();
   const [authenticated, setAuthenticated] = useState(false);
 
@@ -301,13 +334,27 @@ export function GameTopBar() {
             AI-Sana
           </span>
         </Link>
-        <div className="hidden flex-1 items-center justify-center gap-2 md:flex">
-          <StatusPill icon="🔥" value="12 күн" />
-          <StatusPill icon="❤️" value="5" />
-          <StatusPill icon="⭐" value="2450" />
-          <StatusPill icon="💎" value="1280" />
-          <StatusPill icon="🏆" value="16" />
-        </div>
+        {!compact ? (
+          <div className="hidden flex-1 items-center justify-center gap-2 md:flex">
+            <StatusPill icon="🔥" value="12 күн" />
+            <StatusPill icon="❤️" value="5" />
+            <StatusPill icon="⭐" value="2450" />
+            <StatusPill icon="💎" value="1280" />
+            <StatusPill icon="🏆" value="16" />
+          </div>
+        ) : (
+          <nav className="hidden flex-1 items-center justify-center gap-6 text-sm font-black text-[#4B3D73] md:flex">
+            <Link className="transition hover:text-[#6D28D9]" to="/">
+              Басты бет
+            </Link>
+            <Link className="transition hover:text-[#6D28D9]" to="/about">
+              Біз туралы
+            </Link>
+            <Link className="transition hover:text-[#6D28D9]" to="/privacy">
+              Құпиялылық
+            </Link>
+          </nav>
+        )}
         <div className="ml-auto flex shrink-0 items-center gap-2">
           <div className="flex rounded-full border-2 border-[#DDD6FE] bg-[#F5F3FF] p-1 shadow-[0_4px_0_rgba(109,40,217,0.08)]">
             {(["KZ", "RU", "EN"] as Lang[]).map((lang) => (

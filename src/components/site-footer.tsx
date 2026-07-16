@@ -11,40 +11,40 @@ export function SiteFooter() {
         : { about: "About", careers: "Careers", privacy: "Privacy Policy" };
 
   return (
-    <footer className="bg-surface w-full border-t border-surface-variant">
-      <div className="flex flex-col md:flex-row justify-between items-start py-20 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto">
-        <div className="mb-12 md:mb-0 max-w-sm">
-          <div className="font-headline-md text-headline-md text-secondary font-bold mb-6">
+    <footer className="w-full border-t-2 border-[#DDD6FE] bg-white">
+      <div className="mx-auto flex max-w-[1440px] flex-col items-start justify-between gap-10 px-5 py-12 md:flex-row md:items-center">
+        <div className="max-w-md">
+          <div className="mb-4 text-3xl font-black tracking-tight text-[#6D28D9]">
             AI-Sana
           </div>
-          <p className="font-body-md text-body-md text-on-surface-variant mb-6">
+          <p className="mb-5 text-base font-semibold leading-7 text-[#6B5E8F]">
             {t("footer_desc")}
           </p>
           <a
-            className="mb-6 block font-label-caps text-label-caps text-secondary uppercase tracking-widest hover:text-primary transition-colors"
+            className="mb-5 block text-sm font-black uppercase tracking-[0.2em] text-[#8B5CF6] transition-colors hover:text-[#6D28D9]"
             href="mailto:info.aisana@gmail.com"
           >
             info.aisana@gmail.com
           </a>
-          <p className="font-label-caps text-label-caps text-outline uppercase tracking-widest opacity-60">
+          <p className="text-xs font-black uppercase tracking-[0.2em] text-[#A78BFA]">
             {t("footer_rights")}
           </p>
         </div>
-        <div className="flex flex-col gap-6 md:items-end">
+        <div className="flex flex-wrap gap-3 md:justify-end">
           <Link
-            className="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest hover:text-primary transition-colors"
+            className="rounded-2xl border-2 border-[#DDD6FE] bg-[#F5F3FF] px-5 py-3 text-sm font-black text-[#1E1B4B] transition hover:border-[#8B5CF6] hover:text-[#6D28D9]"
             to="/about"
           >
             {links.about}
           </Link>
           <Link
-            className="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest hover:text-primary transition-colors"
+            className="rounded-2xl border-2 border-[#DDD6FE] bg-[#F5F3FF] px-5 py-3 text-sm font-black text-[#1E1B4B] transition hover:border-[#8B5CF6] hover:text-[#6D28D9]"
             to="/careers"
           >
             {links.careers}
           </Link>
           <Link
-            className="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest hover:text-primary transition-colors"
+            className="rounded-2xl border-2 border-[#DDD6FE] bg-[#F5F3FF] px-5 py-3 text-sm font-black text-[#1E1B4B] transition hover:border-[#8B5CF6] hover:text-[#6D28D9]"
             to="/privacy"
           >
             {links.privacy}
