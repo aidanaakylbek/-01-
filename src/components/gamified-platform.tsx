@@ -3,7 +3,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { AibiMark } from "@/components/aibi-mark";
 import { SiteFooter } from "@/components/site-footer";
 import { Lang, useLanguage } from "@/hooks/use-language";
-import { getAccountDashboard } from "@/lib/api/account.functions";
+import { getAccountDashboard, logoutAccount } from "@/lib/api/account.functions";
 import type { Account } from "@/lib/account-store.server";
 
 type NavItem = {
@@ -309,6 +309,7 @@ function PaywallCard() {
 export function GameTopBar({ compact = false }: { compact?: boolean }) {
   const { language, setLanguage } = useLanguage();
   const [authenticated, setAuthenticated] = useState(false);
+  const logoutLabel = language === "RU" ? "Выйти" : language === "EN" ? "Log out" : "Шығу";
 
   useEffect(() => {
     let mounted = true;
@@ -366,12 +367,25 @@ export function GameTopBar({ compact = false }: { compact?: boolean }) {
             ))}
           </div>
           {authenticated ? (
-            <Link
-              to="/profile"
-              className="grid h-11 w-11 place-items-center rounded-full bg-[#8B5CF6] font-black text-white shadow-[0_5px_0_#5B21B6] transition hover:-translate-y-0.5"
-            >
-              AA
-            </Link>
+            <>
+              <Link
+                to="/profile"
+                className="grid h-11 w-11 place-items-center rounded-full bg-[#8B5CF6] font-black text-white shadow-[0_5px_0_#5B21B6] transition hover:-translate-y-0.5"
+              >
+                AA
+              </Link>
+              <button
+                className="rounded-2xl border-2 border-[#DDD6FE] bg-white px-3 py-2 text-sm font-black text-[#6D28D9] shadow-[0_4px_0_rgba(109,40,217,0.12)] transition hover:-translate-y-0.5"
+                type="button"
+                onClick={() => {
+                  void logoutAccount().finally(() => {
+                    window.location.href = "/login";
+                  });
+                }}
+              >
+                {logoutLabel}
+              </button>
+            </>
           ) : (
             <Link
               to="/login"
