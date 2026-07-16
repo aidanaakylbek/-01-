@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 360" role="img" aria-label="Water mass decreases over light exposure time">
+  <rect width="720" height="360" rx="28" fill="#f5f3ff"/>
+  <line x1="105" y1="285" x2="620" y2="285" stroke="#1e1b4b" stroke-width="5"/>
+  <line x1="105" y1="285" x2="105" y2="75" stroke="#1e1b4b" stroke-width="5"/>
+  <path d="M140 120 C240 145 310 175 390 205 C470 235 535 255 600 270" fill="none" stroke="#6d28d9" stroke-width="9" stroke-linecap="round"/>
+  <g font-family="Arial, sans-serif" font-size="22" font-weight="900" fill="#1e1b4b">
+    <text x="35" y="95" transform="rotate(-90 35 95)">су массасы</text>
+    <text x="350" y="330">жарық түсу уақыты</text>
+  </g>
+</svg>

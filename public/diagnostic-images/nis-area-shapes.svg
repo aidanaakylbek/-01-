@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 360" role="img" aria-label="Area comparison shapes">
+  <rect width="720" height="360" rx="28" fill="#f5f3ff"/>
+  <g font-family="Arial, sans-serif" font-weight="900" text-anchor="middle" fill="#1e1b4b">
+    <text x="190" y="70" font-size="28">A бағаны</text>
+    <text x="530" y="70" font-size="28">B бағаны</text>
+  </g>
+  <rect x="95" y="110" width="190" height="150" fill="#ddd6fe" stroke="#6d28d9" stroke-width="5"/>
+  <polygon points="460,260 605,260 560,110 415,110" fill="#ede9fe" stroke="#6d28d9" stroke-width="5"/>
+  <text x="190" y="310" text-anchor="middle" font-family="Arial" font-size="22" font-weight="800" fill="#6b5e8f">фигура A</text>
+  <text x="510" y="310" text-anchor="middle" font-family="Arial" font-size="22" font-weight="800" fill="#6b5e8f">фигура B</text>
+</svg>

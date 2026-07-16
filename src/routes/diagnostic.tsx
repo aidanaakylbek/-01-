@@ -137,6 +137,21 @@ const copy = {
 };
 
 const diagnosticTracks: DiagnosticTrack[] = ["NIS", "BIL", "RFMS"];
+const diagnosticQuestionImages: Record<string, string> = {
+  "nis-full-math-03": "/diagnostic-images/nis-coordinate-points.svg",
+  "nis-full-math-06": "/diagnostic-images/nis-ring.svg",
+  "nis-full-math-07": "/diagnostic-images/nis-four-squares.svg",
+  "nis-full-math-09": "/diagnostic-images/nis-tiles-square.svg",
+  "nis-full-math-22": "/diagnostic-images/nis-mixture-pie.svg",
+  "nis-full-math-29": "/diagnostic-images/nis-inequality-lines.svg",
+  "nis-full-math-30": "/diagnostic-images/nis-opposite-numbers.svg",
+  "nis-full-quant-31": "/diagnostic-images/nis-routes.svg",
+  "nis-full-quant-34": "/diagnostic-images/nis-area-shapes.svg",
+  "nis-full-quant-52": "/diagnostic-images/nis-solids.svg",
+  "nis-full-quant-59": "/diagnostic-images/nis-class-chart.svg",
+  "nis-full-science-05": "/diagnostic-images/nis-cell.svg",
+  "nis-full-science-17": "/diagnostic-images/nis-water-graph.svg",
+};
 const questionsCountByTrack = diagnosticTracks.reduce(
   (counts, track) => ({
     ...counts,
@@ -351,6 +366,15 @@ function Diagnostic() {
             <p className="mb-6 text-2xl font-black text-[#1E1B4B]">
               {currentQuestion.question[language]}
             </p>
+            {diagnosticQuestionImages[currentQuestion.id] && (
+              <div className="mb-6 overflow-hidden rounded-[28px] border-2 border-[#DDD6FE] bg-[#F5F3FF] p-3">
+                <img
+                  alt={currentQuestion.topic}
+                  className="mx-auto max-h-[360px] w-full max-w-3xl rounded-3xl object-contain"
+                  src={diagnosticQuestionImages[currentQuestion.id]}
+                />
+              </div>
+            )}
             <p className="mb-3 font-bold text-[#6B5E8F]">{c.choose}</p>
 
             <div className="grid gap-3">
