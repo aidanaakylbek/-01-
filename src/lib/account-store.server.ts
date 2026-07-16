@@ -8,6 +8,7 @@ import {
   createAccountWithParent,
   createPaymentRequestRow,
   findAccountByEmail,
+  findParentByNormalizedPhone,
   getVerifiedReportTargets,
   hashPassword,
   isSupabaseConfigured,
@@ -55,6 +56,10 @@ export type PaymentMethod = "kaspi_pay" | "kaspi_red" | "kaspi_0_0_12";
 export type PaymentRequestStatus = "pending" | "invoice_sent" | "approved" | "rejected" | "expired";
 export const duplicateEmailMessage =
   "Бұл email бұрын тіркелген. Басқа email қолданыңыз немесе аккаунтқа кіріңіз.";
+export const duplicateParentPhoneMessage =
+  "Бұл ата-ана номері бұрын тіркелген. Басқа номер қолданыңыз немесе аккаунтқа кіріңіз.";
+export const duplicateTelegramMessage =
+  "Бұл Telegram аккаунт басқа AI-Sana профиліне қосылған. Бір Telegram аккаунт тек бір оқушыға ғана қолданылады.";
 
 export type PricingPlan = {
   badge?: string;
@@ -471,6 +476,11 @@ export async function registerAccount(input: {
   password: string;
 }) {
   const normalizedEmail = normalizeEmail(input.email);
+  const parentPhoneNormalized = normalizeParentPhone(input.parentPhone);
+
+  if (!parentPhoneNormalized) {
+    throw new Error("INVALID_PARENT_PHONE");
+  }
 
   if (isSupabaseConfigured() && (await findAccountByEmail(normalizedEmail))) {
     throw new Error("EMAIL_ALREADY_EXISTS");
@@ -478,6 +488,19 @@ export async function registerAccount(input: {
 
   if (!isSupabaseConfigured() && accounts.has(normalizedEmail)) {
     throw new Error("EMAIL_ALREADY_EXISTS");
+  }
+
+  if (isSupabaseConfigured() && (await findParentByNormalizedPhone(parentPhoneNormalized))) {
+    throw new Error("PARENT_PHONE_ALREADY_EXISTS");
+  }
+
+  if (
+    !isSupabaseConfigured() &&
+    [...accounts.values()].some(
+      (account) => normalizeParentPhone(account.parentPhone) === parentPhoneNormalized,
+    )
+  ) {
+    throw new Error("PARENT_PHONE_ALREADY_EXISTS");
   }
 
   const parentPhone = input.parentPhone.trim();
@@ -491,11 +514,16 @@ export async function registerAccount(input: {
       initials: getInitials(input.name),
       parentName: input.parentName.trim(),
       parentPhone,
+      parentPhoneNormalized,
       password: input.password,
       inviteCode,
     }).catch((error) => {
       if (isDuplicateEmailError(error)) {
         throw new Error("EMAIL_ALREADY_EXISTS");
+      }
+
+      if (isDuplicateParentPhoneError(error)) {
+        throw new Error("PARENT_PHONE_ALREADY_EXISTS");
       }
 
       throw error;
@@ -543,6 +571,28 @@ export function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
 }
 
+export function normalizeParentPhone(phone: string) {
+  const digits = phone.replace(/\D/g, "");
+
+  if (!digits) {
+    return "";
+  }
+
+  if (digits.length === 11 && digits.startsWith("8")) {
+    return `+7${digits.slice(1)}`;
+  }
+
+  if (digits.length === 11 && digits.startsWith("7")) {
+    return `+${digits}`;
+  }
+
+  if (digits.length === 10) {
+    return `+7${digits}`;
+  }
+
+  return `+${digits}`;
+}
+
 export function emailExists(email: string) {
   return accounts.has(normalizeEmail(email));
 }
@@ -557,6 +607,19 @@ function isDuplicateEmailError(error: unknown) {
     error.message.includes("duplicate key") ||
     error.message.includes("users_email") ||
     error.message.includes("users_email_unique")
+  );
+}
+
+function isDuplicateParentPhoneError(error: unknown) {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  return (
+    error.message.includes("23505") ||
+    error.message.includes("duplicate key") ||
+    error.message.includes("parents_phone_normalized") ||
+    error.message.includes("phone_normalized")
   );
 }
 
@@ -585,14 +648,35 @@ export async function createOrReturnParentInvite() {
 
 export async function verifyParentTelegramInvite(inviteCode: string, telegramChatId: string) {
   if (isSupabaseConfigured()) {
-    const account = await verifyParentTelegram(inviteCode, telegramChatId);
-    return account ? toPublicAccount(account) : null;
+    const result = await verifyParentTelegram(inviteCode, telegramChatId);
+
+    if ("account" in result && result.account) {
+      return { ...result, account: toPublicAccount(result.account) };
+    }
+
+    return result;
   }
 
   const account = [...accounts.values()].find((item) => item.parentInviteCode === inviteCode);
 
   if (!account) {
-    return null;
+    return { status: "invalid" as const };
+  }
+
+  const existingTelegramOwner = [...accounts.values()].find(
+    (item) => item.parentTelegramChatId === telegramChatId,
+  );
+
+  if (existingTelegramOwner && existingTelegramOwner.email !== account.email) {
+    return { status: "telegram_already_connected" as const };
+  }
+
+  if (
+    existingTelegramOwner?.email === account.email &&
+    account.parentTelegramConnected &&
+    account.parentPhoneVerified
+  ) {
+    return { status: "already_verified" as const, account: toPublicAccount(account) };
   }
 
   const now = new Date().toISOString();
@@ -604,7 +688,7 @@ export async function verifyParentTelegramInvite(inviteCode: string, telegramCha
   account.parentTelegramVerifiedAt = now;
   accounts.set(account.email, account);
 
-  return toPublicAccount(account);
+  return { status: "verified" as const, account: toPublicAccount(account) };
 }
 
 export async function getVerifiedParentReportTargets() {

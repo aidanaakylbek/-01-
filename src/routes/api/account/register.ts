@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import {
   duplicateEmailMessage,
+  duplicateParentPhoneMessage,
   registerAccount,
 } from "@/lib/account-store.server";
 
@@ -41,6 +42,16 @@ export const Route = createFileRoute("/api/account/register")({
               {
                 error: "EMAIL_ALREADY_EXISTS",
                 message: duplicateEmailMessage,
+              },
+              { status: 409 },
+            );
+          }
+
+          if (error instanceof Error && error.message === "PARENT_PHONE_ALREADY_EXISTS") {
+            return Response.json(
+              {
+                error: "PARENT_PHONE_ALREADY_EXISTS",
+                message: duplicateParentPhoneMessage,
               },
               { status: 409 },
             );

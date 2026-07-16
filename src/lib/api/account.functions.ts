@@ -4,6 +4,7 @@ import { z } from "zod";
 import {
   createPaymentRequest as createStoredPaymentRequest,
   duplicateEmailMessage,
+  duplicateParentPhoneMessage,
   getDashboardAccount as readDashboardAccount,
   getPostLoginRedirect,
   listPaymentRequests as listStoredPaymentRequests,
@@ -40,6 +41,10 @@ export const registerAccount = createServerFn({ method: "POST" })
     } catch (error) {
       if (error instanceof Error && error.message === "EMAIL_ALREADY_EXISTS") {
         throw new Error(`EMAIL_ALREADY_EXISTS:${duplicateEmailMessage}`);
+      }
+
+      if (error instanceof Error && error.message === "PARENT_PHONE_ALREADY_EXISTS") {
+        throw new Error(`PARENT_PHONE_ALREADY_EXISTS:${duplicateParentPhoneMessage}`);
       }
 
       throw error;

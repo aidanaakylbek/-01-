@@ -74,9 +74,22 @@ export const Route = createFileRoute("/api/telegram/webhook")({
 });
 
 async function verifyParentOrSendInvalidMessage(chatId: string, inviteCode: string) {
-  const account = await verifyParentTelegramInvite(inviteCode, chatId);
+  const result = await verifyParentTelegramInvite(inviteCode, chatId);
 
-  if (!account) {
+  if (result.status === "telegram_already_connected") {
+    await sendTelegramMessage(
+      chatId,
+      "Бұл Telegram аккаунт басқа AI-Sana профиліне қосылған. Бір Telegram аккаунт тек бір оқушыға ғана қолданылады.",
+    );
+    return null;
+  }
+
+  if (result.status === "already_verified") {
+    await sendTelegramMessage(chatId, "Сіз AI-Sana ата-ана есебіне бұрын қосылғансыз ✅");
+    return result.account;
+  }
+
+  if (result.status === "invalid") {
     await sendTelegramMessage(
       chatId,
       "Сілтеме жарамсыз немесе мерзімі өткен. AI-Sana сайтынан қайта қосылып көріңіз.",
@@ -92,7 +105,7 @@ async function verifyParentOrSendInvalidMessage(chatId: string, inviteCode: stri
     ].join("\n"),
   );
 
-  return account;
+  return result.account;
 }
 
 function extractParentInviteCodeFromPayload(payload: string) {

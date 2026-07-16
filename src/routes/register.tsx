@@ -20,6 +20,7 @@ function Register() {
   const [statusMessage, setStatusMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [emailError, setEmailError] = useState("");
+  const [parentPhoneError, setParentPhoneError] = useState("");
   const [parentInvite, setParentInvite] = useState<{
     code: string;
     configured: boolean;
@@ -112,6 +113,7 @@ function Register() {
     try {
       setErrorMessage("");
       setEmailError("");
+      setParentPhoneError("");
       const normalizedEmail = String(formData.get("email") ?? "").trim().toLowerCase();
 
       await registerAccount({
@@ -146,6 +148,17 @@ function Register() {
 
       if (message.includes("EMAIL_ALREADY_EXISTS") || message.includes("Бұл email бұрын тіркелген")) {
         setEmailError("Бұл email бұрын тіркелген. Басқа email қолданыңыз немесе аккаунтқа кіріңіз.");
+        setErrorMessage("");
+        return;
+      }
+
+      if (
+        message.includes("PARENT_PHONE_ALREADY_EXISTS") ||
+        message.includes("Бұл ата-ана номері бұрын тіркелген")
+      ) {
+        setParentPhoneError(
+          "Бұл ата-ана номері бұрын тіркелген. Басқа номер қолданыңыз немесе аккаунтқа кіріңіз.",
+        );
         setErrorMessage("");
         return;
       }
@@ -238,15 +251,23 @@ function Register() {
             <label className="flex flex-col gap-2 font-black text-[#1E1B4B]">
               {copy.parentPhone}
               <input
-                className="h-13 rounded-2xl border-2 border-[#DDD6FE] bg-[#F5F3FF] px-4 font-semibold text-[#1E1B4B] focus:border-[#8B5CF6] focus:outline-none"
+                className={`h-13 rounded-2xl border-2 bg-[#F5F3FF] px-4 font-semibold text-[#1E1B4B] focus:outline-none ${
+                  parentPhoneError
+                    ? "border-[#EF4444] focus:border-[#EF4444]"
+                    : "border-[#DDD6FE] focus:border-[#8B5CF6]"
+                }`}
                 name="parentPhone"
                 type="tel"
                 autoComplete="tel"
                 placeholder="+7 700 123 45 67"
                 required
               />
-              <span className="text-sm font-semibold text-[#6B5E8F]">
-                {statusMessage || copy.parentHint}
+              <span
+                className={`text-sm font-semibold ${
+                  parentPhoneError ? "font-bold text-[#EF4444]" : "text-[#6B5E8F]"
+                }`}
+              >
+                {parentPhoneError || statusMessage || copy.parentHint}
               </span>
             </label>
 

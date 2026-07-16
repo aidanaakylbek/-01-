@@ -28,6 +28,7 @@ create table if not exists public.parents (
   student_id uuid not null references public.users(id) on delete cascade,
   name text not null,
   phone text not null,
+  phone_normalized text not null,
   phone_verified boolean not null default false,
   telegram_chat_id text,
   telegram_connected boolean not null default false,
@@ -72,3 +73,28 @@ create index if not exists parents_invite_code_idx on public.parents(invite_code
 create index if not exists payment_requests_user_id_idx on public.payment_requests(user_id);
 create unique index if not exists users_email_unique_idx on public.users(email);
 create unique index if not exists users_email_lower_unique_idx on public.users(lower(email));
+
+alter table public.parents add column if not exists phone_normalized text;
+
+update public.parents
+set phone_normalized =
+  case
+    when length(regexp_replace(phone, '\D', '', 'g')) = 11
+      and left(regexp_replace(phone, '\D', '', 'g'), 1) = '8'
+      then '+7' || substring(regexp_replace(phone, '\D', '', 'g') from 2)
+    when length(regexp_replace(phone, '\D', '', 'g')) = 11
+      and left(regexp_replace(phone, '\D', '', 'g'), 1) = '7'
+      then '+' || regexp_replace(phone, '\D', '', 'g')
+    when length(regexp_replace(phone, '\D', '', 'g')) = 10
+      then '+7' || regexp_replace(phone, '\D', '', 'g')
+    else '+' || regexp_replace(phone, '\D', '', 'g')
+  end
+where phone_normalized is null or phone_normalized = '';
+
+alter table public.parents alter column phone_normalized set not null;
+
+create unique index if not exists parents_phone_normalized_unique_idx on public.parents(phone_normalized);
+create unique index if not exists parents_telegram_chat_id_unique_idx
+  on public.parents(telegram_chat_id)
+  where telegram_chat_id is not null;
+create unique index if not exists parents_invite_code_unique_idx on public.parents(invite_code);

@@ -34,6 +34,7 @@ type SupabaseParentRow = {
   student_id: string;
   name: string;
   phone: string;
+  phone_normalized: string;
   phone_verified: boolean | null;
   telegram_chat_id: string | null;
   telegram_connected: boolean | null;
@@ -90,10 +91,24 @@ export async function findAccountByInviteCode(inviteCode: string) {
   return user ? userToAccount(user, parent) : null;
 }
 
+export async function findParentByNormalizedPhone(phoneNormalized: string) {
+  return selectOne<SupabaseParentRow>(
+    "parents",
+    `phone_normalized=eq.${encodeURIComponent(phoneNormalized)}`,
+  );
+}
+
 async function findParentByStudentId(studentId: string) {
   return selectOne<SupabaseParentRow>(
     "parents",
     `student_id=eq.${encodeURIComponent(studentId)}`,
+  );
+}
+
+async function findParentByTelegramChatId(telegramChatId: string) {
+  return selectOne<SupabaseParentRow>(
+    "parents",
+    `telegram_chat_id=eq.${encodeURIComponent(telegramChatId)}`,
   );
 }
 
@@ -104,6 +119,7 @@ export async function createAccountWithParent(input: {
   initials: string;
   parentName: string;
   parentPhone: string;
+  parentPhoneNormalized: string;
   password: string;
   inviteCode: string;
 }) {
@@ -122,27 +138,50 @@ export async function createAccountWithParent(input: {
     },
   ]);
 
-  const [parent] = await insertRows<SupabaseParentRow>("parents", [
-    {
-      student_id: user.id,
-      name: input.parentName,
-      phone: input.parentPhone,
-      phone_verified: false,
-      telegram_connected: false,
-      invite_code: input.inviteCode,
-    },
-  ]);
+  try {
+    const [parent] = await insertRows<SupabaseParentRow>("parents", [
+      {
+        student_id: user.id,
+        name: input.parentName,
+        phone: input.parentPhone,
+        phone_normalized: input.parentPhoneNormalized,
+        phone_verified: false,
+        telegram_connected: false,
+        invite_code: input.inviteCode,
+      },
+    ]);
 
-  return userToAccount(user, parent);
+    return userToAccount(user, parent);
+  } catch (error) {
+    await deleteRows("users", `id=eq.${encodeURIComponent(user.id)}`).catch(() => undefined);
+    throw error;
+  }
 }
 
 export async function verifyParentTelegram(inviteCode: string, telegramChatId: string) {
-  const account = await findAccountByInviteCode(inviteCode);
-  if (!account) return null;
+  const parent = await selectOne<SupabaseParentRow>(
+    "parents",
+    `invite_code=eq.${encodeURIComponent(inviteCode)}`,
+  );
+
+  if (!parent) return { status: "invalid" as const };
+
+  const existingParent = await findParentByTelegramChatId(telegramChatId);
+
+  if (existingParent && existingParent.id !== parent.id) {
+    return { status: "telegram_already_connected" as const };
+  }
+
+  if (existingParent?.id === parent.id && parent.telegram_connected && parent.phone_verified) {
+    const user = await selectOne<SupabaseUserRow>("users", `id=eq.${encodeURIComponent(parent.student_id)}`);
+    return user
+      ? { status: "already_verified" as const, account: userToAccount(user, parent) }
+      : { status: "invalid" as const };
+  }
 
   const now = new Date().toISOString();
 
-  const [parent] = await updateRows<SupabaseParentRow>(
+  const [updatedParent] = await updateRows<SupabaseParentRow>(
     "parents",
     `invite_code=eq.${encodeURIComponent(inviteCode)}`,
     {
@@ -155,13 +194,13 @@ export async function verifyParentTelegram(inviteCode: string, telegramChatId: s
 
   const [user] = await updateRows<SupabaseUserRow>(
     "users",
-    `id=eq.${encodeURIComponent(account.id)}`,
+    `id=eq.${encodeURIComponent(parent.student_id)}`,
     {
       telegram_parent_verified: true,
     },
   );
 
-  return userToAccount(user, parent);
+  return { status: "verified" as const, account: userToAccount(user, updatedParent) };
 }
 
 export async function updateDiagnosticResult(
@@ -363,6 +402,12 @@ async function updateRows<T>(table: string, query: string, patch: unknown) {
     headers: { Prefer: "return=representation" },
   });
   return (await response.json()) as T[];
+}
+
+async function deleteRows(table: string, query: string) {
+  await supabaseFetch(`${table}?${query}`, {
+    method: "DELETE",
+  });
 }
 
 async function supabaseFetch(path: string, init: RequestInit) {
