@@ -309,7 +309,7 @@ function PaywallCard() {
 export function GameTopBar({ compact = false }: { compact?: boolean }) {
   const { language, setLanguage } = useLanguage();
   const [authenticated, setAuthenticated] = useState(false);
-  const logoutLabel = language === "RU" ? "Выйти" : language === "EN" ? "Log out" : "Шығу";
+  const logoutLabel = language === "RU" ? "Выйти" : "Шығу";
 
   useEffect(() => {
     let mounted = true;
@@ -353,7 +353,7 @@ export function GameTopBar({ compact = false }: { compact?: boolean }) {
         )}
         <div className="ml-auto flex shrink-0 items-center gap-2">
           <div className="flex rounded-full border-2 border-[#DDD6FE] bg-[#F5F3FF] p-1 shadow-[0_4px_0_rgba(109,40,217,0.08)]">
-            {(["KZ", "RU", "EN"] as Lang[]).map((lang) => (
+            {(["KZ", "RU"] as Lang[]).map((lang) => (
               <button
                 key={lang}
                 type="button"

@@ -528,18 +528,22 @@ const translations: Record<Lang, Record<string, string>> = {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguageState] = useState<Lang>("EN");
+  const [language, setLanguageState] = useState<Lang>("KZ");
 
   useEffect(() => {
     const stored = localStorage.getItem("aibi_lang");
-    if (stored === "EN" || stored === "KZ" || stored === "RU") {
+    if (stored === "KZ" || stored === "RU") {
       setLanguageState(stored);
+    } else if (stored === "EN") {
+      setLanguageState("KZ");
+      localStorage.setItem("aibi_lang", "KZ");
     }
   }, []);
 
   const setLanguage = (lang: Lang) => {
-    setLanguageState(lang);
-    localStorage.setItem("aibi_lang", lang);
+    const nextLanguage = lang === "EN" ? "KZ" : lang;
+    setLanguageState(nextLanguage);
+    localStorage.setItem("aibi_lang", nextLanguage);
   };
 
   const t = (key: string): string => {
