@@ -567,6 +567,10 @@ export async function createOrReturnParentInvite() {
     throw new Error("AUTH_REQUIRED");
   }
 
+  if (isSupabaseConfigured() && !account.parentInviteCode) {
+    throw new Error("PARENT_INVITE_NOT_FOUND");
+  }
+
   if (!account.parentInviteCode) {
     account.parentInviteCode = createUniqueParentInviteCode();
     accounts.set(account.email, account);

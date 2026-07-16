@@ -72,7 +72,10 @@ export function hashPassword(password: string) {
 
 export async function findAccountByEmail(email: string) {
   const user = await selectOne<SupabaseUserRow>("users", `email=eq.${encodeURIComponent(email)}`);
-  return user ? userToAccount(user) : null;
+  if (!user) return null;
+
+  const parent = await findParentByStudentId(user.id);
+  return userToAccount(user, parent);
 }
 
 export async function findAccountByInviteCode(inviteCode: string) {
@@ -85,6 +88,13 @@ export async function findAccountByInviteCode(inviteCode: string) {
 
   const user = await selectOne<SupabaseUserRow>("users", `id=eq.${encodeURIComponent(parent.student_id)}`);
   return user ? userToAccount(user, parent) : null;
+}
+
+async function findParentByStudentId(studentId: string) {
+  return selectOne<SupabaseParentRow>(
+    "parents",
+    `student_id=eq.${encodeURIComponent(studentId)}`,
+  );
 }
 
 export async function createAccountWithParent(input: {
