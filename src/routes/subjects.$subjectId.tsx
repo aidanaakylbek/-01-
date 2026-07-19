@@ -125,10 +125,10 @@ function SubjectPage() {
                             </p>
                           </div>
                           <span className="rounded-full bg-[#C084FC] px-4 py-2 font-black text-white">
-                            +20 XP
+                            XP сабақтан кейін
                           </span>
                         </div>
-                        <ProgressBar value={hasLesson ? 68 : locked ? 0 : 30} />
+                        <ProgressBar value={0} />
                         <div className="mt-5 flex flex-wrap gap-3">
                           {hasLesson ? (
                             <Link

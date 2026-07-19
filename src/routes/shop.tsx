@@ -32,7 +32,7 @@ function ShopPage() {
       <div className="space-y-5">
         <GameCard className="bg-gradient-to-br from-[#1E1B4B] to-[#6D28D9] text-white">
           <p className="text-sm font-black uppercase tracking-[0.25em] text-[#FACC15]">
-            💎 1280 Sana Coins
+            💎 0 Sana Coins
           </p>
           <h1 className="mt-2 text-5xl font-black">{title}</h1>
           <p className="mt-3 max-w-2xl font-semibold text-[#DDD6FE]">{subtitle}</p>

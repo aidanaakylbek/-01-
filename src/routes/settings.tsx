@@ -46,7 +46,7 @@ export function ProfileContent({ dashboard }: { dashboard: DashboardData }) {
               <AibiMark size="lg" className="h-24 w-24 bg-white" />
               <div>
                 <p className="text-sm font-black uppercase tracking-[0.25em] text-[#FACC15]">
-                  Level 16 · Purple League
+                  Level 1 · Purple League
                 </p>
                 <h1 className="mt-2 text-4xl font-black">{title}</h1>
                 <p className="mt-1 text-[#EDE9FE]">{dashboard.account.name}</p>
@@ -56,28 +56,24 @@ export function ProfileContent({ dashboard }: { dashboard: DashboardData }) {
               <p className="text-sm font-black uppercase tracking-widest text-[#FACC15]">
                 Sana Coins
               </p>
-              <p className="text-4xl font-black">💎 1280</p>
+              <p className="text-4xl font-black">💎 0</p>
             </div>
           </div>
         </GameCard>
 
         <section className="grid gap-4 md:grid-cols-4">
-          <GameCard><p className="font-black text-[#6B5E8F]">XP</p><p className="text-3xl font-black">2450</p></GameCard>
-          <GameCard><p className="font-black text-[#6B5E8F]">Streak</p><p className="text-3xl font-black">🔥 12</p></GameCard>
-          <GameCard><p className="font-black text-[#6B5E8F]">Badges</p><p className="text-3xl font-black">🏅 8</p></GameCard>
-          <GameCard><p className="font-black text-[#6B5E8F]">Accuracy</p><p className="text-3xl font-black">82%</p></GameCard>
+          <GameCard><p className="font-black text-[#6B5E8F]">XP</p><p className="text-3xl font-black">0</p></GameCard>
+          <GameCard><p className="font-black text-[#6B5E8F]">Streak</p><p className="text-3xl font-black">🔥 0</p></GameCard>
+          <GameCard><p className="font-black text-[#6B5E8F]">Badges</p><p className="text-3xl font-black">🏅 0</p></GameCard>
+          <GameCard><p className="font-black text-[#6B5E8F]">Accuracy</p><p className="text-3xl font-black">0%</p></GameCard>
         </section>
 
         <GameCard>
           <h2 className="text-2xl font-black">Study history</h2>
-          <ProgressBar value={68} />
-          <div className="mt-5 grid gap-3 md:grid-cols-3">
-            {["Диагностика", "Натурал сандар", "Пайыздар"].map((item) => (
-              <div key={item} className="rounded-2xl bg-[#F5F3FF] p-4 font-black">
-                ✅ {item}
-              </div>
-            ))}
-          </div>
+          <ProgressBar value={0} />
+          <p className="mt-5 rounded-2xl bg-[#F5F3FF] p-4 font-black text-[#6B5E8F]">
+            Оқу тарихы бірінші диагностикадан кейін пайда болады.
+          </p>
         </GameCard>
 
         <GameCard>

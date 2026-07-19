@@ -8,11 +8,8 @@ export const Route = createFileRoute("/leaderboard")({
 });
 
 const students = [
-  ["Айзере", 3920, "🔥 18"],
-  ["Данияр", 3510, "🔥 14"],
-  ["Сен", 2450, "🔥 12"],
-  ["Мадина", 2280, "🔥 9"],
-  ["Ерасыл", 2140, "🔥 8"],
+  ["Сен", 0, "🔥 0"],
+  ["Рейтинг сабақтан кейін ашылады", 0, "🔥 0"],
 ];
 
 function LeaderboardPage() {
@@ -22,20 +19,20 @@ function LeaderboardPage() {
       ? {
           title: "Purple League",
           subtitle: "Собирай XP и поднимайся в рейтинге недели.",
-          coach: "Еще 470 XP — и ты перейдешь на 2 место!",
+          coach: "Рейтинг алғашқы сабақтан кейін жаңарады.",
           weekly: "Недельный рейтинг",
         }
       : language === "EN"
         ? {
             title: "Purple League",
             subtitle: "Earn XP and climb this week's leaderboard.",
-            coach: "470 more XP and you move to 2nd place!",
+            coach: "Leaderboard starts updating after your first lesson.",
             weekly: "Weekly leaderboard",
           }
         : {
             title: "Purple League",
             subtitle: "XP жинап, апталық рейтингте жоғары көтеріл.",
-            coach: "Тағы 470 XP жинасаң, 2-орынға шығасың!",
+            coach: "Рейтинг алғашқы сабақтан кейін жаңарады.",
             weekly: "Апталық рейтинг",
           };
 

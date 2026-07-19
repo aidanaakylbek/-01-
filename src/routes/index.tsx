@@ -23,9 +23,9 @@ export const Route = createFileRoute("/")({
 });
 
 const lessonNodes = [
-  { title: "Диагностика", state: "done", icon: "done", href: "/diagnostic" },
-  { title: "Логика", state: "done", icon: "psychology", href: "/plan" },
-  { title: "Математика", state: "current", icon: "calculate", href: "/subjects#nis" },
+  { title: "Диагностика", state: "current", icon: "quiz", href: "/diagnostic" },
+  { title: "Логика", state: "locked", icon: "lock", href: "/plan" },
+  { title: "Математика", state: "locked", icon: "lock", href: "/subjects#nis" },
   { title: "Оқу сауаттылығы", state: "locked", icon: "menu_book", href: "/subjects#bil" },
   { title: "Mini Test", state: "locked", icon: "quiz", href: "/exam" },
   { title: "Boss Test", state: "boss", icon: "workspace_premium", href: "/exam" },
@@ -98,7 +98,7 @@ export function Dashboard() {
               <div className="absolute right-0 top-8 h-48 w-48 rounded-full bg-white/15 blur-2xl" />
               <div className="relative mx-auto flex h-full max-w-[380px] items-center justify-center">
                 <div className="absolute right-4 top-2 rounded-[26px] border-2 border-white/30 bg-white/20 px-4 py-3 font-black text-white shadow-[0_8px_0_rgba(30,27,75,0.18)] backdrop-blur-md animate-[sana-bubble_3.2s_ease-in-out_infinite]">
-                  +20 XP
+                  +0 XP
                 </div>
                 <div className="absolute left-2 top-16 grid h-12 w-12 place-items-center rounded-full bg-[#FACC15] text-2xl shadow-[0_6px_0_#CA8A04] animate-[sana-spark_2.8s_ease-in-out_infinite]">
                   ⭐
@@ -144,7 +144,7 @@ export function Dashboard() {
                 <h2 className="mt-2 text-3xl font-black">Жарайсың!</h2>
               </div>
               <div className="rounded-2xl bg-[#F5F3FF] px-4 py-3 font-black text-[#6D28D9]">
-                ⭐ 420 XP today
+                ⭐ 0 XP today
               </div>
             </div>
             <div className="relative mx-auto max-w-xl py-4">
@@ -161,8 +161,8 @@ export function Dashboard() {
             <GameCard className="bg-[#FFF7CC]">
               <div className="text-5xl">🎁</div>
               <h3 className="mt-3 text-2xl font-black">{c.ready}</h3>
-              <p className="mt-2 font-semibold text-[#6B5E8F]">Күндік серияң сақталды!</p>
-              <ProgressBar value={72} />
+              <p className="mt-2 font-semibold text-[#6B5E8F]">Алғашқы сабақтан кейін прогресс басталады.</p>
+              <ProgressBar value={0} />
             </GameCard>
             <GameCard className="border-[#FACC15] bg-[#1E1B4B] text-white">
               <p className="text-sm font-black uppercase tracking-widest text-[#FACC15]">Special</p>

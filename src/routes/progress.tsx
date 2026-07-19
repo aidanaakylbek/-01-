@@ -42,10 +42,10 @@ function ProgressPage() {
       <div className="space-y-5">
         <MascotCoach text={c.advice} />
         <section className="grid gap-4 md:grid-cols-4">
-          <Stat title={c.accuracy} value="82%" icon="target" />
-          <Stat title="XP" value="2450" icon="stars" />
-          <Stat title={c.lessons} value="18" icon="task_alt" />
-          <Stat title="Level" value="16" icon="workspace_premium" />
+          <Stat title={c.accuracy} value="0%" icon="target" />
+          <Stat title="XP" value="0" icon="stars" />
+          <Stat title={c.lessons} value="0" icon="task_alt" />
+          <Stat title="Level" value="1" icon="workspace_premium" />
         </section>
         <section className="grid gap-5 lg:grid-cols-[1fr_360px]">
           <GameCard>
@@ -54,7 +54,7 @@ function ProgressPage() {
             </p>
             <h1 className="mt-2 text-4xl font-black">{c.title}</h1>
             <div className="mt-8 flex h-64 items-end gap-3">
-              {[40, 56, 62, 58, 74, 80, 88].map((value, index) => (
+              {[0, 0, 0, 0, 0, 0, 0].map((value, index) => (
                 <div key={index} className="flex flex-1 flex-col items-center gap-3">
                   <div
                     className="w-full rounded-t-3xl bg-gradient-to-t from-[#6D28D9] to-[#C084FC] shadow-[0_6px_0_rgba(109,40,217,0.18)]"
@@ -70,9 +70,9 @@ function ProgressPage() {
           <div className="space-y-5">
             <GameCard>
               <h2 className="text-2xl font-black">{c.weak}</h2>
-              <Topic title="Пайыздар" value={28} />
-              <Topic title="Логика" value={45} />
-              <Topic title="Оқу сауаттылығы" value={61} />
+              <p className="mt-4 font-semibold text-[#6B5E8F]">
+                Әлсіз тақырыптар диагностикадан кейін анықталады.
+              </p>
             </GameCard>
             <GameCard>
               <h2 className="text-2xl font-black">{c.streak}</h2>
@@ -80,7 +80,7 @@ function ProgressPage() {
                 {Array.from({ length: 21 }).map((_, index) => (
                   <div
                     key={index}
-                    className={`h-9 rounded-xl ${index % 5 === 0 ? "bg-[#FACC15]" : "bg-[#8B5CF6]"}`}
+                    className="h-9 rounded-xl bg-[#EDE9FE]"
                   />
                 ))}
               </div>

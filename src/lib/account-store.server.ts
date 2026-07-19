@@ -415,24 +415,29 @@ function clearSessionEmail() {
 export async function getDashboardAccount(): Promise<DashboardAccount> {
   const activeAccount = await getActiveStoredAccount();
   const account = activeAccount ?? guestAccount;
+  const examAttempts = account.examAttempts ?? [];
+  const completedLessons = account.diagnosticCompleted ? 1 : 0;
+  const averageAccuracy = account.diagnosticCompleted ? (account.diagnosticScore ?? 0) : 0;
+  const weakTopics = account.diagnosticCompleted ? (account.diagnosticWeakTopics ?? []) : [];
+  const hasProgress = completedLessons > 0 || examAttempts.length > 0;
 
   return {
     authenticated: Boolean(activeAccount),
     account: toPublicAccount(account),
-    readiness: 68,
-    completedLessons: 4,
+    readiness: averageAccuracy,
+    completedLessons,
     weeklyGoal: 5,
-    studyHours: 2.5,
-    averageAccuracy: 68,
+    studyHours: 0,
+    averageAccuracy,
     nextExam: {
       day: "Суббота",
       time: "10:00",
       description: "Полноформатный тренировочный тест по НИШ/БИЛ/РФМШ.",
     },
     focus: {
-      title: "Логические задачи",
-      description: "Точность в последних тестах ниже 50%.",
-      percent: 45,
+      title: weakTopics[0] ?? "Диагностика",
+      description: hasProgress ? "Диагностика нәтижесі бойынша қайталау керек тақырып." : "Прогресс диагностикадан кейін пайда болады.",
+      percent: hasProgress ? Math.max(0, Math.min(100, averageAccuracy)) : 0,
     },
     tasks: [
       {
@@ -440,14 +445,14 @@ export async function getDashboardAccount(): Promise<DashboardAccount> {
         icon: "calculate",
         title: "НИШ: Количественные характеристики",
         subtitle: "Математический и логический анализ",
-        status: "done",
+        status: account.diagnosticCompleted ? "done" : "todo",
       },
       {
         id: "reading",
         icon: "menu_book",
         title: "БИЛ: Читательская грамотность",
         subtitle: "Понимание казахского и русского текста",
-        status: "active",
+        status: "todo",
       },
       {
         id: "functions",
@@ -462,59 +467,53 @@ export async function getDashboardAccount(): Promise<DashboardAccount> {
         id: "natural-science",
         icon: "science",
         name: "Естествознание",
-        percent: 75,
-        status: "improving",
+        percent: 0,
+        status: "needs-practice",
       },
       {
         id: "languages",
         icon: "language",
         name: "Английский и казахский",
-        percent: 85,
-        status: "strong",
+        percent: 0,
+        status: "needs-practice",
       },
       {
         id: "logic",
         icon: "extension",
         name: "Логические задачи",
-        percent: 40,
+        percent: 0,
         status: "needs-practice",
       },
     ],
     accuracyTrend: [
-      { day: "Mon", accuracy: 42 },
-      { day: "Tue", accuracy: 51 },
-      { day: "Wed", accuracy: 48 },
-      { day: "Thu", accuracy: 63 },
-      { day: "Fri", accuracy: 82 },
+      { day: "Mon", accuracy: 0 },
+      { day: "Tue", accuracy: 0 },
+      { day: "Wed", accuracy: 0 },
+      { day: "Thu", accuracy: 0 },
+      { day: "Fri", accuracy: averageAccuracy },
     ],
-    risks: [
-      {
-        title: "Логические задачи",
-        detail: "Точность снизилась до 45%. Нужна короткая ежедневная практика.",
-        level: "High",
-        accuracy: 45,
-      },
-      {
-        title: "Количественные сравнения",
-        detail: "Показатель нестабилен: 52%. Повторить стратегии сравнения.",
-        level: "Medium",
-        accuracy: 52,
-      },
-      {
-        title: "Выносливость на пробном экзамене",
-        detail: "На этой неделе нужен один полный тест по времени.",
-        level: "Medium",
-        accuracy: 61,
-      },
-    ],
+    risks: weakTopics.slice(0, 3).map((topic) => ({
+      title: topic,
+      detail: "Диагностикада осы тақырыпты қайталау керек болып шықты.",
+      level: "Medium" as const,
+      accuracy: averageAccuracy,
+    })),
     parentRecommendation:
-      "Попросите ученика показать две самые сложные задачи недели и объяснить, как он исправил ошибки.",
+      hasProgress
+        ? "Попросите ученика показать две самые сложные задачи недели и объяснить, как он исправил ошибки."
+        : "Ата-ана есебі алғашқы диагностика мен сабақ нәтижелерінен кейін толығады.",
     recommendations: [
-      "Выделить 25 минут на логику в понедельник, среду и пятницу.",
-      "После каждой практики разобрать две ошибки вслух.",
-      "Оставить субботнее утро свободным для полного пробного экзамена.",
+      hasProgress
+        ? "Әлсіз тақырыптарға қысқа күнделікті қайталау жасаңыз."
+        : "Алдымен тегін диагностикалық тесттен өтіңіз.",
+      hasProgress
+        ? "Қате сұрақтарды қайта шешіп, себебін түсіндіріңіз."
+        : "Диагностикадан кейін жеке оқу жоспары ашылады.",
+      hasProgress
+        ? "Апта соңында mini test орындаңыз."
+        : "Прогресс сабақ аяқталған сайын жиналады.",
     ],
-    examAttempts: account.examAttempts ?? [],
+    examAttempts,
     weakTopicProgress: account.weakTopicProgress ?? [],
     solutionExplanationLogs: account.solutionExplanationLogs ?? [],
     aiTutorMessages: account.aiTutorMessages ?? [],

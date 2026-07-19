@@ -62,7 +62,7 @@ function ProfileRoute() {
               <AibiMark size="lg" className="h-24 w-24 bg-white" />
               <div>
                 <p className="text-sm font-black uppercase tracking-[0.25em] text-[#FACC15]">
-                  Level 16 · {c.league}
+                  Level 1 · {c.league}
                 </p>
                 <h1 className="mt-2 text-4xl font-black">{c.title}</h1>
                 <p className="mt-1 max-w-xl font-semibold text-[#EDE9FE]">{c.subtitle}</p>
@@ -72,7 +72,7 @@ function ProfileRoute() {
               <p className="text-sm font-black uppercase tracking-widest text-[#FACC15]">
                 {c.coins}
               </p>
-              <p className="text-4xl font-black">💎 1280</p>
+              <p className="text-4xl font-black">💎 0</p>
               <button
                 className="mt-4 rounded-2xl bg-white px-5 py-3 font-black text-[#6D28D9] shadow-[0_5px_0_#C4B5FD] transition hover:-translate-y-0.5"
                 type="button"
@@ -92,10 +92,10 @@ function ProfileRoute() {
 
         <section className="grid gap-4 md:grid-cols-4">
           {[
-            ["2450", c.stats[0]],
-            ["🔥 12", c.stats[1]],
-            ["🏅 8", c.stats[2]],
-            ["82%", c.stats[3]],
+            ["0", c.stats[0]],
+            ["🔥 0", c.stats[1]],
+            ["🏅 0", c.stats[2]],
+            ["0%", c.stats[3]],
           ].map(([value, label]) => (
             <GameCard key={label}>
               <p className="font-black text-[#6B5E8F]">{label}</p>
@@ -107,20 +107,10 @@ function ProfileRoute() {
         <section className="grid gap-5 xl:grid-cols-[1fr_1fr]">
           <GameCard>
             <h2 className="text-2xl font-black text-[#1E1B4B]">{c.history}</h2>
-            <ProgressBar value={68} />
-            <div className="mt-5 grid gap-3">
-              {c.lessons.map((item, index) => (
-                <div
-                  key={item}
-                  className="flex items-center justify-between rounded-2xl border-2 border-[#DDD6FE] bg-[#F5F3FF] p-4 font-black"
-                >
-                  <span>✅ {item}</span>
-                  <span className="rounded-full bg-[#EDE9FE] px-3 py-1 text-[#6D28D9]">
-                    +{(index + 1) * 20} XP
-                  </span>
-                </div>
-              ))}
-            </div>
+            <ProgressBar value={0} />
+            <p className="mt-5 rounded-2xl border-2 border-[#DDD6FE] bg-[#F5F3FF] p-4 font-black text-[#6B5E8F]">
+              Оқу тарихы бірінші диагностикадан кейін пайда болады.
+            </p>
           </GameCard>
 
           <GameCard>

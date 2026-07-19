@@ -407,10 +407,9 @@ function TutorSidebar({
 
       <GameCard className="bg-white/95">
         <h2 className="text-2xl font-black text-[#1E1B4B]">{copy.weak}</h2>
-        <div className="mt-4 space-y-4">
-          <WeakTopic title="Пайыздар" percent={28} />
-          <WeakTopic title="Сөйлемдегі байланыс" percent={35} />
-        </div>
+        <p className="mt-4 rounded-3xl bg-[#F5F3FF] p-4 font-black text-[#6B5E8F]">
+          Әлсіз тақырыптар диагностика және сабақ нәтижелерінен кейін анықталады.
+        </p>
       </GameCard>
 
       <GameCard className="bg-gradient-to-br from-[#1E1B4B] to-[#6D28D9] text-white">

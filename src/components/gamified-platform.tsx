@@ -4,7 +4,7 @@ import { AibiMark } from "@/components/aibi-mark";
 import { SiteFooter } from "@/components/site-footer";
 import { Lang, useLanguage } from "@/hooks/use-language";
 import { getAccountDashboard, logoutAccount } from "@/lib/api/account.functions";
-import type { Account } from "@/lib/account-store.server";
+import type { Account, DashboardAccount } from "@/lib/account-store.server";
 
 type NavItem = {
   label: string;
@@ -327,6 +327,7 @@ function PaywallCard() {
 export function GameTopBar({ compact = false }: { compact?: boolean }) {
   const { language, setLanguage } = useLanguage();
   const [authenticated, setAuthenticated] = useState(false);
+  const [dashboard, setDashboard] = useState<DashboardAccount | null>(null);
   const logoutLabel = language === "RU" ? "Выйти" : "Шығу";
 
   useEffect(() => {
@@ -334,6 +335,7 @@ export function GameTopBar({ compact = false }: { compact?: boolean }) {
     void getAccountDashboard().then((dashboard) => {
       if (mounted) {
         setAuthenticated(dashboard.authenticated);
+        setDashboard(dashboard);
       }
     });
 
@@ -353,11 +355,11 @@ export function GameTopBar({ compact = false }: { compact?: boolean }) {
         </Link>
         {!compact ? (
           <div className="hidden flex-1 items-center justify-center gap-2 md:flex">
-            <StatusPill icon="🔥" value="12 күн" />
+            <StatusPill icon="🔥" value={`${dashboard?.completedLessons ?? 0} күн`} />
             <StatusPill icon="❤️" value="5" />
-            <StatusPill icon="⭐" value="2450" />
-            <StatusPill icon="💎" value="1280" />
-            <StatusPill icon="🏆" value="16" />
+            <StatusPill icon="⭐" value="0" />
+            <StatusPill icon="💎" value="0" />
+            <StatusPill icon="🏆" value="1" />
           </div>
         ) : (
           <nav className="hidden flex-1 items-center justify-center gap-6 text-sm font-black text-[#4B3D73] md:flex">
@@ -514,30 +516,55 @@ function StatusPill({ icon, value }: { icon: string; value: string }) {
 export function RightWidgets() {
   const { language } = useLanguage();
   const c = labels[language];
+  const [dashboard, setDashboard] = useState<DashboardAccount | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    void getAccountDashboard().then((data) => {
+      if (mounted) {
+        setDashboard(data);
+      }
+    });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const completedLessons = dashboard?.completedLessons ?? 0;
+  const averageAccuracy = dashboard?.averageAccuracy ?? 0;
+  const weeklyValues = dashboard?.accuracyTrend.map((item) => item.accuracy) ?? [0, 0, 0, 0, 0, 0, 0];
+  const weakTopics = dashboard?.risks ?? [];
+
   return (
     <div className="sticky top-20 space-y-4">
       <GameCard className="bg-white/95">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-black uppercase tracking-widest text-[#8B5CF6]">{c.today}</p>
-            <h3 className="mt-1 text-2xl font-black">{c.lessons}</h3>
+            <h3 className="mt-1 text-2xl font-black">{completedLessons}/3 сабақ</h3>
           </div>
           <div className="grid h-14 w-14 place-items-center rounded-2xl bg-[#FACC15] text-2xl shadow-[0_5px_0_#CA8A04]">
             🎁
           </div>
         </div>
-        <ProgressBar value={66} />
-        <p className="mt-3 text-sm font-bold text-[#6B5E8F]">{c.reward}</p>
+        <ProgressBar value={Math.min(100, Math.round((completedLessons / 3) * 100))} />
+        <p className="mt-3 text-sm font-bold text-[#6B5E8F]">
+          {completedLessons > 0 ? c.reward : "Прогресс сабақтан кейін басталады."}
+        </p>
       </GameCard>
       <GameCard className="bg-white/95">
         <h3 className="text-lg font-black">{c.weak}</h3>
-        <WeakTopic name="Пайыздар" value={28} />
-        <WeakTopic name="Сөйлемдегі байланыс" value={35} />
+        {weakTopics.length > 0 ? (
+          weakTopics.map((topic) => <WeakTopic key={topic.title} name={topic.title} value={topic.accuracy} />)
+        ) : (
+          <p className="mt-3 text-sm font-bold text-[#6B5E8F]">Әлі анықталмады. Алдымен диагностика өт.</p>
+        )}
       </GameCard>
       <GameCard className="bg-white/95">
         <h3 className="text-lg font-black">{c.weekly}</h3>
         <div className="mt-4 flex h-28 items-end gap-2">
-          {[42, 58, 51, 70, 82, 68, 88].map((h, i) => (
+          {weeklyValues.map((h, i) => (
             <div className="flex flex-1 flex-col items-center gap-2" key={i}>
               <div
                 className="w-full rounded-t-xl bg-gradient-to-t from-[#6D28D9] to-[#C084FC]"
@@ -546,12 +573,12 @@ export function RightWidgets() {
             </div>
           ))}
         </div>
-        <p className="mt-3 text-3xl font-black text-[#6D28D9]">82%</p>
+        <p className="mt-3 text-3xl font-black text-[#6D28D9]">{averageAccuracy}%</p>
       </GameCard>
       <GameCard>
         <h3 className="text-lg font-black">{c.parent}</h3>
         <p className="mt-2 text-sm font-semibold text-[#6B5E8F]">
-          18 сабақ, 73% дұрыс жауап, белсенділік жоғары.
+          {completedLessons} сабақ, {averageAccuracy}% дұрыс жауап. Есеп прогресс жиналғаннан кейін толығады.
         </p>
       </GameCard>
       <GameCard className="bg-[#1E1B4B] text-white">

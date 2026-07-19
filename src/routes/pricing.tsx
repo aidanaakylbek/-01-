@@ -85,14 +85,20 @@ function Pricing() {
                   Әлсіз тақырыптар
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  {(account.diagnosticWeakTopics?.length ? account.diagnosticWeakTopics : ["Пайыздар", "Логика"]).map((topic) => (
-                    <span
-                      className="rounded-full bg-white px-4 py-2 font-black text-[#1E1B4B] shadow-[0_3px_0_rgba(109,40,217,0.12)]"
-                      key={topic}
-                    >
-                      {topic}
+                  {account.diagnosticWeakTopics?.length ? (
+                    account.diagnosticWeakTopics.map((topic) => (
+                      <span
+                        className="rounded-full bg-white px-4 py-2 font-black text-[#1E1B4B] shadow-[0_3px_0_rgba(109,40,217,0.12)]"
+                        key={topic}
+                      >
+                        {topic}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="rounded-full bg-white px-4 py-2 font-black text-[#6B5E8F] shadow-[0_3px_0_rgba(109,40,217,0.12)]">
+                      Диагностикадан кейін анықталады
                     </span>
-                  ))}
+                  )}
                 </div>
                 <p className="mt-4 font-semibold text-[#6B5E8F]">
                   AI-Sana кеңесі: әлсіз тақырыптарды күн сайын 20 минут қайталап, қате сұрақтарды қайта шешіңіз.

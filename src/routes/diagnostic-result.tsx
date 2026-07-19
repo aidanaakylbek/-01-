@@ -34,7 +34,8 @@ function DiagnosticResult() {
   const score = dashboard.account.diagnosticScore ?? dashboard.averageAccuracy;
   const weakTopics = dashboard.account.diagnosticWeakTopics?.length
     ? dashboard.account.diagnosticWeakTopics
-    : ["Пайыздар", "Логика", "Оқу сауаттылығы"];
+    : [];
+  const firstWeakTopic = weakTopics[0] ?? "диагностикадағы қате сұрақтар";
 
   const startPayment = async (planKey: PricingPlan["key"], paymentMethod: PaymentMethod) => {
     setPendingKey(`${planKey}:${paymentMethod}`);
@@ -59,7 +60,10 @@ function DiagnosticResult() {
         <GameCard className="bg-white/95">
           <div className="grid gap-4 md:grid-cols-3">
             <Summary label="Жалпы нәтиже" value={`${score}%`} />
-            <Summary label="Әлсіз тақырыптар" value={weakTopics.slice(0, 2).join(", ")} />
+            <Summary
+              label="Әлсіз тақырыптар"
+              value={weakTopics.length ? weakTopics.slice(0, 2).join(", ") : "Әлі анықталмады"}
+            />
             <Summary label="Келесі мақсат" value={`${Math.min(95, score + 10)}%`} />
           </div>
           <div className="mt-6 rounded-3xl bg-[#F5F3FF] p-5">
@@ -67,12 +71,12 @@ function DiagnosticResult() {
               AI-Sana кеңесі
             </p>
             <p className="mt-2 text-lg font-bold text-[#1E1B4B]">
-              Алдымен {weakTopics[0]} тақырыбын қайталап, кейін қысқа жаттығу және mini
+              Алдымен {firstWeakTopic} тақырыбын қайталап, кейін қысқа жаттығу және mini
               test орындаңыз. Толық тариф ашылғанда AI-Sana әр қатені қадамдап түсіндіреді.
             </p>
             <a
               className="mt-4 inline-flex rounded-2xl bg-[#6D28D9] px-5 py-3 font-black text-white shadow-[0_6px_0_#4C1D95] transition hover:-translate-y-0.5"
-              href={`/explain-solution?mode=diagnostic&topic=${encodeURIComponent(weakTopics[0])}&diagnosticResult=${encodeURIComponent(`${score}%`)}`}
+              href={`/explain-solution?mode=diagnostic&topic=${encodeURIComponent(firstWeakTopic)}&diagnosticResult=${encodeURIComponent(`${score}%`)}`}
             >
               AI-Sana-дан разбор сұрау
             </a>
