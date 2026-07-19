@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VocabularyRouteImport } from './routes/vocabulary'
 import { Route as VerifyParentTelegramRouteImport } from './routes/verify-parent-telegram'
 import { Route as TopicChallengeRouteImport } from './routes/topic-challenge'
 import { Route as SubjectsRouteImport } from './routes/subjects'
@@ -34,12 +35,14 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CareersRouteImport } from './routes/careers'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as VocabularyTopicSlugRouteImport } from './routes/vocabulary.$topicSlug'
 import { Route as SubjectsSubjectIdRouteImport } from './routes/subjects.$subjectId'
 import { Route as ApiWhatsappWeeklyReportRouteImport } from './routes/api/whatsapp-weekly-report'
 import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as ApiReviewRouteImport } from './routes/api/review'
 import { Route as ApiExplainSolutionRouteImport } from './routes/api/explain-solution'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as AdminVocabularyRouteImport } from './routes/admin.vocabulary'
 import { Route as AdminPaymentsRouteImport } from './routes/admin.payments'
 import { Route as LessonSubjectIdTopicIdRouteImport } from './routes/lesson.$subjectId.$topicId'
 import { Route as ApiTelegramWebhookInfoRouteImport } from './routes/api/telegram/webhook-info'
@@ -52,6 +55,11 @@ import { Route as ApiCronSendWeeklyReportsRouteImport } from './routes/api/cron/
 import { Route as ApiAiTutorChatRouteImport } from './routes/api/ai-tutor/chat'
 import { Route as ApiAccountRegisterRouteImport } from './routes/api/account/register'
 
+const VocabularyRoute = VocabularyRouteImport.update({
+  id: '/vocabulary',
+  path: '/vocabulary',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const VerifyParentTelegramRoute = VerifyParentTelegramRouteImport.update({
   id: '/verify-parent-telegram',
   path: '/verify-parent-telegram',
@@ -177,6 +185,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VocabularyTopicSlugRoute = VocabularyTopicSlugRouteImport.update({
+  id: '/$topicSlug',
+  path: '/$topicSlug',
+  getParentRoute: () => VocabularyRoute,
+} as any)
 const SubjectsSubjectIdRoute = SubjectsSubjectIdRouteImport.update({
   id: '/$subjectId',
   path: '/$subjectId',
@@ -205,6 +218,11 @@ const ApiExplainSolutionRoute = ApiExplainSolutionRouteImport.update({
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminVocabularyRoute = AdminVocabularyRouteImport.update({
+  id: '/admin/vocabulary',
+  path: '/admin/vocabulary',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminPaymentsRoute = AdminPaymentsRouteImport.update({
@@ -291,13 +309,16 @@ export interface FileRoutesByFullPath {
   '/subjects': typeof SubjectsRouteWithChildren
   '/topic-challenge': typeof TopicChallengeRoute
   '/verify-parent-telegram': typeof VerifyParentTelegramRoute
+  '/vocabulary': typeof VocabularyRouteWithChildren
   '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/vocabulary': typeof AdminVocabularyRoute
   '/api/chat': typeof ApiChatRoute
   '/api/explain-solution': typeof ApiExplainSolutionRoute
   '/api/review': typeof ApiReviewRoute
   '/api/tts': typeof ApiTtsRoute
   '/api/whatsapp-weekly-report': typeof ApiWhatsappWeeklyReportRoute
   '/subjects/$subjectId': typeof SubjectsSubjectIdRoute
+  '/vocabulary/$topicSlug': typeof VocabularyTopicSlugRoute
   '/api/account/register': typeof ApiAccountRegisterRoute
   '/api/ai-tutor/chat': typeof ApiAiTutorChatRoute
   '/api/cron/send-weekly-reports': typeof ApiCronSendWeeklyReportsRoute
@@ -335,13 +356,16 @@ export interface FileRoutesByTo {
   '/subjects': typeof SubjectsRouteWithChildren
   '/topic-challenge': typeof TopicChallengeRoute
   '/verify-parent-telegram': typeof VerifyParentTelegramRoute
+  '/vocabulary': typeof VocabularyRouteWithChildren
   '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/vocabulary': typeof AdminVocabularyRoute
   '/api/chat': typeof ApiChatRoute
   '/api/explain-solution': typeof ApiExplainSolutionRoute
   '/api/review': typeof ApiReviewRoute
   '/api/tts': typeof ApiTtsRoute
   '/api/whatsapp-weekly-report': typeof ApiWhatsappWeeklyReportRoute
   '/subjects/$subjectId': typeof SubjectsSubjectIdRoute
+  '/vocabulary/$topicSlug': typeof VocabularyTopicSlugRoute
   '/api/account/register': typeof ApiAccountRegisterRoute
   '/api/ai-tutor/chat': typeof ApiAiTutorChatRoute
   '/api/cron/send-weekly-reports': typeof ApiCronSendWeeklyReportsRoute
@@ -380,13 +404,16 @@ export interface FileRoutesById {
   '/subjects': typeof SubjectsRouteWithChildren
   '/topic-challenge': typeof TopicChallengeRoute
   '/verify-parent-telegram': typeof VerifyParentTelegramRoute
+  '/vocabulary': typeof VocabularyRouteWithChildren
   '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/vocabulary': typeof AdminVocabularyRoute
   '/api/chat': typeof ApiChatRoute
   '/api/explain-solution': typeof ApiExplainSolutionRoute
   '/api/review': typeof ApiReviewRoute
   '/api/tts': typeof ApiTtsRoute
   '/api/whatsapp-weekly-report': typeof ApiWhatsappWeeklyReportRoute
   '/subjects/$subjectId': typeof SubjectsSubjectIdRoute
+  '/vocabulary/$topicSlug': typeof VocabularyTopicSlugRoute
   '/api/account/register': typeof ApiAccountRegisterRoute
   '/api/ai-tutor/chat': typeof ApiAiTutorChatRoute
   '/api/cron/send-weekly-reports': typeof ApiCronSendWeeklyReportsRoute
@@ -426,13 +453,16 @@ export interface FileRouteTypes {
     | '/subjects'
     | '/topic-challenge'
     | '/verify-parent-telegram'
+    | '/vocabulary'
     | '/admin/payments'
+    | '/admin/vocabulary'
     | '/api/chat'
     | '/api/explain-solution'
     | '/api/review'
     | '/api/tts'
     | '/api/whatsapp-weekly-report'
     | '/subjects/$subjectId'
+    | '/vocabulary/$topicSlug'
     | '/api/account/register'
     | '/api/ai-tutor/chat'
     | '/api/cron/send-weekly-reports'
@@ -470,13 +500,16 @@ export interface FileRouteTypes {
     | '/subjects'
     | '/topic-challenge'
     | '/verify-parent-telegram'
+    | '/vocabulary'
     | '/admin/payments'
+    | '/admin/vocabulary'
     | '/api/chat'
     | '/api/explain-solution'
     | '/api/review'
     | '/api/tts'
     | '/api/whatsapp-weekly-report'
     | '/subjects/$subjectId'
+    | '/vocabulary/$topicSlug'
     | '/api/account/register'
     | '/api/ai-tutor/chat'
     | '/api/cron/send-weekly-reports'
@@ -514,13 +547,16 @@ export interface FileRouteTypes {
     | '/subjects'
     | '/topic-challenge'
     | '/verify-parent-telegram'
+    | '/vocabulary'
     | '/admin/payments'
+    | '/admin/vocabulary'
     | '/api/chat'
     | '/api/explain-solution'
     | '/api/review'
     | '/api/tts'
     | '/api/whatsapp-weekly-report'
     | '/subjects/$subjectId'
+    | '/vocabulary/$topicSlug'
     | '/api/account/register'
     | '/api/ai-tutor/chat'
     | '/api/cron/send-weekly-reports'
@@ -559,7 +595,9 @@ export interface RootRouteChildren {
   SubjectsRoute: typeof SubjectsRouteWithChildren
   TopicChallengeRoute: typeof TopicChallengeRoute
   VerifyParentTelegramRoute: typeof VerifyParentTelegramRoute
+  VocabularyRoute: typeof VocabularyRouteWithChildren
   AdminPaymentsRoute: typeof AdminPaymentsRoute
+  AdminVocabularyRoute: typeof AdminVocabularyRoute
   ApiChatRoute: typeof ApiChatRoute
   ApiExplainSolutionRoute: typeof ApiExplainSolutionRoute
   ApiReviewRoute: typeof ApiReviewRoute
@@ -579,6 +617,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/vocabulary': {
+      id: '/vocabulary'
+      path: '/vocabulary'
+      fullPath: '/vocabulary'
+      preLoaderRoute: typeof VocabularyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/verify-parent-telegram': {
       id: '/verify-parent-telegram'
       path: '/verify-parent-telegram'
@@ -754,6 +799,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/vocabulary/$topicSlug': {
+      id: '/vocabulary/$topicSlug'
+      path: '/$topicSlug'
+      fullPath: '/vocabulary/$topicSlug'
+      preLoaderRoute: typeof VocabularyTopicSlugRouteImport
+      parentRoute: typeof VocabularyRoute
+    }
     '/subjects/$subjectId': {
       id: '/subjects/$subjectId'
       path: '/$subjectId'
@@ -794,6 +846,13 @@ declare module '@tanstack/react-router' {
       path: '/api/chat'
       fullPath: '/api/chat'
       preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/vocabulary': {
+      id: '/admin/vocabulary'
+      path: '/admin/vocabulary'
+      fullPath: '/admin/vocabulary'
+      preLoaderRoute: typeof AdminVocabularyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/payments': {
@@ -888,6 +947,18 @@ const SubjectsRouteWithChildren = SubjectsRoute._addFileChildren(
   SubjectsRouteChildren,
 )
 
+interface VocabularyRouteChildren {
+  VocabularyTopicSlugRoute: typeof VocabularyTopicSlugRoute
+}
+
+const VocabularyRouteChildren: VocabularyRouteChildren = {
+  VocabularyTopicSlugRoute: VocabularyTopicSlugRoute,
+}
+
+const VocabularyRouteWithChildren = VocabularyRoute._addFileChildren(
+  VocabularyRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
@@ -914,7 +985,9 @@ const rootRouteChildren: RootRouteChildren = {
   SubjectsRoute: SubjectsRouteWithChildren,
   TopicChallengeRoute: TopicChallengeRoute,
   VerifyParentTelegramRoute: VerifyParentTelegramRoute,
+  VocabularyRoute: VocabularyRouteWithChildren,
   AdminPaymentsRoute: AdminPaymentsRoute,
+  AdminVocabularyRoute: AdminVocabularyRoute,
   ApiChatRoute: ApiChatRoute,
   ApiExplainSolutionRoute: ApiExplainSolutionRoute,
   ApiReviewRoute: ApiReviewRoute,

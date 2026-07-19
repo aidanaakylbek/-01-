@@ -22,6 +22,7 @@ const labels = {
     profile: "Профиль",
     leaderboard: "Рейтинг",
     shop: "Дүкен",
+    vocabulary: "Сөздік",
     today: "Бүгінгі мақсат",
     lessons: "3 сабақ",
     weak: "Әлсіз тақырыптар",
@@ -41,6 +42,7 @@ const labels = {
     profile: "Профиль",
     leaderboard: "Лига",
     shop: "Магазин",
+    vocabulary: "Словарь",
     today: "Цель дня",
     lessons: "3 урока",
     weak: "Слабые темы",
@@ -60,6 +62,7 @@ const labels = {
     profile: "Profile",
     leaderboard: "Leaderboard",
     shop: "Shop",
+    vocabulary: "Vocabulary",
     today: "Daily Goal",
     lessons: "3 lessons",
     weak: "Weak Topics",
@@ -210,6 +213,7 @@ function isSimpleShellRoute(pathname: string) {
     "/diagnostic-result",
     "/pricing",
     "/payment",
+    "/vocabulary",
     "/about",
     "/careers",
     "/privacy",
@@ -295,6 +299,7 @@ function isPaidRoute(pathname: string) {
     pathname.startsWith("/progress") ||
     pathname.startsWith("/reports") ||
     pathname.startsWith("/shop") ||
+    pathname.startsWith("/vocabulary") ||
     pathname.startsWith("/topic-challenge") ||
     pathname.startsWith("/exam") ||
     pathname.startsWith("/explain-solution")
@@ -429,6 +434,7 @@ function GameSidebar() {
     { label: c.path, icon: "route", to: "/home" },
     { label: c.practice, icon: "exercise", to: "/plan" },
     { label: c.tutor, icon: "smart_toy", to: "/explain-solution" },
+    { label: c.vocabulary, icon: "auto_stories", to: "/vocabulary" },
     { label: c.progress, icon: "monitoring", to: "/progress" },
     { label: c.profile, icon: "person", to: "/profile" },
     { label: c.leaderboard, icon: "leaderboard", to: "/leaderboard" },
@@ -478,12 +484,13 @@ function MobileGameNav() {
     { label: c.home, icon: "home", to: "/" },
     { label: c.practice, icon: "exercise", to: "/plan" },
     { label: c.tutor, icon: "smart_toy", to: "/explain-solution" },
+    { label: c.vocabulary, icon: "auto_stories", to: "/vocabulary" },
     { label: c.progress, icon: "monitoring", to: "/progress" },
     { label: c.shop, icon: "storefront", to: "/shop" },
   ];
   return (
     <nav className="fixed inset-x-3 bottom-3 z-50 rounded-[26px] border-2 border-[#DDD6FE] bg-white/95 p-2 shadow-[0_8px_0_rgba(109,40,217,0.18)] backdrop-blur md:hidden">
-      <div className="grid grid-cols-5 gap-1">
+      <div className="grid grid-cols-6 gap-1">
         {items.map((item) => {
           const active = location.pathname === item.to;
           return (
