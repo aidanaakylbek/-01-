@@ -70,6 +70,12 @@ function DiagnosticResult() {
               Алдымен {weakTopics[0]} тақырыбын қайталап, кейін қысқа жаттығу және mini
               test орындаңыз. Толық тариф ашылғанда AI-Sana әр қатені қадамдап түсіндіреді.
             </p>
+            <a
+              className="mt-4 inline-flex rounded-2xl bg-[#6D28D9] px-5 py-3 font-black text-white shadow-[0_6px_0_#4C1D95] transition hover:-translate-y-0.5"
+              href={`/explain-solution?mode=diagnostic&topic=${encodeURIComponent(weakTopics[0])}&diagnosticResult=${encodeURIComponent(`${score}%`)}`}
+            >
+              AI-Sana-дан разбор сұрау
+            </a>
           </div>
         </GameCard>
 

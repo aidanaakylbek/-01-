@@ -49,6 +49,7 @@ import { Route as ApiTelegramSetWebhookRouteImport } from './routes/api/telegram
 import { Route as ApiParentSendTestMessageRouteImport } from './routes/api/parent/send-test-message'
 import { Route as ApiParentCreateInviteRouteImport } from './routes/api/parent/create-invite'
 import { Route as ApiCronSendWeeklyReportsRouteImport } from './routes/api/cron/send-weekly-reports'
+import { Route as ApiAiTutorChatRouteImport } from './routes/api/ai-tutor/chat'
 import { Route as ApiAccountRegisterRouteImport } from './routes/api/account/register'
 
 const VerifyParentTelegramRoute = VerifyParentTelegramRouteImport.update({
@@ -253,6 +254,11 @@ const ApiCronSendWeeklyReportsRoute =
     path: '/api/cron/send-weekly-reports',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiAiTutorChatRoute = ApiAiTutorChatRouteImport.update({
+  id: '/api/ai-tutor/chat',
+  path: '/api/ai-tutor/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAccountRegisterRoute = ApiAccountRegisterRouteImport.update({
   id: '/api/account/register',
   path: '/api/account/register',
@@ -293,6 +299,7 @@ export interface FileRoutesByFullPath {
   '/api/whatsapp-weekly-report': typeof ApiWhatsappWeeklyReportRoute
   '/subjects/$subjectId': typeof SubjectsSubjectIdRoute
   '/api/account/register': typeof ApiAccountRegisterRoute
+  '/api/ai-tutor/chat': typeof ApiAiTutorChatRoute
   '/api/cron/send-weekly-reports': typeof ApiCronSendWeeklyReportsRoute
   '/api/parent/create-invite': typeof ApiParentCreateInviteRoute
   '/api/parent/send-test-message': typeof ApiParentSendTestMessageRoute
@@ -336,6 +343,7 @@ export interface FileRoutesByTo {
   '/api/whatsapp-weekly-report': typeof ApiWhatsappWeeklyReportRoute
   '/subjects/$subjectId': typeof SubjectsSubjectIdRoute
   '/api/account/register': typeof ApiAccountRegisterRoute
+  '/api/ai-tutor/chat': typeof ApiAiTutorChatRoute
   '/api/cron/send-weekly-reports': typeof ApiCronSendWeeklyReportsRoute
   '/api/parent/create-invite': typeof ApiParentCreateInviteRoute
   '/api/parent/send-test-message': typeof ApiParentSendTestMessageRoute
@@ -380,6 +388,7 @@ export interface FileRoutesById {
   '/api/whatsapp-weekly-report': typeof ApiWhatsappWeeklyReportRoute
   '/subjects/$subjectId': typeof SubjectsSubjectIdRoute
   '/api/account/register': typeof ApiAccountRegisterRoute
+  '/api/ai-tutor/chat': typeof ApiAiTutorChatRoute
   '/api/cron/send-weekly-reports': typeof ApiCronSendWeeklyReportsRoute
   '/api/parent/create-invite': typeof ApiParentCreateInviteRoute
   '/api/parent/send-test-message': typeof ApiParentSendTestMessageRoute
@@ -425,6 +434,7 @@ export interface FileRouteTypes {
     | '/api/whatsapp-weekly-report'
     | '/subjects/$subjectId'
     | '/api/account/register'
+    | '/api/ai-tutor/chat'
     | '/api/cron/send-weekly-reports'
     | '/api/parent/create-invite'
     | '/api/parent/send-test-message'
@@ -468,6 +478,7 @@ export interface FileRouteTypes {
     | '/api/whatsapp-weekly-report'
     | '/subjects/$subjectId'
     | '/api/account/register'
+    | '/api/ai-tutor/chat'
     | '/api/cron/send-weekly-reports'
     | '/api/parent/create-invite'
     | '/api/parent/send-test-message'
@@ -511,6 +522,7 @@ export interface FileRouteTypes {
     | '/api/whatsapp-weekly-report'
     | '/subjects/$subjectId'
     | '/api/account/register'
+    | '/api/ai-tutor/chat'
     | '/api/cron/send-weekly-reports'
     | '/api/parent/create-invite'
     | '/api/parent/send-test-message'
@@ -554,6 +566,7 @@ export interface RootRouteChildren {
   ApiTtsRoute: typeof ApiTtsRoute
   ApiWhatsappWeeklyReportRoute: typeof ApiWhatsappWeeklyReportRoute
   ApiAccountRegisterRoute: typeof ApiAccountRegisterRoute
+  ApiAiTutorChatRoute: typeof ApiAiTutorChatRoute
   ApiCronSendWeeklyReportsRoute: typeof ApiCronSendWeeklyReportsRoute
   ApiParentCreateInviteRoute: typeof ApiParentCreateInviteRoute
   ApiParentSendTestMessageRoute: typeof ApiParentSendTestMessageRoute
@@ -846,6 +859,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCronSendWeeklyReportsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/ai-tutor/chat': {
+      id: '/api/ai-tutor/chat'
+      path: '/api/ai-tutor/chat'
+      fullPath: '/api/ai-tutor/chat'
+      preLoaderRoute: typeof ApiAiTutorChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/account/register': {
       id: '/api/account/register'
       path: '/api/account/register'
@@ -901,6 +921,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiTtsRoute: ApiTtsRoute,
   ApiWhatsappWeeklyReportRoute: ApiWhatsappWeeklyReportRoute,
   ApiAccountRegisterRoute: ApiAccountRegisterRoute,
+  ApiAiTutorChatRoute: ApiAiTutorChatRoute,
   ApiCronSendWeeklyReportsRoute: ApiCronSendWeeklyReportsRoute,
   ApiParentCreateInviteRoute: ApiParentCreateInviteRoute,
   ApiParentSendTestMessageRoute: ApiParentSendTestMessageRoute,

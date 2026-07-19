@@ -43,6 +43,7 @@ function TopicLessonPage() {
           submit: "Проверить",
           result: "Результат",
           correct: "правильно",
+          askAi: "Спросить AI-Sana",
         }
       : language === "EN"
         ? {
@@ -53,6 +54,7 @@ function TopicLessonPage() {
             submit: "Check",
             result: "Result",
             correct: "correct",
+            askAi: "Ask AI-Sana",
           }
         : {
             back: "Пәнге оралу",
@@ -62,6 +64,7 @@ function TopicLessonPage() {
             submit: "Тексеру",
             result: "Нәтиже",
             correct: "дұрыс",
+            askAi: "AI-Sana-дан сұра",
           };
 
   return (
@@ -174,9 +177,17 @@ function TopicLessonPage() {
                       })}
                     </div>
                     {submitted ? (
-                      <p className="mt-3 text-sm font-semibold text-[#6B5E8F]">
-                        AI-Sana: {question.explanation[language]}
-                      </p>
+                      <div className="mt-3 space-y-3">
+                        <p className="text-sm font-semibold text-[#6B5E8F]">
+                          AI-Sana: {question.explanation[language]}
+                        </p>
+                        <a
+                          className="inline-flex rounded-2xl border-2 border-[#DDD6FE] px-4 py-3 text-sm font-black text-[#6D28D9] transition hover:-translate-y-0.5"
+                          href={`/explain-solution?mode=lesson&topic=${encodeURIComponent(topic.title[language])}&question=${encodeURIComponent(question.question[language])}`}
+                        >
+                          {c.askAi}
+                        </a>
+                      </div>
                     ) : null}
                   </div>
                 ))}

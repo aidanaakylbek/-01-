@@ -138,6 +138,18 @@ export type SolutionExplanationLog = {
   feedback: string;
 };
 
+export type AITutorMessage = {
+  id: string;
+  userId: string;
+  lessonId?: string;
+  questionId?: string;
+  diagnosticResultId?: string;
+  role: "user" | "assistant";
+  message: string;
+  mentorStyle: MentorStyle;
+  createdAt: string;
+};
+
 export type DashboardTask = {
   id: string;
   icon: string;
@@ -188,9 +200,11 @@ export type DashboardAccount = {
   examAttempts: ExamAttempt[];
   weakTopicProgress: WeakTopicProgress[];
   solutionExplanationLogs: SolutionExplanationLog[];
+  aiTutorMessages: AITutorMessage[];
 };
 
 export type StoredAccount = Account & {
+  aiTutorMessages?: AITutorMessage[];
   examAttempts?: ExamAttempt[];
   password: string;
   solutionExplanationLogs?: SolutionExplanationLog[];
@@ -503,6 +517,7 @@ export async function getDashboardAccount(): Promise<DashboardAccount> {
     examAttempts: account.examAttempts ?? [],
     weakTopicProgress: account.weakTopicProgress ?? [],
     solutionExplanationLogs: account.solutionExplanationLogs ?? [],
+    aiTutorMessages: account.aiTutorMessages ?? [],
   };
 }
 
@@ -874,6 +889,36 @@ export async function saveSolutionExplanationLog(log: Omit<SolutionExplanationLo
   account.solutionExplanationLogs = [saved, ...(account.solutionExplanationLogs ?? [])].slice(0, 30);
   accounts.set(account.email, account);
   return saved;
+}
+
+export async function saveAITutorMessages(messages: Array<Omit<AITutorMessage, "id" | "createdAt" | "userId">>) {
+  const account = await getActiveStoredAccount();
+
+  if (!account) {
+    throw new Error("AUTH_REQUIRED");
+  }
+
+  const now = Date.now();
+  const saved = messages.map((message, index) => ({
+    ...message,
+    id: `ai-tutor-${now}-${index}`,
+    userId: account.id,
+    createdAt: new Date(now + index).toISOString(),
+  }));
+
+  account.aiTutorMessages = [...(account.aiTutorMessages ?? []), ...saved].slice(-80);
+  accounts.set(account.email, account);
+  return saved;
+}
+
+export async function listAITutorMessages(limit = 30) {
+  const account = await getActiveStoredAccount();
+
+  if (!account) {
+    return [];
+  }
+
+  return (account.aiTutorMessages ?? []).slice(-limit);
 }
 
 export function createParentWhatsAppCode(phone: string) {
