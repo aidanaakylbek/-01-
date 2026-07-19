@@ -31,28 +31,6 @@ type TutorContext = {
   weakTopic: string;
 };
 
-const quickActions = [
-  "Неге қате?",
-  "Қарапайым тілмен түсіндір",
-  "Ұқсас сұрақ бер",
-  "Формуланы көрсет",
-  "Тағы мысал",
-  "Қайта түсіндір",
-  "Көмек бер",
-  "Hint",
-];
-
-const quickActionPrompts: Record<string, string> = {
-  "Hint": "Маған бір қысқа hint бер.",
-  "Көмек бер": "Осы тақырып бойынша көмектес.",
-  "Қайта түсіндір": "Осы тақырыпты басқа жолмен қайта түсіндір.",
-  "Қарапайым тілмен түсіндір": "Осы тақырыпты өте қарапайым тілмен түсіндір.",
-  "Неге қате?": "Осы тақырыпта оқушылар жиі жіберетін қатені түсіндір.",
-  "Тағы мысал": "Осы тақырып бойынша тағы бір мысал келтір.",
-  "Ұқсас сұрақ бер": "Осы тақырып бойынша ұқсас бір сұрақ бер.",
-  "Формуланы көрсет": "Осы тақырыпқа керек формуланы оқулықтағыдай түсінікті көрсет.",
-};
-
 const mentorExamples: Record<MentorStyle, string> = {
   soft: "Ештеңе етпейді, бірге жайлап түсініп алайық.",
   strict: "Қатені нақты табамыз да, келесі қадамды жасаймыз.",
@@ -78,9 +56,9 @@ function AITutorPage() {
   const [tutorContext, setTutorContext] = useState<TutorContext>({
     examType: "NIS / BIL / RFMS",
     mode: "lesson",
-    previousMistakes: ["Пайызды бөлшекке ауыстыру", "Сұрақты асығыс оқу"],
-    topic: "Пайыздар және логика",
-    weakTopic: "Пайыздар",
+    previousMistakes: [],
+    topic: "",
+    weakTopic: "",
   });
   const chatEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -325,19 +303,6 @@ function AITutorPage() {
             </div>
 
             <div className="border-t-2 border-[#DDD6FE] bg-white p-4">
-              <div className="mb-3 flex flex-wrap gap-2">
-                {quickActions.map((action) => (
-                  <button
-                    key={action}
-                    className="rounded-full border-2 border-[#DDD6FE] bg-[#F5F3FF] px-3 py-2 text-sm font-black text-[#6D28D9] transition hover:-translate-y-0.5 hover:bg-[#EDE9FE]"
-                    disabled={loading}
-                    type="button"
-                    onClick={() => void sendMessage(`${tutorContext.topic}: ${quickActionPrompts[action] ?? action}`)}
-                  >
-                    {action}
-                  </button>
-                ))}
-              </div>
               <form className="flex gap-2" onSubmit={handleSubmit}>
                 <input
                   className="min-h-14 flex-1 rounded-2xl border-2 border-[#DDD6FE] bg-[#F5F3FF] px-4 font-semibold text-[#1E1B4B] outline-none transition focus:border-[#8B5CF6]"
@@ -433,7 +398,7 @@ function TutorSidebar({
     <div className="space-y-5">
       <GameCard className="bg-white/95">
         <p className="text-sm font-black uppercase tracking-[0.22em] text-[#8B5CF6]">{copy.currentTopic}</p>
-        <h2 className="mt-2 text-2xl font-black text-[#1E1B4B]">{topic}</h2>
+        <h2 className="mt-2 text-2xl font-black text-[#1E1B4B]">{topic || "Сұрақ немесе тақырып таңда"}</h2>
         <div className="mt-4 rounded-3xl bg-[#F5F3FF] p-4">
           <p className="font-black text-[#6D28D9]">AI-Sana</p>
           <p className="mt-1 font-semibold text-[#6B5E8F]">Қатеңді қадамдап түсіндіреді, формуланы көрсетеді және ұқсас сұрақ береді.</p>
