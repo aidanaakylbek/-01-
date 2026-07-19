@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { AibiMark } from "@/components/aibi-mark";
+import { ReadableMathText } from "@/components/readable-math-text";
 import { useLanguage } from "@/hooks/use-language";
 
 type ChatMessage = {
@@ -239,7 +240,9 @@ export function AIAssistant() {
                         ))}
                       </div>
                     ) : null}
-                    <p className="whitespace-pre-wrap">{msg.content}</p>
+                    <p>
+                      <ReadableMathText text={msg.content} />
+                    </p>
                     {msg.role === "assistant" && (
                       <button
                         aria-label="Read AI-Sana answer aloud"

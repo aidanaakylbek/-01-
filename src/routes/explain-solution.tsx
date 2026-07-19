@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import aiSanaHero from "@/assets/ai-sana-hero.jpg";
 import { AibiMark } from "@/components/aibi-mark";
 import { GameCard, GameLayout, ProgressBar } from "@/components/gamified-platform";
+import { ReadableMathText } from "@/components/readable-math-text";
 import { useLanguage } from "@/hooks/use-language";
 import { getAccountDashboard, updateMentorStyle } from "@/lib/api/account.functions";
 import { mentorStyles } from "@/lib/ai-mentor";
@@ -397,7 +398,7 @@ function ChatBubble({ message }: { message: ChatMessage }) {
             : "border-[#DDD6FE] bg-[#EDE9FE] text-[#1E1B4B]"
         }`}
       >
-        {message.content}
+        <ReadableMathText text={message.content} />
       </div>
     </div>
   );
