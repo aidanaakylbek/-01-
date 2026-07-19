@@ -74,6 +74,16 @@ create index if not exists payment_requests_user_id_idx on public.payment_reques
 create unique index if not exists users_email_unique_idx on public.users(email);
 create unique index if not exists users_email_lower_unique_idx on public.users(lower(email));
 
+alter table public.users
+  add column if not exists mentor_style text not null default 'friendly';
+
+alter table public.users
+  drop constraint if exists users_mentor_style_check;
+
+alter table public.users
+  add constraint users_mentor_style_check
+  check (mentor_style in ('soft', 'strict', 'friendly', 'olympiad'));
+
 alter table public.parents add column if not exists phone_normalized text;
 
 update public.parents

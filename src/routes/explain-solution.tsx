@@ -236,12 +236,13 @@ function AITutorPage() {
 
   const selectMentorStyle = async (style: MentorStyle) => {
     setMentorStyle(style);
+    setError("");
 
     try {
       const updated = await updateMentorStyle({ data: { mentorStyle: style } });
       setAccount(updated);
-    } catch {
-      setError("Ментор стилін сақтау мүмкін болмады. Біраздан кейін қайталап көріңіз.");
+    } catch (error) {
+      console.error("Mentor style save failed", error);
     }
   };
 
