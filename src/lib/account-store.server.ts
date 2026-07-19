@@ -234,7 +234,42 @@ const demoAccount: StoredAccount = {
   password: "demo123",
 };
 
-const accounts = new Map<string, StoredAccount>([[demoAccount.email, demoAccount]]);
+const ownerAdminEmail = normalizeEmail(process.env.ADMIN_EMAIL ?? "admin@ai-sana.kz");
+const ownerAdminPassword = process.env.ADMIN_PASSWORD ?? "AiSanaAdmin2026!";
+
+const ownerAdminAccount: StoredAccount = {
+  id: "owner-admin",
+  name: process.env.ADMIN_NAME ?? "AI-Sana Admin",
+  email: ownerAdminEmail,
+  grade: "admin",
+  initials: "AA",
+  role: "admin",
+  parentName: "AI-Sana",
+  parentPhone: "+77000000000",
+  parentPhoneVerified: true,
+  parentTelegramChatId: undefined,
+  parentTelegramConnected: true,
+  parentTelegramVerifiedAt: new Date("2026-01-01T00:00:00.000Z").toISOString(),
+  parentInviteCode: "owner-admin",
+  parentLastReportSentAt: undefined,
+  parentWhatsApp: "+77000000000",
+  parentWhatsAppVerified: true,
+  telegramParentVerified: true,
+  subscriptionStatus: "active",
+  subscriptionPlan: "yearly",
+  subscriptionStartedAt: new Date("2026-01-01T00:00:00.000Z").toISOString(),
+  subscriptionExpiresAt: new Date("2099-12-31T23:59:59.999Z").toISOString(),
+  diagnosticCompleted: true,
+  diagnosticScore: 100,
+  diagnosticWeakTopics: [],
+  mentorStyle: "friendly",
+  password: ownerAdminPassword,
+};
+
+const accounts = new Map<string, StoredAccount>([
+  [demoAccount.email, demoAccount],
+  [ownerAdminAccount.email, ownerAdminAccount],
+]);
 const paymentRequests = new Map<string, PaymentRequest>();
 const parentWhatsAppVerifications = new Map<string, ParentWhatsAppVerification>();
 let activeEmail: string | null = null;
@@ -301,6 +336,10 @@ async function getActiveStoredAccount() {
 
   if (!email) {
     return null;
+  }
+
+  if (email === ownerAdminEmail) {
+    return ownerAdminAccount;
   }
 
   if (isSupabaseConfigured()) {
@@ -878,6 +917,11 @@ function normalizePhone(phone: string) {
 export async function loginAccount(input: { email: string; password: string; remember?: boolean }) {
   const email = input.email.trim().toLowerCase();
 
+  if (email === ownerAdminEmail && input.password === ownerAdminPassword) {
+    setSessionEmail(ownerAdminAccount.email, Boolean(input.remember));
+    return toPublicAccount(ownerAdminAccount);
+  }
+
   if (isSupabaseConfigured()) {
     const account = await findAccountByEmail(email);
 
@@ -914,6 +958,10 @@ export function canEnterPlatform(account: Account | StoredAccount | null) {
     return false;
   }
 
+  if (account.role === "admin") {
+    return true;
+  }
+
   return Boolean(
     account.telegramParentVerified ||
       (account.parentTelegramConnected && account.parentPhoneVerified),
@@ -923,6 +971,10 @@ export function canEnterPlatform(account: Account | StoredAccount | null) {
 export function hasActiveSubscription(account: Account | StoredAccount | null) {
   if (!account) {
     return false;
+  }
+
+  if (account.role === "admin") {
+    return true;
   }
 
   if (account.subscriptionStatus !== "active") {
@@ -1141,6 +1193,10 @@ export async function updatePaymentRequest(input: {
 }
 
 export function getPostLoginRedirect(account: Account | StoredAccount) {
+  if (account.role === "admin") {
+    return "/home";
+  }
+
   if (!canEnterPlatform(account)) {
     return "/verify-parent-telegram";
   }
