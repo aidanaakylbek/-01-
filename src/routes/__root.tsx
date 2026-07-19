@@ -191,6 +191,10 @@ function PaidAssistantGate() {
 }
 
 function hasActiveSubscription(account: Account) {
+  if (account.role === "admin") {
+    return true;
+  }
+
   if (account.subscriptionStatus !== "active") {
     return false;
   }

@@ -82,6 +82,7 @@ export function GameLayout({
   const location = useLocation();
   const access = useAccessGate();
   const simpleShell = isSimpleShellRoute(location.pathname);
+  const useSimpleShell = simpleShell && !access.fullGameShell;
 
   if (access.redirecting) {
     return (
@@ -94,7 +95,7 @@ export function GameLayout({
     );
   }
 
-  if (simpleShell) {
+  if (useSimpleShell) {
     return (
       <div className="min-h-screen bg-[#F5F3FF] text-[#1E1B4B]">
         <GameTopBar compact />
@@ -184,6 +185,15 @@ function useAccessGate() {
   }, [account, authenticated, loadingAccess, pathname]);
 
   return {
+    account,
+    authenticated,
+    fullGameShell: Boolean(
+      authenticated &&
+        account &&
+        isTelegramVerified(account) &&
+        hasActiveSubscription(account) &&
+        pathname === "/",
+    ),
     redirecting,
     paywalled: Boolean(authenticated && account && isTelegramVerified(account) && isPaidRoute(pathname) && !hasActiveSubscription(account)),
   };
@@ -207,10 +217,18 @@ function isSimpleShellRoute(pathname: string) {
 }
 
 function isTelegramVerified(account: Account) {
+  if (account.role === "admin") {
+    return true;
+  }
+
   return account.telegramParentVerified || (account.parentTelegramConnected && account.parentPhoneVerified);
 }
 
 function hasActiveSubscription(account: Account) {
+  if (account.role === "admin") {
+    return true;
+  }
+
   if (account.subscriptionStatus !== "active") {
     return false;
   }
