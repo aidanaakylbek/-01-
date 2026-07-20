@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { GameCard, GameLayout, ProgressBar } from "@/components/gamified-platform";
 import {
   VocabularyEmptyState,
+  VocabularyAIPanel,
   VocabularyFlashcard,
   VocabularyTabs,
   VocabularyWordList,
@@ -13,10 +14,11 @@ import {
 import { useLanguage } from "@/hooks/use-language";
 import {
   getVocabularyTopicFn,
+  getVocabularyAIResponseFn,
   saveVocabularyProgressFn,
   toggleVocabularyFavoriteFn,
 } from "@/lib/api/vocabulary.functions";
-import type { VocabularyLanguage, VocabularyPartOfSpeech } from "@/lib/vocabulary.server";
+import type { VocabularyAIResponse, VocabularyLanguage, VocabularyPartOfSpeech } from "@/lib/vocabulary.server";
 
 export const Route = createFileRoute("/vocabulary/$topicSlug")({
   loader: async ({ params }) => {
@@ -43,6 +45,8 @@ function VocabularyTopicPage() {
   const [mode, setMode] = useState<"flashcards" | "list">("flashcards");
   const [query, setQuery] = useState("");
   const [saving, setSaving] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiResponse, setAiResponse] = useState<VocabularyAIResponse | undefined>();
 
   const title = lang === "RU" ? topic.title_ru : lang === "EN" ? topic.title_en : topic.title_kk;
   const description = lang === "RU" ? topic.description_ru : lang === "EN" ? topic.description_en : topic.description_kk;
@@ -86,6 +90,25 @@ function VocabularyTopicPage() {
   const favorite = async (wordId: string) => {
     await toggleVocabularyFavoriteFn({ data: { wordId } });
     await reload();
+  };
+
+  const askAI = async (message: string) => {
+    setAiLoading(true);
+    try {
+      setAiResponse(
+        await getVocabularyAIResponseFn({
+          data: {
+            message,
+            topicSlug: topic.slug,
+            wordId: activeWord?.id,
+            partOfSpeech: activePart,
+            mentorStyle: "friendly",
+          },
+        }),
+      );
+    } finally {
+      setAiLoading(false);
+    }
   };
 
   return (
@@ -134,6 +157,25 @@ function VocabularyTopicPage() {
               className="rounded-2xl border-2 border-[#DDD6FE] bg-[#F5F3FF] px-4 py-3 font-bold outline-none focus:border-[#8B5CF6]"
             />
           </div>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <Link
+              to="/vocabulary/$topicSlug/test/$partOfSpeech"
+              params={{ topicSlug: topic.slug, partOfSpeech: activePart }}
+              className="rounded-2xl bg-[#6D28D9] px-5 py-3 font-black text-white shadow-[0_5px_0_#4C1D95]"
+            >
+              {partLabel(activePart, lang)} тесті
+            </Link>
+            <Link
+              to="/vocabulary/$topicSlug/final-test"
+              params={{ topicSlug: topic.slug }}
+              className="rounded-2xl bg-[#FACC15] px-5 py-3 font-black text-[#1E1B4B] shadow-[0_5px_0_#D97706]"
+            >
+              Mixed Topic Test
+            </Link>
+            <Link to="/vocabulary/games" className="rounded-2xl border-2 border-[#DDD6FE] px-5 py-3 font-black text-[#6D28D9]">
+              Ойындар
+            </Link>
+          </div>
         </GameCard>
 
         {mode === "flashcards" ? (
@@ -156,7 +198,18 @@ function VocabularyTopicPage() {
         ) : (
           <VocabularyEmptyState text={c.noSearch} icon="search_off" />
         )}
+
+        <VocabularyAIPanel response={aiResponse} loading={aiLoading} onAsk={(message) => void askAI(message)} />
       </div>
     </GameLayout>
   );
+}
+
+function partLabel(part: VocabularyPartOfSpeech, language: VocabularyLanguage) {
+  const labels = {
+    verb: { KZ: "Етістіктер", RU: "Глаголы", EN: "Verbs" },
+    adjective: { KZ: "Сын есімдер", RU: "Прилагательные", EN: "Adjectives" },
+    noun: { KZ: "Зат есімдер", RU: "Существительные", EN: "Nouns" },
+  } satisfies Record<VocabularyPartOfSpeech, Record<VocabularyLanguage, string>>;
+  return labels[part][language];
 }

@@ -35,6 +35,8 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CareersRouteImport } from './routes/careers'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as VocabularyWeakWordsRouteImport } from './routes/vocabulary.weak-words'
+import { Route as VocabularyGamesRouteImport } from './routes/vocabulary.games'
 import { Route as VocabularyTopicSlugRouteImport } from './routes/vocabulary.$topicSlug'
 import { Route as SubjectsSubjectIdRouteImport } from './routes/subjects.$subjectId'
 import { Route as ApiWhatsappWeeklyReportRouteImport } from './routes/api/whatsapp-weekly-report'
@@ -44,6 +46,8 @@ import { Route as ApiExplainSolutionRouteImport } from './routes/api/explain-sol
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AdminVocabularyRouteImport } from './routes/admin.vocabulary'
 import { Route as AdminPaymentsRouteImport } from './routes/admin.payments'
+import { Route as VocabularyReviewPersonalizedRouteImport } from './routes/vocabulary.review.personalized'
+import { Route as VocabularyTopicSlugFinalTestRouteImport } from './routes/vocabulary.$topicSlug.final-test'
 import { Route as LessonSubjectIdTopicIdRouteImport } from './routes/lesson.$subjectId.$topicId'
 import { Route as ApiTelegramWebhookInfoRouteImport } from './routes/api/telegram/webhook-info'
 import { Route as ApiTelegramWebhookRouteImport } from './routes/api/telegram/webhook'
@@ -54,6 +58,7 @@ import { Route as ApiParentCreateInviteRouteImport } from './routes/api/parent/c
 import { Route as ApiCronSendWeeklyReportsRouteImport } from './routes/api/cron/send-weekly-reports'
 import { Route as ApiAiTutorChatRouteImport } from './routes/api/ai-tutor/chat'
 import { Route as ApiAccountRegisterRouteImport } from './routes/api/account/register'
+import { Route as VocabularyTopicSlugTestPartOfSpeechRouteImport } from './routes/vocabulary.$topicSlug.test.$partOfSpeech'
 
 const VocabularyRoute = VocabularyRouteImport.update({
   id: '/vocabulary',
@@ -185,6 +190,16 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VocabularyWeakWordsRoute = VocabularyWeakWordsRouteImport.update({
+  id: '/weak-words',
+  path: '/weak-words',
+  getParentRoute: () => VocabularyRoute,
+} as any)
+const VocabularyGamesRoute = VocabularyGamesRouteImport.update({
+  id: '/games',
+  path: '/games',
+  getParentRoute: () => VocabularyRoute,
+} as any)
 const VocabularyTopicSlugRoute = VocabularyTopicSlugRouteImport.update({
   id: '/$topicSlug',
   path: '/$topicSlug',
@@ -230,6 +245,18 @@ const AdminPaymentsRoute = AdminPaymentsRouteImport.update({
   path: '/admin/payments',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VocabularyReviewPersonalizedRoute =
+  VocabularyReviewPersonalizedRouteImport.update({
+    id: '/review/personalized',
+    path: '/review/personalized',
+    getParentRoute: () => VocabularyRoute,
+  } as any)
+const VocabularyTopicSlugFinalTestRoute =
+  VocabularyTopicSlugFinalTestRouteImport.update({
+    id: '/final-test',
+    path: '/final-test',
+    getParentRoute: () => VocabularyTopicSlugRoute,
+  } as any)
 const LessonSubjectIdTopicIdRoute = LessonSubjectIdTopicIdRouteImport.update({
   id: '/lesson/$subjectId/$topicId',
   path: '/lesson/$subjectId/$topicId',
@@ -282,6 +309,12 @@ const ApiAccountRegisterRoute = ApiAccountRegisterRouteImport.update({
   path: '/api/account/register',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VocabularyTopicSlugTestPartOfSpeechRoute =
+  VocabularyTopicSlugTestPartOfSpeechRouteImport.update({
+    id: '/test/$partOfSpeech',
+    path: '/test/$partOfSpeech',
+    getParentRoute: () => VocabularyTopicSlugRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -318,7 +351,9 @@ export interface FileRoutesByFullPath {
   '/api/tts': typeof ApiTtsRoute
   '/api/whatsapp-weekly-report': typeof ApiWhatsappWeeklyReportRoute
   '/subjects/$subjectId': typeof SubjectsSubjectIdRoute
-  '/vocabulary/$topicSlug': typeof VocabularyTopicSlugRoute
+  '/vocabulary/$topicSlug': typeof VocabularyTopicSlugRouteWithChildren
+  '/vocabulary/games': typeof VocabularyGamesRoute
+  '/vocabulary/weak-words': typeof VocabularyWeakWordsRoute
   '/api/account/register': typeof ApiAccountRegisterRoute
   '/api/ai-tutor/chat': typeof ApiAiTutorChatRoute
   '/api/cron/send-weekly-reports': typeof ApiCronSendWeeklyReportsRoute
@@ -329,6 +364,9 @@ export interface FileRoutesByFullPath {
   '/api/telegram/webhook': typeof ApiTelegramWebhookRoute
   '/api/telegram/webhook-info': typeof ApiTelegramWebhookInfoRoute
   '/lesson/$subjectId/$topicId': typeof LessonSubjectIdTopicIdRoute
+  '/vocabulary/$topicSlug/final-test': typeof VocabularyTopicSlugFinalTestRoute
+  '/vocabulary/review/personalized': typeof VocabularyReviewPersonalizedRoute
+  '/vocabulary/$topicSlug/test/$partOfSpeech': typeof VocabularyTopicSlugTestPartOfSpeechRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -365,7 +403,9 @@ export interface FileRoutesByTo {
   '/api/tts': typeof ApiTtsRoute
   '/api/whatsapp-weekly-report': typeof ApiWhatsappWeeklyReportRoute
   '/subjects/$subjectId': typeof SubjectsSubjectIdRoute
-  '/vocabulary/$topicSlug': typeof VocabularyTopicSlugRoute
+  '/vocabulary/$topicSlug': typeof VocabularyTopicSlugRouteWithChildren
+  '/vocabulary/games': typeof VocabularyGamesRoute
+  '/vocabulary/weak-words': typeof VocabularyWeakWordsRoute
   '/api/account/register': typeof ApiAccountRegisterRoute
   '/api/ai-tutor/chat': typeof ApiAiTutorChatRoute
   '/api/cron/send-weekly-reports': typeof ApiCronSendWeeklyReportsRoute
@@ -376,6 +416,9 @@ export interface FileRoutesByTo {
   '/api/telegram/webhook': typeof ApiTelegramWebhookRoute
   '/api/telegram/webhook-info': typeof ApiTelegramWebhookInfoRoute
   '/lesson/$subjectId/$topicId': typeof LessonSubjectIdTopicIdRoute
+  '/vocabulary/$topicSlug/final-test': typeof VocabularyTopicSlugFinalTestRoute
+  '/vocabulary/review/personalized': typeof VocabularyReviewPersonalizedRoute
+  '/vocabulary/$topicSlug/test/$partOfSpeech': typeof VocabularyTopicSlugTestPartOfSpeechRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -413,7 +456,9 @@ export interface FileRoutesById {
   '/api/tts': typeof ApiTtsRoute
   '/api/whatsapp-weekly-report': typeof ApiWhatsappWeeklyReportRoute
   '/subjects/$subjectId': typeof SubjectsSubjectIdRoute
-  '/vocabulary/$topicSlug': typeof VocabularyTopicSlugRoute
+  '/vocabulary/$topicSlug': typeof VocabularyTopicSlugRouteWithChildren
+  '/vocabulary/games': typeof VocabularyGamesRoute
+  '/vocabulary/weak-words': typeof VocabularyWeakWordsRoute
   '/api/account/register': typeof ApiAccountRegisterRoute
   '/api/ai-tutor/chat': typeof ApiAiTutorChatRoute
   '/api/cron/send-weekly-reports': typeof ApiCronSendWeeklyReportsRoute
@@ -424,6 +469,9 @@ export interface FileRoutesById {
   '/api/telegram/webhook': typeof ApiTelegramWebhookRoute
   '/api/telegram/webhook-info': typeof ApiTelegramWebhookInfoRoute
   '/lesson/$subjectId/$topicId': typeof LessonSubjectIdTopicIdRoute
+  '/vocabulary/$topicSlug/final-test': typeof VocabularyTopicSlugFinalTestRoute
+  '/vocabulary/review/personalized': typeof VocabularyReviewPersonalizedRoute
+  '/vocabulary/$topicSlug/test/$partOfSpeech': typeof VocabularyTopicSlugTestPartOfSpeechRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -463,6 +511,8 @@ export interface FileRouteTypes {
     | '/api/whatsapp-weekly-report'
     | '/subjects/$subjectId'
     | '/vocabulary/$topicSlug'
+    | '/vocabulary/games'
+    | '/vocabulary/weak-words'
     | '/api/account/register'
     | '/api/ai-tutor/chat'
     | '/api/cron/send-weekly-reports'
@@ -473,6 +523,9 @@ export interface FileRouteTypes {
     | '/api/telegram/webhook'
     | '/api/telegram/webhook-info'
     | '/lesson/$subjectId/$topicId'
+    | '/vocabulary/$topicSlug/final-test'
+    | '/vocabulary/review/personalized'
+    | '/vocabulary/$topicSlug/test/$partOfSpeech'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -510,6 +563,8 @@ export interface FileRouteTypes {
     | '/api/whatsapp-weekly-report'
     | '/subjects/$subjectId'
     | '/vocabulary/$topicSlug'
+    | '/vocabulary/games'
+    | '/vocabulary/weak-words'
     | '/api/account/register'
     | '/api/ai-tutor/chat'
     | '/api/cron/send-weekly-reports'
@@ -520,6 +575,9 @@ export interface FileRouteTypes {
     | '/api/telegram/webhook'
     | '/api/telegram/webhook-info'
     | '/lesson/$subjectId/$topicId'
+    | '/vocabulary/$topicSlug/final-test'
+    | '/vocabulary/review/personalized'
+    | '/vocabulary/$topicSlug/test/$partOfSpeech'
   id:
     | '__root__'
     | '/'
@@ -557,6 +615,8 @@ export interface FileRouteTypes {
     | '/api/whatsapp-weekly-report'
     | '/subjects/$subjectId'
     | '/vocabulary/$topicSlug'
+    | '/vocabulary/games'
+    | '/vocabulary/weak-words'
     | '/api/account/register'
     | '/api/ai-tutor/chat'
     | '/api/cron/send-weekly-reports'
@@ -567,6 +627,9 @@ export interface FileRouteTypes {
     | '/api/telegram/webhook'
     | '/api/telegram/webhook-info'
     | '/lesson/$subjectId/$topicId'
+    | '/vocabulary/$topicSlug/final-test'
+    | '/vocabulary/review/personalized'
+    | '/vocabulary/$topicSlug/test/$partOfSpeech'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -799,6 +862,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/vocabulary/weak-words': {
+      id: '/vocabulary/weak-words'
+      path: '/weak-words'
+      fullPath: '/vocabulary/weak-words'
+      preLoaderRoute: typeof VocabularyWeakWordsRouteImport
+      parentRoute: typeof VocabularyRoute
+    }
+    '/vocabulary/games': {
+      id: '/vocabulary/games'
+      path: '/games'
+      fullPath: '/vocabulary/games'
+      preLoaderRoute: typeof VocabularyGamesRouteImport
+      parentRoute: typeof VocabularyRoute
+    }
     '/vocabulary/$topicSlug': {
       id: '/vocabulary/$topicSlug'
       path: '/$topicSlug'
@@ -861,6 +938,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/payments'
       preLoaderRoute: typeof AdminPaymentsRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/vocabulary/review/personalized': {
+      id: '/vocabulary/review/personalized'
+      path: '/review/personalized'
+      fullPath: '/vocabulary/review/personalized'
+      preLoaderRoute: typeof VocabularyReviewPersonalizedRouteImport
+      parentRoute: typeof VocabularyRoute
+    }
+    '/vocabulary/$topicSlug/final-test': {
+      id: '/vocabulary/$topicSlug/final-test'
+      path: '/final-test'
+      fullPath: '/vocabulary/$topicSlug/final-test'
+      preLoaderRoute: typeof VocabularyTopicSlugFinalTestRouteImport
+      parentRoute: typeof VocabularyTopicSlugRoute
     }
     '/lesson/$subjectId/$topicId': {
       id: '/lesson/$subjectId/$topicId'
@@ -932,6 +1023,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAccountRegisterRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/vocabulary/$topicSlug/test/$partOfSpeech': {
+      id: '/vocabulary/$topicSlug/test/$partOfSpeech'
+      path: '/test/$partOfSpeech'
+      fullPath: '/vocabulary/$topicSlug/test/$partOfSpeech'
+      preLoaderRoute: typeof VocabularyTopicSlugTestPartOfSpeechRouteImport
+      parentRoute: typeof VocabularyTopicSlugRoute
+    }
   }
 }
 
@@ -947,12 +1045,32 @@ const SubjectsRouteWithChildren = SubjectsRoute._addFileChildren(
   SubjectsRouteChildren,
 )
 
+interface VocabularyTopicSlugRouteChildren {
+  VocabularyTopicSlugFinalTestRoute: typeof VocabularyTopicSlugFinalTestRoute
+  VocabularyTopicSlugTestPartOfSpeechRoute: typeof VocabularyTopicSlugTestPartOfSpeechRoute
+}
+
+const VocabularyTopicSlugRouteChildren: VocabularyTopicSlugRouteChildren = {
+  VocabularyTopicSlugFinalTestRoute: VocabularyTopicSlugFinalTestRoute,
+  VocabularyTopicSlugTestPartOfSpeechRoute:
+    VocabularyTopicSlugTestPartOfSpeechRoute,
+}
+
+const VocabularyTopicSlugRouteWithChildren =
+  VocabularyTopicSlugRoute._addFileChildren(VocabularyTopicSlugRouteChildren)
+
 interface VocabularyRouteChildren {
-  VocabularyTopicSlugRoute: typeof VocabularyTopicSlugRoute
+  VocabularyTopicSlugRoute: typeof VocabularyTopicSlugRouteWithChildren
+  VocabularyGamesRoute: typeof VocabularyGamesRoute
+  VocabularyWeakWordsRoute: typeof VocabularyWeakWordsRoute
+  VocabularyReviewPersonalizedRoute: typeof VocabularyReviewPersonalizedRoute
 }
 
 const VocabularyRouteChildren: VocabularyRouteChildren = {
-  VocabularyTopicSlugRoute: VocabularyTopicSlugRoute,
+  VocabularyTopicSlugRoute: VocabularyTopicSlugRouteWithChildren,
+  VocabularyGamesRoute: VocabularyGamesRoute,
+  VocabularyWeakWordsRoute: VocabularyWeakWordsRoute,
+  VocabularyReviewPersonalizedRoute: VocabularyReviewPersonalizedRoute,
 }
 
 const VocabularyRouteWithChildren = VocabularyRoute._addFileChildren(

@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 
 import { GameCard, GameLayout, ProgressBar } from "@/components/gamified-platform";
@@ -81,6 +81,20 @@ function VocabularyPage() {
             <VocabularyMetric title="📚 Learned" value={`${overview.stats.totalLearned}`} />
             <VocabularyMetric title="⭐ XP" value={`${overview.stats.xpEarned}`} />
             <VocabularyMetric title="★ Favorites" value={`${overview.stats.favorites}`} />
+          </div>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <Link to="/vocabulary/games" className="rounded-2xl bg-[#6D28D9] px-5 py-3 font-black text-white shadow-[0_5px_0_#4C1D95]">
+              {c.games}
+            </Link>
+            <Link to="/vocabulary/weak-words" className="rounded-2xl border-2 border-[#DDD6FE] px-5 py-3 font-black text-[#6D28D9]">
+              {c.weakWords}
+            </Link>
+            <Link
+              to="/vocabulary/review/personalized"
+              className="rounded-2xl border-2 border-[#DDD6FE] px-5 py-3 font-black text-[#6D28D9]"
+            >
+              {c.reviewSession}
+            </Link>
           </div>
         </GameCard>
 
