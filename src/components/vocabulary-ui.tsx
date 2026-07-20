@@ -181,7 +181,7 @@ export function DailyWordCard({
         <VocabularyAudioButton word={word.word_en} audioUrl={word.audio_url} />
         <Link
           to="/vocabulary/$topicSlug"
-          params={{ topicSlug: "family" }}
+          params={{ topicSlug: word.topicSlug }}
           className="rounded-2xl bg-[#6D28D9] px-5 py-3 font-black text-white shadow-[0_5px_0_#4C1D95]"
         >
           Сөзді ашу

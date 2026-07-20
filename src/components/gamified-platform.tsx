@@ -203,6 +203,10 @@ function useAccessGate() {
 }
 
 function isSimpleShellRoute(pathname: string) {
+  if (pathname === "/vocabulary" || pathname.startsWith("/vocabulary/")) {
+    return true;
+  }
+
   return [
     "/",
     "/login",
@@ -213,7 +217,6 @@ function isSimpleShellRoute(pathname: string) {
     "/diagnostic-result",
     "/pricing",
     "/payment",
-    "/vocabulary",
     "/about",
     "/careers",
     "/privacy",
@@ -299,7 +302,6 @@ function isPaidRoute(pathname: string) {
     pathname.startsWith("/progress") ||
     pathname.startsWith("/reports") ||
     pathname.startsWith("/shop") ||
-    pathname.startsWith("/vocabulary") ||
     pathname.startsWith("/topic-challenge") ||
     pathname.startsWith("/exam") ||
     pathname.startsWith("/explain-solution")

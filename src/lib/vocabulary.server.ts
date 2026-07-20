@@ -149,6 +149,7 @@ export type VocabularyTopicDetail = VocabularyTopicSummary & {
 export type VocabularyWordWithState = VocabularyWord & {
   progress: VocabularyWordProgress;
   favorite: boolean;
+  topicSlug: string;
 };
 
 export type VocabularyQuestion = {
@@ -1102,6 +1103,7 @@ function withState(word: VocabularyWord, userId: string): VocabularyWordWithStat
     ...word,
     progress: getUserProgressMap(userId).get(word.id) ?? newProgress(word.id),
     favorite: getUserFavorites(userId).has(word.id),
+    topicSlug: topicsById(word.topic_id)?.slug ?? "family",
   };
 }
 

@@ -12,19 +12,26 @@ import {
 import type { VocabularyGameSession, VocabularyGameType, VocabularyLanguage } from "@/lib/vocabulary.server";
 
 export const Route = createFileRoute("/vocabulary/games")({
-  loader: async () => getVocabularyGamesConfigFn({ data: { topicSlug: "family" } }),
+  validateSearch: (search: Record<string, unknown>) => ({
+    topic: typeof search.topic === "string" && search.topic.trim() ? search.topic : "family",
+  }),
+  loader: async ({ location }) => {
+    const search = location.search as { topic?: string };
+    return getVocabularyGamesConfigFn({ data: { topicSlug: search.topic ?? "family" } });
+  },
   head: () => ({ meta: [{ title: "Vocabulary Games — AI-Sana" }] }),
   component: VocabularyGamesPage,
 });
 
 function VocabularyGamesPage() {
   const games = Route.useLoaderData();
+  const { topic } = Route.useSearch();
   const { language } = useLanguage();
   const lang = language as VocabularyLanguage;
   const [activeSession, setActiveSession] = useState<VocabularyGameSession | undefined>();
 
   const start = async (gameType: VocabularyGameType) => {
-    setActiveSession(await startVocabularyGameFn({ data: { gameType, topicSlug: "family", mode: "normal" } }));
+    setActiveSession(await startVocabularyGameFn({ data: { gameType, topicSlug: topic, mode: "normal" } }));
   };
 
   const complete = async (session: VocabularyGameSession) => {

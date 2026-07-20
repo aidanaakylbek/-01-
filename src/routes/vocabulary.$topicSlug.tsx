@@ -172,7 +172,11 @@ function VocabularyTopicPage() {
             >
               Mixed Topic Test
             </Link>
-            <Link to="/vocabulary/games" className="rounded-2xl border-2 border-[#DDD6FE] px-5 py-3 font-black text-[#6D28D9]">
+            <Link
+              to="/vocabulary/games"
+              search={{ topic: topic.slug }}
+              className="rounded-2xl border-2 border-[#DDD6FE] px-5 py-3 font-black text-[#6D28D9]"
+            >
               Ойындар
             </Link>
           </div>
