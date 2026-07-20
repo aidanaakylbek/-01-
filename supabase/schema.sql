@@ -145,8 +145,8 @@ create table if not exists public.english_vocabulary_words (
   example_en text,
   example_kk text,
   example_ru text,
-  difficulty text not null default 'beginner'
-    check (difficulty in ('beginner', 'intermediate')),
+  difficulty text not null default 'A1'
+    check (difficulty in ('A1', 'beginner', 'intermediate')),
   order_index integer not null check (order_index between 1 and 15),
   is_active boolean not null default true,
   created_at timestamptz not null default now(),

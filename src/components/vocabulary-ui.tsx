@@ -52,7 +52,7 @@ export const vocabularyCopy = {
     inProgress: "Жалғастыру",
     mastered: "Меңгерілді",
     needsReview: "Қайталау керек",
-    lockedHint: "Алдыңғы тақырыпты аяқтаңыз.",
+    lockedHint: "Алдыңғы тақырыпты 80% нәтижемен толық меңгеріңіз.",
   },
   RU: {
     title: "Словарь",
@@ -90,7 +90,7 @@ export const vocabularyCopy = {
     inProgress: "Продолжить",
     mastered: "Освоено",
     needsReview: "Повторить",
-    lockedHint: "Завершите предыдущую тему.",
+    lockedHint: "Полностью освойте предыдущую тему с результатом 80%.",
   },
   EN: {
     title: "Vocabulary",
@@ -128,7 +128,7 @@ export const vocabularyCopy = {
     inProgress: "Continue",
     mastered: "Mastered",
     needsReview: "Review",
-    lockedHint: "Complete the previous topic to unlock this one.",
+    lockedHint: "Master the previous topic with at least 80% to unlock this one.",
   },
 } satisfies Record<VocabularyLanguage, Record<string, string>>;
 
@@ -287,7 +287,7 @@ export function VocabularyTopicCard({ language, topic }: { language: VocabularyL
           <span>{c.verbs}: {topic.progress.knownVerbs} / 15 {topic.progress.tests.verbsPassed ? "✅" : ""}</span>
           <span>{c.adjectives}: {topic.progress.knownAdjectives} / 15 {topic.progress.tests.adjectivesPassed ? "✅" : ""}</span>
           <span>{c.nouns}: {topic.progress.knownNouns} / 15 {topic.progress.tests.nounsPassed ? "✅" : ""}</span>
-          <span>Mixed Test: {topic.progress.tests.mixedPassed ? "✅" : "70%+"}</span>
+          <span>Mixed Test: {topic.progress.tests.mixedPassed ? "✅" : "80%+"}</span>
         </div>
       </div>
       {locked ? (
@@ -404,7 +404,7 @@ function VocabularyPathNode({
           <Requirement done={topic.progress.tests.verbsPassed} label="Verbs" />
           <Requirement done={topic.progress.tests.adjectivesPassed} label="Adjectives" />
           <Requirement done={topic.progress.tests.nounsPassed} label="Nouns" />
-          <Requirement done={topic.progress.tests.mixedPassed} label="Mixed test" />
+          <Requirement done={topic.progress.tests.mixedPassed} label="Mixed test 80%+" />
         </div>
         {locked ? (
           <button type="button" disabled className="mt-4 rounded-2xl bg-[#DDD6FE] px-5 py-3 font-black text-[#6B5E8F]">

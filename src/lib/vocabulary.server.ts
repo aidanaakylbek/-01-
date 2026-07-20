@@ -1,8 +1,9 @@
 import { getDashboardAccount } from "./account-store.server";
+import { a1VocabularyTopics, type A1VocabularyWordSeed } from "./a1-vocabulary-content";
 
 export type VocabularyLanguage = "KZ" | "RU" | "EN";
 export type VocabularyDifficulty = "beginner" | "intermediate" | "mixed";
-export type VocabularyWordDifficulty = "beginner" | "intermediate";
+export type VocabularyWordDifficulty = "A1" | "beginner" | "intermediate";
 export type VocabularyPartOfSpeech = "verb" | "adjective" | "noun";
 export type VocabularyProgressStatus = "new" | "learning" | "review" | "known";
 export type VocabularyQuestionType =
@@ -268,7 +269,6 @@ type DailyActivity = VocabularyDailyGoal & {
 };
 
 const now = new Date("2026-07-20T00:00:00.000Z").toISOString();
-const familyTopicId = "vocab-topic-family";
 const todayActivityByUser = new Map<string, DailyActivity>();
 const progressByUser = new Map<string, Map<string, VocabularyWordProgress>>();
 const favoritesByUser = new Map<string, Set<string>>();
@@ -276,33 +276,10 @@ const testAttempts = new Map<string, VocabularyTestAttempt>();
 const gameSessions = new Map<string, VocabularyGameSession>();
 const rewardedKeysByUser = new Map<string, Set<string>>();
 
-const topics = new Map<string, VocabularyTopic>([
-  [
-    "family",
-    {
-      id: familyTopicId,
-      slug: "family",
-      title_en: "Family",
-      title_kk: "Отбасы",
-      title_ru: "Семья",
-      description_en: "Useful everyday words about family and home.",
-      description_kk: "Отбасы мен үй туралы күнделікті қажет сөздер.",
-      description_ru: "Полезные слова о семье и доме.",
-      icon: "family_restroom",
-      difficulty: "mixed",
-      order_index: 1,
-      is_published: true,
-      is_featured: true,
-      created_at: now,
-      updated_at: now,
-    },
-  ],
-]);
-seedVocabularyPathTopics();
-
+const topics = new Map<string, VocabularyTopic>();
 const words = new Map<string, VocabularyWord>();
 
-seedFamilyWords();
+seedA1VocabularyModule();
 
 export async function getVocabularyOverview(): Promise<VocabularyOverview> {
   const userId = await getCurrentUserId();
@@ -917,13 +894,13 @@ function updateWordMetricsFromAnswer(userId: string, wordId: string, correct: bo
 }
 
 function calculateTestXp(attempt: VocabularyTestAttempt) {
-  if (attempt.testType === "mixed_topic") return attempt.percentage >= 90 ? 60 : attempt.percentage >= 70 ? 40 : 10;
-  return attempt.percentage >= 90 ? 30 : attempt.percentage >= 70 ? 20 : 5;
+  if (attempt.testType === "mixed_topic") return attempt.percentage >= 90 ? 60 : attempt.percentage >= 80 ? 40 : 10;
+  return attempt.percentage >= 90 ? 30 : attempt.percentage >= 80 ? 20 : 5;
 }
 
 function resultState(percentage: number): VocabularyTestResult["resultState"] {
   if (percentage >= 90) return "excellent";
-  if (percentage >= 70) return "passed";
+  if (percentage >= 80) return "passed";
   if (percentage >= 50) return "almost_there";
   return "needs_review";
 }
@@ -949,19 +926,16 @@ function scorePart(attempt: VocabularyTestAttempt, part: VocabularyPartOfSpeech)
 function isTopicCompleted(topicId: string, userId: string) {
   const attempts = [...testAttempts.values()].filter((attempt) => attempt.userId === userId && attempt.topicId === topicId);
   const wordsLearned = getTopicWords(topicId).every((word) => getUserProgressMap(userId).get(word.id)?.status === "known");
-  const passedMixed = attempts.some((attempt) => attempt.testType === "mixed_topic" && attempt.status === "completed" && attempt.percentage >= 70);
+  const passedMixed = attempts.some((attempt) => attempt.testType === "mixed_topic" && attempt.status === "completed" && attempt.percentage >= 80);
   const parts: VocabularyPartOfSpeech[] = ["verb", "adjective", "noun"];
   const passedParts = parts.every((part) =>
-    attempts.some((attempt) => attempt.partOfSpeech === part && attempt.status === "completed" && attempt.percentage >= 70),
+    attempts.some((attempt) => attempt.partOfSpeech === part && attempt.status === "completed" && attempt.percentage >= 80),
   );
   return wordsLearned && passedMixed && passedParts;
 }
 
 function isTopicMastered(topicId: string, userId: string) {
-  const attempts = [...testAttempts.values()].filter((attempt) => attempt.userId === userId && attempt.topicId === topicId);
-  const mixed90 = attempts.some((attempt) => attempt.testType === "mixed_topic" && attempt.status === "completed" && attempt.percentage >= 90);
-  const highConfidence = getTopicWords(topicId).every((word) => (getUserProgressMap(userId).get(word.id)?.confidenceLevel ?? 0) >= 4);
-  return mixed90 && highConfidence;
+  return isTopicCompleted(topicId, userId);
 }
 
 function grantRewardOnce(userId: string, key: string, xp: number) {
@@ -1144,7 +1118,7 @@ function calculateTopicProgress(topicId: string, userId: string): VocabularyTopi
               ? "in_progress"
               : "available",
     unlocked,
-    lockedReason: unlocked ? undefined : "Complete the previous topic to unlock this one.",
+    lockedReason: unlocked ? undefined : "Master the previous topic with at least 80% to unlock this one.",
     tests,
     rewards: completed || mastered ? { xp: 40, coins: 20, badge: "Topic Completed" } : undefined,
   };
@@ -1153,10 +1127,10 @@ function calculateTopicProgress(topicId: string, userId: string): VocabularyTopi
 function getTopicTestStatus(topicId: string, userId: string) {
   const attempts = [...testAttempts.values()].filter((attempt) => attempt.userId === userId && attempt.topicId === topicId);
   return {
-    verbsPassed: attempts.some((attempt) => attempt.partOfSpeech === "verb" && attempt.status === "completed" && attempt.percentage >= 70),
-    adjectivesPassed: attempts.some((attempt) => attempt.partOfSpeech === "adjective" && attempt.status === "completed" && attempt.percentage >= 70),
-    nounsPassed: attempts.some((attempt) => attempt.partOfSpeech === "noun" && attempt.status === "completed" && attempt.percentage >= 70),
-    mixedPassed: attempts.some((attempt) => attempt.testType === "mixed_topic" && attempt.status === "completed" && attempt.percentage >= 70),
+    verbsPassed: attempts.some((attempt) => attempt.partOfSpeech === "verb" && attempt.status === "completed" && attempt.percentage >= 80),
+    adjectivesPassed: attempts.some((attempt) => attempt.partOfSpeech === "adjective" && attempt.status === "completed" && attempt.percentage >= 80),
+    nounsPassed: attempts.some((attempt) => attempt.partOfSpeech === "noun" && attempt.status === "completed" && attempt.percentage >= 80),
+    mixedPassed: attempts.some((attempt) => attempt.testType === "mixed_topic" && attempt.status === "completed" && attempt.percentage >= 80),
   };
 }
 
@@ -1165,7 +1139,7 @@ function isTopicUnlocked(topicId: string, userId: string) {
   const index = ordered.findIndex((topic) => topic.id === topicId);
   if (index <= 0) return true;
   const previous = ordered[index - 1];
-  return previous ? isTopicCompleted(previous.id, userId) : false;
+  return previous ? isTopicMastered(previous.id, userId) : false;
 }
 
 function assertTopicUnlocked(topic: VocabularyTopic, userId: string) {
@@ -1176,7 +1150,7 @@ function assertTopicUnlocked(topic: VocabularyTopic, userId: string) {
 }
 
 function syncTopicUnlocks(userId: string, topicId: string) {
-  if (!isTopicCompleted(topicId, userId)) return;
+  if (!isTopicMastered(topicId, userId)) return;
   const topic = topicsById(topicId);
   if (!topic) return;
   grantRewardOnce(userId, `vocabulary:topic:${topic.id}:completed`, 40);
@@ -1340,152 +1314,8 @@ function topicsById(topicId: string) {
   return [...topics.values()].find((topic) => topic.id === topicId);
 }
 
-function seedVocabularyPathTopics() {
-  const pathTopics: Array<Pick<VocabularyTopic, "slug" | "title_en" | "title_kk" | "title_ru" | "description_en" | "description_kk" | "description_ru" | "icon">> = [
-    {
-      slug: "school",
-      title_en: "School",
-      title_kk: "Мектеп",
-      title_ru: "Школа",
-      description_en: "Words for classroom, lessons, and study.",
-      description_kk: "Сынып, сабақ және оқу туралы сөздер.",
-      description_ru: "Слова о классе, уроках и учебе.",
-      icon: "school",
-    },
-    {
-      slug: "food",
-      title_en: "Food",
-      title_kk: "Тағам",
-      title_ru: "Еда",
-      description_en: "Food, drinks, and meals.",
-      description_kk: "Тағам, сусын және тамақтану сөздері.",
-      description_ru: "Еда, напитки и приемы пищи.",
-      icon: "restaurant",
-    },
-    {
-      slug: "house",
-      title_en: "House",
-      title_kk: "Үй",
-      title_ru: "Дом",
-      description_en: "Rooms, furniture, and home objects.",
-      description_kk: "Бөлмелер, жиһаз және үй заттары.",
-      description_ru: "Комнаты, мебель и домашние предметы.",
-      icon: "home",
-    },
-    {
-      slug: "clothes",
-      title_en: "Clothes",
-      title_kk: "Киім",
-      title_ru: "Одежда",
-      description_en: "Clothes and what people wear.",
-      description_kk: "Киім және киіну туралы сөздер.",
-      description_ru: "Одежда и вещи, которые носят.",
-      icon: "checkroom",
-    },
-    {
-      slug: "daily-routine",
-      title_en: "Daily Routine",
-      title_kk: "Күн тәртібі",
-      title_ru: "Распорядок дня",
-      description_en: "Everyday actions from morning to evening.",
-      description_kk: "Таңнан кешке дейінгі күнделікті әрекеттер.",
-      description_ru: "Ежедневные действия с утра до вечера.",
-      icon: "routine",
-    },
-    {
-      slug: "animals",
-      title_en: "Animals",
-      title_kk: "Жануарлар",
-      title_ru: "Животные",
-      description_en: "Common animals and their features.",
-      description_kk: "Жануарлар және олардың белгілері.",
-      description_ru: "Животные и их признаки.",
-      icon: "pets",
-    },
-    {
-      slug: "weather",
-      title_en: "Weather",
-      title_kk: "Ауа райы",
-      title_ru: "Погода",
-      description_en: "Weather, seasons, and temperature.",
-      description_kk: "Ауа райы, мезгілдер және температура.",
-      description_ru: "Погода, времена года и температура.",
-      icon: "partly_cloudy_day",
-    },
-    {
-      slug: "transport",
-      title_en: "Transport",
-      title_kk: "Көлік",
-      title_ru: "Транспорт",
-      description_en: "Transport and movement around the city.",
-      description_kk: "Көлік және қалада қозғалу сөздері.",
-      description_ru: "Транспорт и передвижение по городу.",
-      icon: "directions_bus",
-    },
-    {
-      slug: "travel",
-      title_en: "Travel",
-      title_kk: "Саяхат",
-      title_ru: "Путешествие",
-      description_en: "Travel, places, and directions.",
-      description_kk: "Саяхат, орындар және бағыттар.",
-      description_ru: "Путешествия, места и направления.",
-      icon: "travel_explore",
-    },
-    {
-      slug: "hobbies",
-      title_en: "Hobbies",
-      title_kk: "Хобби",
-      title_ru: "Хобби",
-      description_en: "Free time, hobbies, and interests.",
-      description_kk: "Бос уақыт, хобби және қызығушылықтар.",
-      description_ru: "Свободное время, хобби и интересы.",
-      icon: "sports_esports",
-    },
-    {
-      slug: "body",
-      title_en: "Body",
-      title_kk: "Дене",
-      title_ru: "Тело",
-      description_en: "Body parts and health words.",
-      description_kk: "Дене мүшелері және денсаулық сөздері.",
-      description_ru: "Части тела и слова о здоровье.",
-      icon: "accessibility_new",
-    },
-    {
-      slug: "nature",
-      title_en: "Nature",
-      title_kk: "Табиғат",
-      title_ru: "Природа",
-      description_en: "Nature, plants, and landscapes.",
-      description_kk: "Табиғат, өсімдіктер және жер бедері.",
-      description_ru: "Природа, растения и пейзажи.",
-      icon: "forest",
-    },
-    {
-      slug: "jobs",
-      title_en: "Jobs",
-      title_kk: "Мамандықтар",
-      title_ru: "Профессии",
-      description_en: "Jobs and people at work.",
-      description_kk: "Мамандықтар және еңбек туралы сөздер.",
-      description_ru: "Профессии и люди на работе.",
-      icon: "work",
-    },
-    {
-      slug: "emotions",
-      title_en: "Emotions",
-      title_kk: "Эмоциялар",
-      title_ru: "Эмоции",
-      description_en: "Feelings and character words.",
-      description_kk: "Сезімдер және мінезді сипаттайтын сөздер.",
-      description_ru: "Чувства и слова для описания характера.",
-      icon: "sentiment_satisfied",
-    },
-  ];
-
-  pathTopics.forEach((topic, index) => {
-    if (topics.has(topic.slug)) return;
+function seedA1VocabularyModule() {
+  a1VocabularyTopics.forEach((topic, topicIndex) => {
     topics.set(topic.slug, {
       id: `vocab-topic-${topic.slug}`,
       slug: topic.slug,
@@ -1496,94 +1326,39 @@ function seedVocabularyPathTopics() {
       description_kk: topic.description_kk,
       description_ru: topic.description_ru,
       icon: topic.icon,
-      difficulty: "mixed",
-      order_index: index + 2,
+      difficulty: "beginner",
+      order_index: topicIndex + 1,
       is_published: true,
-      is_featured: false,
+      is_featured: topicIndex < 3,
       created_at: now,
       updated_at: now,
     });
+
+    seedA1Words(topic.slug, "verb", topic.verbs);
+    seedA1Words(topic.slug, "adjective", topic.adjectives);
+    seedA1Words(topic.slug, "noun", topic.nouns);
   });
 }
 
-function seedFamilyWords() {
-  const verbData = [
-    ["love", "жақсы көру", "любить", "beginner", "I love my family.", "Мен отбасымды жақсы көремін.", "Я люблю свою семью."],
-    ["help", "көмектесу", "помогать", "beginner", "I help my mother at home.", "Мен анама үйде көмектесемін.", "Я помогаю маме дома."],
-    ["live", "тұру", "жить", "beginner", "We live with our parents.", "Біз ата-анамызбен бірге тұрамыз.", "Мы живем с родителями."],
-    ["visit", "қонаққа бару", "навещать", "beginner", "We visit our grandparents on Sunday.", "Біз жексенбіде ата-әжемізге барамыз.", "Мы навещаем бабушку и дедушку в воскресенье."],
-    ["care", "қамқор болу", "заботиться", "intermediate", "Parents care for their children.", "Ата-аналар балаларына қамқор болады.", "Родители заботятся о своих детях."],
-    ["support", "қолдау", "поддерживать", "intermediate", "My brother supports me.", "Ағам мені қолдайды.", "Мой брат поддерживает меня."],
-    ["talk", "сөйлесу", "разговаривать", "beginner", "I talk with my sister every day.", "Мен әпкеммен күн сайын сөйлесемін.", "Я разговариваю с сестрой каждый день."],
-    ["listen", "тыңдау", "слушать", "beginner", "I listen to my father.", "Мен әкемді тыңдаймын.", "Я слушаю папу."],
-    ["share", "бөлісу", "делиться", "intermediate", "We share food at home.", "Біз үйде тамақты бөлісеміз.", "Мы делимся едой дома."],
-    ["respect", "құрметтеу", "уважать", "intermediate", "Children respect their parents.", "Балалар ата-анасын құрметтейді.", "Дети уважают родителей."],
-    ["protect", "қорғау", "защищать", "intermediate", "My family protects me.", "Отбасым мені қорғайды.", "Моя семья защищает меня."],
-    ["celebrate", "атап өту", "праздновать", "beginner", "We celebrate birthdays together.", "Біз туған күндерді бірге атап өтеміз.", "Мы празднуем дни рождения вместе."],
-    ["grow", "өсу", "расти", "beginner", "Children grow fast.", "Балалар тез өседі.", "Дети быстро растут."],
-    ["remember", "есте сақтау", "помнить", "beginner", "I remember my grandmother's stories.", "Мен әжемнің әңгімелерін есте сақтаймын.", "Я помню рассказы бабушки."],
-    ["meet", "кездесу", "встречаться", "beginner", "We meet our cousins in summer.", "Біз жазда немере туыстарымызбен кездесеміз.", "Летом мы встречаемся с двоюродными родственниками."],
-  ] as const;
+function seedA1Words(topicSlug: string, part: VocabularyPartOfSpeech, data: A1VocabularyWordSeed[]) {
+  const topic = topics.get(topicSlug);
+  if (!topic) return;
 
-  const adjectiveData = [
-    ["kind", "мейірімді", "добрый", "beginner", "My sister is very kind.", "Менің әпкем өте мейірімді.", "Моя сестра очень добрая."],
-    ["caring", "қамқор", "заботливый", "intermediate", "My mother is caring.", "Менің анам қамқор.", "Моя мама заботливая."],
-    ["friendly", "достық пейілді", "дружелюбный", "beginner", "My cousin is friendly.", "Менің немере туысым достық пейілді.", "Мой двоюродный брат дружелюбный."],
-    ["young", "жас", "молодой", "beginner", "My brother is young.", "Менің інім жас.", "Мой брат молодой."],
-    ["old", "қарт / үлкен", "старый", "beginner", "My grandfather is old.", "Менің атам қарт.", "Мой дедушка старый."],
-    ["happy", "бақытты", "счастливый", "beginner", "Our family is happy.", "Біздің отбасымыз бақытты.", "Наша семья счастливая."],
-    ["close", "жақын", "близкий", "beginner", "I am close to my sister.", "Мен әпкеме жақынмын.", "Я близок к своей сестре."],
-    ["helpful", "көмекшіл", "готовый помочь", "intermediate", "My uncle is helpful.", "Менің көкем көмекшіл.", "Мой дядя готов помочь."],
-    ["strict", "қатал", "строгий", "beginner", "My father can be strict.", "Менің әкем кейде қатал болады.", "Мой отец иногда строгий."],
-    ["funny", "көңілді / күлкілі", "смешной", "beginner", "My aunt is funny.", "Менің татем көңілді.", "Моя тетя смешная."],
-    ["quiet", "тыныш", "тихий", "beginner", "My baby brother is quiet.", "Менің кішкентай інім тыныш.", "Мой младший брат тихий."],
-    ["busy", "бос емес", "занятый", "beginner", "My parents are busy today.", "Ата-анам бүгін бос емес.", "Мои родители сегодня заняты."],
-    ["loving", "сүйіспеншілікке толы", "любящий", "intermediate", "I have a loving family.", "Менің отбасым сүйіспеншілікке толы.", "У меня любящая семья."],
-    ["responsible", "жауапты", "ответственный", "intermediate", "My older brother is responsible.", "Менің ағам жауапты.", "Мой старший брат ответственный."],
-    ["patient", "сабырлы", "терпеливый", "intermediate", "My grandmother is patient.", "Менің әжем сабырлы.", "Моя бабушка терпеливая."],
-  ] as const;
-
-  const nounData = [
-    ["family", "отбасы", "семья", "beginner", "I have a big family.", "Менің отбасым үлкен.", "У меня большая семья."],
-    ["mother", "ана", "мама", "beginner", "My mother cooks dinner.", "Менің анам кешкі ас дайындайды.", "Моя мама готовит ужин."],
-    ["father", "әке", "папа", "beginner", "My father helps me.", "Менің әкем маған көмектеседі.", "Мой папа помогает мне."],
-    ["parents", "ата-ана", "родители", "beginner", "My parents support me.", "Ата-анам мені қолдайды.", "Мои родители поддерживают меня."],
-    ["sister", "әпке / сіңлі / қарындас", "сестра", "beginner", "My sister likes books.", "Менің әпкем кітаптарды ұнатады.", "Моя сестра любит книги."],
-    ["brother", "аға / іні", "брат", "beginner", "My brother plays football.", "Менің ағам футбол ойнайды.", "Мой брат играет в футбол."],
-    ["grandmother", "әже", "бабушка", "beginner", "My grandmother tells stories.", "Менің әжем әңгіме айтады.", "Моя бабушка рассказывает истории."],
-    ["grandfather", "ата", "дедушка", "beginner", "My grandfather has a garden.", "Менің атамның бағы бар.", "У моего дедушки есть сад."],
-    ["child", "бала", "ребёнок", "beginner", "The child is happy.", "Бала бақытты.", "Ребёнок счастлив."],
-    ["children", "балалар", "дети", "beginner", "The children play together.", "Балалар бірге ойнайды.", "Дети играют вместе."],
-    ["cousin", "немере туыс", "двоюродный брат / двоюродная сестра", "intermediate", "My cousin lives nearby.", "Менің немере туысым жақын жерде тұрады.", "Мой двоюродный родственник живет рядом."],
-    ["uncle", "көке / нағашы / ағай", "дядя", "intermediate", "My uncle visits us.", "Менің көкем бізге қонаққа келеді.", "Мой дядя навещает нас."],
-    ["aunt", "тәте / апай", "тётя", "intermediate", "My aunt is kind.", "Менің татем мейірімді.", "Моя тетя добрая."],
-    ["home", "үй", "дом", "beginner", "Our home is warm.", "Біздің үйіміз жылы.", "Наш дом теплый."],
-    ["relationship", "қарым-қатынас", "отношения", "intermediate", "Good relationships make a family strong.", "Жақсы қарым-қатынас отбасын мықты етеді.", "Хорошие отношения делают семью крепкой."],
-  ] as const;
-
-  addSeedWords("verb", verbData);
-  addSeedWords("adjective", adjectiveData);
-  addSeedWords("noun", nounData);
-}
-
-function addSeedWords(
-  part: VocabularyPartOfSpeech,
-  data: readonly (readonly [string, string, string, VocabularyWordDifficulty, string, string, string])[],
-) {
-  data.forEach(([word_en, translation_kk, translation_ru, difficulty, example_en, example_kk, example_ru], index) => {
+  data.forEach((item, index) => {
+    const wordId = `a1-${topic.slug}-${part}-${index + 1}`;
     const word: VocabularyWord = {
-      id: `family-${part}-${index + 1}`,
-      topic_id: familyTopicId,
-      word_en,
-      translation_kk,
-      translation_ru,
+      id: wordId,
+      topic_id: topic.id,
+      word_en: item.en,
+      translation_kk: item.kk,
+      translation_ru: item.ru,
       part_of_speech: part,
-      pronunciation: `/${word_en}/`,
+      pronunciation: undefined,
       phonetic_ipa: undefined,
-      example_en,
-      example_kk,
-      example_ru,
-      difficulty,
+      example_en: buildA1Example(item.en, part),
+      example_kk: buildA1KazakhExample(item.kk),
+      example_ru: buildA1RussianExample(item.ru),
+      difficulty: "A1",
       order_index: index + 1,
       is_active: true,
       created_at: now,
@@ -1591,4 +1366,18 @@ function addSeedWords(
     };
     words.set(word.id, word);
   });
+}
+
+function buildA1Example(word: string, part: VocabularyPartOfSpeech) {
+  if (part === "verb") return `I learn how to use the action word "${word}" today.`;
+  if (part === "adjective") return `The word "${word}" helps me describe something.`;
+  return `I learn the word "${word}" in my English lesson.`;
+}
+
+function buildA1KazakhExample(translation: string) {
+  return `Бұл сөздің мағынасы: ${translation}.`;
+}
+
+function buildA1RussianExample(translation: string) {
+  return `Значение этого слова: ${translation}.`;
 }
