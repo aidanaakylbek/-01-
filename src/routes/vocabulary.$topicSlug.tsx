@@ -167,7 +167,7 @@ function VocabularyTopicPage() {
             <SectionStatus label={partLabel("noun", lang)} known={topic.progress.knownNouns} passed={topic.progress.tests.nounsPassed} active={activePart === "noun"} />
             <div className={`rounded-3xl border-2 p-4 ${topic.progress.tests.mixedPassed ? "border-[#FACC15] bg-[#FFFBEB]" : "border-[#DDD6FE] bg-[#F5F3FF]"}`}>
               <p className="font-black text-[#1E1B4B]">Mixed Topic Test</p>
-              <p className="mt-1 text-sm font-black text-[#6B5E8F]">{topic.progress.tests.mixedPassed ? "✓ 70%+" : "70%+"}</p>
+              <p className="mt-1 text-sm font-black text-[#6B5E8F]">{topic.progress.tests.mixedPassed ? "✓ 80%+" : "80%+"}</p>
             </div>
           </div>
           {sectionPassed.verb && sectionPassed.adjective && sectionPassed.noun ? (

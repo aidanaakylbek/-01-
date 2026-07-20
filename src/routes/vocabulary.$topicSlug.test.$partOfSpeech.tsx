@@ -67,7 +67,7 @@ function VocabularySectionTestPage() {
             ← Тақырыпқа қайту
           </Link>
           <h1 className="mt-4 text-5xl font-black">Section Test</h1>
-          <p className="mt-2 font-bold text-[#EDE9FE]">10 сұрақ · өту балы 70%</p>
+          <p className="mt-2 font-bold text-[#EDE9FE]">10 сұрақ · өту балы 80%</p>
         </GameCard>
         {result ? (
           <VocabularyTestResultCard language={lang} result={result} />

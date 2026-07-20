@@ -37,6 +37,8 @@ export type VocabularyGameType =
   | "speed_round"
   | "sentence_builder";
 
+const FIRST_A1_TOPIC_SLUG = "greetings-polite-words";
+
 export type VocabularyTopic = {
   id: string;
   slug: string;
@@ -613,7 +615,7 @@ export async function startPersonalizedVocabularyReview(size = 10) {
 }
 
 export async function getVocabularyGamesConfig(topicSlug?: string): Promise<VocabularyGameConfig[]> {
-  const topic = topicSlug ? topics.get(topicSlug) : topics.get("family");
+  const topic = topicSlug ? topics.get(topicSlug) : topics.get(FIRST_A1_TOPIC_SLUG);
   const imageCount = topic ? getTopicWords(topic.id).filter((word) => word.image_url).length : 0;
   return [
     gameConfig("match_pairs", "Match Pairs", "Жұптарды сәйкестендір", "Соедини пары", true),
@@ -650,7 +652,7 @@ export async function startVocabularyGame(input: {
   mode?: "easy" | "normal" | "challenge";
 }) {
   const userId = await getCurrentUserId();
-  const topic = topics.get(input.topicSlug ?? "family");
+  const topic = topics.get(input.topicSlug ?? FIRST_A1_TOPIC_SLUG);
   if (!topic) throw new Error("TOPIC_NOT_FOUND");
   assertTopicUnlocked(topic, userId);
   const pairCount = input.mode === "challenge" ? 8 : input.mode === "easy" ? 4 : 6;
@@ -703,7 +705,7 @@ export async function getVocabularyAIResponse(input: {
   partOfSpeech?: VocabularyPartOfSpeech;
   mentorStyle?: string;
 }) {
-  const topic = input.topicSlug ? topics.get(input.topicSlug) : topics.get("family");
+  const topic = input.topicSlug ? topics.get(input.topicSlug) : topics.get(FIRST_A1_TOPIC_SLUG);
   const word = input.wordId ? words.get(input.wordId) : undefined;
   const focus = word ?? (topic ? getTopicWords(topic.id).find((item) => item.part_of_speech === input.partOfSpeech) : undefined);
   const answer = buildLocalVocabularyAIAnswer(input.message, focus);
@@ -1167,7 +1169,7 @@ function withState(word: VocabularyWord, userId: string): VocabularyWordWithStat
     ...word,
     progress: getUserProgressMap(userId).get(word.id) ?? newProgress(word.id),
     favorite: getUserFavorites(userId).has(word.id),
-    topicSlug: topicsById(word.topic_id)?.slug ?? "family",
+    topicSlug: topicsById(word.topic_id)?.slug ?? FIRST_A1_TOPIC_SLUG,
   };
 }
 

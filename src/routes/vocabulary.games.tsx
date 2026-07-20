@@ -13,11 +13,11 @@ import type { VocabularyGameSession, VocabularyGameType, VocabularyLanguage } fr
 
 export const Route = createFileRoute("/vocabulary/games")({
   validateSearch: (search: Record<string, unknown>) => ({
-    topic: typeof search.topic === "string" && search.topic.trim() ? search.topic : "family",
+    topic: typeof search.topic === "string" && search.topic.trim() ? search.topic : "greetings-polite-words",
   }),
   loader: async ({ location }) => {
     const search = location.search as { topic?: string };
-    return getVocabularyGamesConfigFn({ data: { topicSlug: search.topic ?? "family" } });
+    return getVocabularyGamesConfigFn({ data: { topicSlug: search.topic ?? "greetings-polite-words" } });
   },
   head: () => ({ meta: [{ title: "Vocabulary Games — AI-Sana" }] }),
   component: VocabularyGamesPage,

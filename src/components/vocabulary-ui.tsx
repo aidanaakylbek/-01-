@@ -299,13 +299,12 @@ export function VocabularyTopicCard({ language, topic }: { language: VocabularyL
           {button}
         </button>
       ) : (
-        <Link
-          to="/vocabulary/$topicSlug"
-          params={{ topicSlug: topic.slug }}
+        <a
+          href={`/vocabulary/${topic.slug}`}
           className="mt-5 inline-flex rounded-2xl bg-[#6D28D9] px-5 py-3 font-black text-white shadow-[0_5px_0_#4C1D95]"
         >
           {button}
-        </Link>
+        </a>
       )}
     </GameCard>
   );
@@ -411,13 +410,12 @@ function VocabularyPathNode({
             {button}
           </button>
         ) : (
-          <Link
-            to="/vocabulary/$topicSlug"
-            params={{ topicSlug: topic.slug }}
+          <a
+            href={`/vocabulary/${topic.slug}`}
             className="mt-4 inline-flex rounded-2xl bg-[#6D28D9] px-5 py-3 font-black text-white shadow-[0_5px_0_#4C1D95]"
           >
             {button}
-          </Link>
+          </a>
         )}
       </div>
     </div>

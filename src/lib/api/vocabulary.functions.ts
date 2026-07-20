@@ -25,7 +25,7 @@ import {
 } from "../vocabulary.server";
 
 const partOfSpeechSchema = z.enum(["verb", "adjective", "noun"]);
-const wordDifficultySchema = z.enum(["beginner", "intermediate"]);
+const wordDifficultySchema = z.enum(["A1", "beginner", "intermediate"]);
 const gameTypeSchema = z.enum([
   "match_pairs",
   "memory",

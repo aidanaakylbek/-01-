@@ -78,13 +78,12 @@ function VocabularyPage() {
               )}
             </div>
             {currentTopic ? (
-              <Link
-                to="/vocabulary/$topicSlug"
-                params={{ topicSlug: currentTopic.slug }}
+              <a
+                href={`/vocabulary/${currentTopic.slug}`}
                 className="inline-flex justify-center rounded-[22px] bg-[#FACC15] px-7 py-4 text-center font-black text-[#1E1B4B] shadow-[0_7px_0_#D97706] transition hover:-translate-y-0.5"
               >
                 {currentTopic.progress.state === "available" ? (lang === "RU" ? "Начать обучение" : "Оқуды бастау") : c.continue}
-              </Link>
+              </a>
             ) : null}
           </div>
         </GameCard>
