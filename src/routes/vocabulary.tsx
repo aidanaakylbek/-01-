@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 
 import { GameCard, GameLayout, ProgressBar } from "@/components/gamified-platform";
 import {
@@ -23,6 +23,7 @@ export const Route = createFileRoute("/vocabulary")({
 
 function VocabularyPage() {
   const loaderData = Route.useLoaderData();
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
   const { language } = useLanguage();
   const lang = language as VocabularyLanguage;
   const c = vocabularyCopy[lang];
@@ -31,6 +32,10 @@ function VocabularyPage() {
   const currentTopic = findCurrentTopic(overview.topics);
   const currentStage = currentTopic ? getCurrentStage(currentTopic, lang) : null;
   const currentTitle = currentTopic ? getTopicTitle(currentTopic, lang) : c.noTopics;
+
+  if (pathname !== "/vocabulary") {
+    return <Outlet />;
+  }
 
   return (
     <GameLayout>

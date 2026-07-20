@@ -1,4 +1,4 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, notFound, useRouterState } from "@tanstack/react-router";
 import { useState } from "react";
 
 import { GameCard, GameLayout, ProgressBar } from "@/components/gamified-platform";
@@ -30,6 +30,7 @@ export const Route = createFileRoute("/vocabulary/$topicSlug")({
 
 function VocabularyTopicPage() {
   const initialTopic = Route.useLoaderData();
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
   const { language } = useLanguage();
   const lang = language as VocabularyLanguage;
   const c = vocabularyCopy[lang];
@@ -64,6 +65,10 @@ function VocabularyTopicPage() {
     adjective: topic.progress.tests.adjectivesPassed,
     noun: topic.progress.tests.nounsPassed,
   };
+
+  if (pathname !== `/vocabulary/${topic.slug}`) {
+    return <Outlet />;
+  }
 
   const reload = async () => {
     const fresh = await getVocabularyTopicFn({ data: { slug: topic.slug } });
