@@ -108,7 +108,7 @@ export type VocabularyTopicProgress = {
   knownNouns: number;
   totalKnown: number;
   completionPercentage: number;
-  state: "locked" | "available" | "in_progress" | "completed" | "mastered";
+  state: "locked" | "available" | "in_progress" | "completed" | "mastered" | "needs_review";
   unlocked: boolean;
   lockedReason?: string;
   tests: {
@@ -1122,6 +1122,7 @@ function calculateTopicProgress(topicId: string, userId: string): VocabularyTopi
   const unlocked = isTopicUnlocked(topicId, userId);
   const completed = isTopicCompleted(topicId, userId);
   const mastered = isTopicMastered(topicId, userId);
+  const needsReview = completed && getTopicWords(topicId).some((word) => progress.get(word.id)?.status === "review");
   const hasStarted =
     totalKnown > 0 ||
     [...testAttempts.values()].some((attempt) => attempt.userId === userId && attempt.topicId === topicId);
@@ -1131,7 +1132,17 @@ function calculateTopicProgress(topicId: string, userId: string): VocabularyTopi
     knownNouns,
     totalKnown,
     completionPercentage: Math.max(0, Math.min(100, completionPercentage)),
-    state: !unlocked ? "locked" : mastered ? "mastered" : completed ? "completed" : hasStarted ? "in_progress" : "available",
+    state: !unlocked
+      ? "locked"
+      : mastered
+        ? "mastered"
+        : needsReview
+          ? "needs_review"
+          : completed
+            ? "completed"
+            : hasStarted
+              ? "in_progress"
+              : "available",
     unlocked,
     lockedReason: unlocked ? undefined : "Complete the previous topic to unlock this one.",
     tests,

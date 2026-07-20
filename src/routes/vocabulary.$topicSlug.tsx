@@ -1,5 +1,5 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import { GameCard, GameLayout, ProgressBar } from "@/components/gamified-platform";
 import {
@@ -7,8 +7,6 @@ import {
   VocabularyAIPanel,
   VocabularyFlashcard,
   VocabularyTabs,
-  VocabularyWordList,
-  useFilteredVocabulary,
   vocabularyCopy,
 } from "@/components/vocabulary-ui";
 import { useLanguage } from "@/hooks/use-language";
@@ -36,14 +34,12 @@ function VocabularyTopicPage() {
   const lang = language as VocabularyLanguage;
   const c = vocabularyCopy[lang];
   const [topic, setTopic] = useState(initialTopic);
-  const [activePart, setActivePart] = useState<VocabularyPartOfSpeech>("verb");
+  const [activePart, setActivePart] = useState<VocabularyPartOfSpeech>(() => getInitialPart(initialTopic.progress));
   const [cardIndexByPart, setCardIndexByPart] = useState<Record<VocabularyPartOfSpeech, number>>({
     verb: 0,
     adjective: 0,
     noun: 0,
   });
-  const [mode, setMode] = useState<"flashcards" | "list">("flashcards");
-  const [query, setQuery] = useState("");
   const [saving, setSaving] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiResponse, setAiResponse] = useState<VocabularyAIResponse | undefined>();
@@ -53,15 +49,21 @@ function VocabularyTopicPage() {
   const activeWords = topic.sections[activePart];
   const activeIndex = Math.min(cardIndexByPart[activePart], Math.max(0, activeWords.length - 1));
   const activeWord = activeWords[activeIndex];
-  const filteredWords = useFilteredVocabulary(topic.words, query, mode === "list" ? activePart : "all");
-  const counts = useMemo(
-    () => ({
-      verb: topic.counts.verbs,
-      adjective: topic.counts.adjectives,
-      noun: topic.counts.nouns,
-    }),
-    [topic.counts],
-  );
+  const counts = {
+    verb: topic.counts.verbs,
+    adjective: topic.counts.adjectives,
+    noun: topic.counts.nouns,
+  };
+  const sectionKnown = {
+    verb: topic.progress.knownVerbs,
+    adjective: topic.progress.knownAdjectives,
+    noun: topic.progress.knownNouns,
+  };
+  const sectionPassed = {
+    verb: topic.progress.tests.verbsPassed,
+    adjective: topic.progress.tests.adjectivesPassed,
+    noun: topic.progress.tests.nounsPassed,
+  };
 
   const reload = async () => {
     const fresh = await getVocabularyTopicFn({ data: { slug: topic.slug } });
@@ -130,47 +132,84 @@ function VocabularyTopicPage() {
           </div>
         </GameCard>
 
+        <GameCard className="bg-white/95">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.22em] text-[#8B5CF6]">
+                {lang === "RU" ? "Обзор темы" : lang === "EN" ? "Topic overview" : "Тақырыпқа шолу"}
+              </p>
+              <h2 className="mt-2 text-3xl font-black text-[#1E1B4B]">{title}</h2>
+              <p className="mt-2 font-bold text-[#6B5E8F]">
+                {lang === "RU" ? "Цель: выучить 45 слов и пройти тесты по разделам." : "Мақсат: 45 сөзді үйреніп, бөлім тесттерін тапсыру."}
+              </p>
+            </div>
+            {sectionKnown[activePart] >= 15 ? (
+              <Link
+                to="/vocabulary/$topicSlug/test/$partOfSpeech"
+                params={{ topicSlug: topic.slug, partOfSpeech: activePart }}
+                className="rounded-2xl bg-[#FACC15] px-5 py-3 text-center font-black text-[#1E1B4B] shadow-[0_5px_0_#D97706]"
+              >
+                {partLabel(activePart, lang)} тесті
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={() => document.getElementById("vocabulary-flashcards")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                className="rounded-2xl bg-[#FACC15] px-5 py-3 text-center font-black text-[#1E1B4B] shadow-[0_5px_0_#D97706]"
+              >
+                {c.continue}
+              </button>
+            )}
+          </div>
+          <div className="mt-5 grid gap-3 md:grid-cols-4">
+            <SectionStatus label={partLabel("verb", lang)} known={topic.progress.knownVerbs} passed={topic.progress.tests.verbsPassed} active={activePart === "verb"} />
+            <SectionStatus label={partLabel("adjective", lang)} known={topic.progress.knownAdjectives} passed={topic.progress.tests.adjectivesPassed} active={activePart === "adjective"} />
+            <SectionStatus label={partLabel("noun", lang)} known={topic.progress.knownNouns} passed={topic.progress.tests.nounsPassed} active={activePart === "noun"} />
+            <div className={`rounded-3xl border-2 p-4 ${topic.progress.tests.mixedPassed ? "border-[#FACC15] bg-[#FFFBEB]" : "border-[#DDD6FE] bg-[#F5F3FF]"}`}>
+              <p className="font-black text-[#1E1B4B]">Mixed Topic Test</p>
+              <p className="mt-1 text-sm font-black text-[#6B5E8F]">{topic.progress.tests.mixedPassed ? "✓ 70%+" : "70%+"}</p>
+            </div>
+          </div>
+          {sectionPassed.verb && sectionPassed.adjective && sectionPassed.noun ? (
+            <Link
+              to="/vocabulary/$topicSlug/final-test"
+              params={{ topicSlug: topic.slug }}
+              className="mt-5 inline-flex rounded-2xl bg-[#6D28D9] px-5 py-3 font-black text-white shadow-[0_5px_0_#4C1D95]"
+            >
+              Mixed Topic Test
+            </Link>
+          ) : null}
+        </GameCard>
+
         <VocabularyTabs active={activePart} counts={counts} language={lang} onChange={setActivePart} />
 
-        <GameCard className="bg-white/95">
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <div className="flex rounded-[22px] border-2 border-[#DDD6FE] bg-[#F5F3FF] p-1">
-              <button
-                type="button"
-                className={`rounded-2xl px-4 py-2 font-black ${mode === "flashcards" ? "bg-[#6D28D9] text-white" : "text-[#6B5E8F]"}`}
-                onClick={() => setMode("flashcards")}
-              >
-                {c.flashcards}
-              </button>
-              <button
-                type="button"
-                className={`rounded-2xl px-4 py-2 font-black ${mode === "list" ? "bg-[#6D28D9] text-white" : "text-[#6B5E8F]"}`}
-                onClick={() => setMode("list")}
-              >
-                {c.list}
-              </button>
-            </div>
-            <input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder={c.search}
-              className="rounded-2xl border-2 border-[#DDD6FE] bg-[#F5F3FF] px-4 py-3 font-bold outline-none focus:border-[#8B5CF6]"
+        <div id="vocabulary-flashcards">
+          {activeWord ? (
+            <VocabularyFlashcard
+              key={activeWord.id}
+              language={lang}
+              word={activeWord}
+              index={activeIndex}
+              total={activeWords.length}
+              saving={saving}
+              onKnown={() => void save("known")}
+              onReview={() => void save("review")}
+              onFavorite={() => void favorite(activeWord.id)}
+              onAskAI={() => void askAI(`Explain the word "${activeWord.word_en}" with simple examples.`)}
             />
-          </div>
-          <div className="mt-4 flex flex-wrap gap-3">
+          ) : (
+            <VocabularyEmptyState text={c.noTopics} icon="style" />
+          )}
+        </div>
+
+        <GameCard className="bg-white/95">
+          <div className="flex flex-wrap gap-3">
             <Link
               to="/vocabulary/$topicSlug/test/$partOfSpeech"
               params={{ topicSlug: topic.slug, partOfSpeech: activePart }}
               className="rounded-2xl bg-[#6D28D9] px-5 py-3 font-black text-white shadow-[0_5px_0_#4C1D95]"
             >
               {partLabel(activePart, lang)} тесті
-            </Link>
-            <Link
-              to="/vocabulary/$topicSlug/final-test"
-              params={{ topicSlug: topic.slug }}
-              className="rounded-2xl bg-[#FACC15] px-5 py-3 font-black text-[#1E1B4B] shadow-[0_5px_0_#D97706]"
-            >
-              Mixed Topic Test
             </Link>
             <Link
               to="/vocabulary/games"
@@ -181,27 +220,6 @@ function VocabularyTopicPage() {
             </Link>
           </div>
         </GameCard>
-
-        {mode === "flashcards" ? (
-          activeWord ? (
-            <VocabularyFlashcard
-              language={lang}
-              word={activeWord}
-              index={activeIndex}
-              total={activeWords.length}
-              saving={saving}
-              onKnown={() => void save("known")}
-              onReview={() => void save("review")}
-              onFavorite={() => void favorite(activeWord.id)}
-            />
-          ) : (
-            <VocabularyEmptyState text={c.noTopics} icon="style" />
-          )
-        ) : filteredWords.length ? (
-          <VocabularyWordList words={filteredWords} onFavorite={(wordId) => void favorite(wordId)} />
-        ) : (
-          <VocabularyEmptyState text={c.noSearch} icon="search_off" />
-        )}
 
         <VocabularyAIPanel response={aiResponse} loading={aiLoading} onAsk={(message) => void askAI(message)} />
       </div>
@@ -216,4 +234,20 @@ function partLabel(part: VocabularyPartOfSpeech, language: VocabularyLanguage) {
     noun: { KZ: "Зат есімдер", RU: "Существительные", EN: "Nouns" },
   } satisfies Record<VocabularyPartOfSpeech, Record<VocabularyLanguage, string>>;
   return labels[part][language];
+}
+
+function getInitialPart(progress: { knownVerbs: number; knownAdjectives: number; knownNouns: number; tests: { verbsPassed: boolean; adjectivesPassed: boolean; nounsPassed: boolean } }) {
+  if (progress.knownVerbs < 15 || !progress.tests.verbsPassed) return "verb";
+  if (progress.knownAdjectives < 15 || !progress.tests.adjectivesPassed) return "adjective";
+  return "noun";
+}
+
+function SectionStatus({ label, known, passed, active }: { label: string; known: number; passed: boolean; active: boolean }) {
+  return (
+    <div className={`rounded-3xl border-2 p-4 ${active ? "border-[#8B5CF6] bg-[#F5F3FF]" : "border-[#DDD6FE] bg-white"}`}>
+      <p className="font-black text-[#1E1B4B]">{label}</p>
+      <p className="mt-1 text-sm font-black text-[#6B5E8F]">{known} / 15 {passed ? "✓" : ""}</p>
+      <ProgressBar value={Math.round((known / 15) * 100)} />
+    </div>
+  );
 }

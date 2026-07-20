@@ -51,6 +51,7 @@ export const vocabularyCopy = {
     available: "Бастау",
     inProgress: "Жалғастыру",
     mastered: "Меңгерілді",
+    needsReview: "Қайталау керек",
     lockedHint: "Алдыңғы тақырыпты аяқтаңыз.",
   },
   RU: {
@@ -88,6 +89,7 @@ export const vocabularyCopy = {
     available: "Начать",
     inProgress: "Продолжить",
     mastered: "Освоено",
+    needsReview: "Повторить",
     lockedHint: "Завершите предыдущую тему.",
   },
   EN: {
@@ -125,6 +127,7 @@ export const vocabularyCopy = {
     available: "Start",
     inProgress: "Continue",
     mastered: "Mastered",
+    needsReview: "Review",
     lockedHint: "Complete the previous topic to unlock this one.",
   },
 } satisfies Record<VocabularyLanguage, Record<string, string>>;
@@ -251,7 +254,9 @@ export function VocabularyTopicCard({ language, topic }: { language: VocabularyL
         ? c.available
         : topic.progress.state === "mastered"
           ? c.mastered
-          : c.inProgress;
+          : topic.progress.state === "needs_review"
+            ? c.needsReview
+            : c.inProgress;
   const locked = topic.progress.state === "locked";
   const completed = topic.progress.state === "completed" || topic.progress.state === "mastered";
   return (
@@ -350,9 +355,18 @@ function VocabularyPathNode({
   const description = language === "RU" ? topic.description_ru : language === "EN" ? topic.description_en : topic.description_kk;
   const locked = topic.progress.state === "locked";
   const completed = topic.progress.state === "completed" || topic.progress.state === "mastered";
-  const active = topic.progress.state === "available" || topic.progress.state === "in_progress";
-  const icon = locked ? "lock" : completed ? "check" : (topic.icon ?? "auto_stories");
-  const button = locked ? c.locked : topic.progress.state === "available" ? c.available : completed ? c.mastered : c.inProgress;
+  const needsReview = topic.progress.state === "needs_review";
+  const active = topic.progress.state === "available" || topic.progress.state === "in_progress" || needsReview;
+  const icon = locked ? "lock" : completed ? "check" : needsReview ? "refresh" : (topic.icon ?? "auto_stories");
+  const button = locked
+    ? c.locked
+    : topic.progress.state === "available"
+      ? c.available
+      : completed
+        ? c.mastered
+        : needsReview
+          ? c.needsReview
+          : c.inProgress;
 
   return (
     <div className="grid grid-cols-[86px_minmax(0,1fr)] gap-4">
@@ -361,6 +375,8 @@ function VocabularyPathNode({
           className={`grid h-20 w-20 place-items-center rounded-full border-4 text-white shadow-[0_8px_0_rgba(76,29,149,0.25)] ${
             completed
               ? "border-[#FACC15] bg-[#6D28D9]"
+              : needsReview
+                ? "border-[#FACC15] bg-[#FACC15] text-[#1E1B4B]"
               : active
                 ? "border-[#C084FC] bg-[#8B5CF6] motion-float"
                 : "border-[#DDD6FE] bg-[#C4B5FD] text-[#6B5E8F]"
@@ -454,6 +470,7 @@ export function VocabularyFlashcard({
   onKnown,
   onReview,
   onFavorite,
+  onAskAI,
 }: {
   language: VocabularyLanguage;
   word: VocabularyWordWithState;
@@ -463,40 +480,54 @@ export function VocabularyFlashcard({
   onKnown: () => void;
   onReview: () => void;
   onFavorite: () => void;
+  onAskAI?: () => void;
 }) {
   const c = vocabularyCopy[language];
   const [flipped, setFlipped] = useState(false);
   const status = word.progress.status;
+  const flipCard = () => setFlipped((value) => !value);
 
   return (
     <div className="space-y-4">
-      <button
-        type="button"
-        onClick={() => setFlipped((value) => !value)}
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={flipCard}
         onKeyDown={(event) => {
           if (event.key === "Enter" || event.key === " ") {
             event.preventDefault();
-            setFlipped((value) => !value);
+            flipCard();
           }
         }}
-        className="min-h-[360px] w-full rounded-[34px] border-2 border-[#DDD6FE] bg-white p-6 text-left shadow-[0_10px_0_rgba(109,40,217,0.12)] outline-none transition focus:ring-4 focus:ring-[#C084FC] md:p-8"
+        className="min-h-[420px] w-full cursor-pointer outline-none focus:ring-4 focus:ring-[#C084FC]"
         aria-label={`${word.word_en} flashcard. ${flipped ? "Back" : "Front"}`}
+        style={{ perspective: "1200px" }}
       >
-        {!flipped ? (
-          <div className="flex min-h-[300px] flex-col justify-between">
+        <div
+          className="relative min-h-[420px] rounded-[34px] transition-transform duration-500 motion-reduce:transition-none"
+          style={{ transformStyle: "preserve-3d", transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)" }}
+        >
+          <div
+            className="absolute inset-0 flex min-h-[420px] flex-col justify-between rounded-[34px] border-2 border-[#DDD6FE] bg-white p-6 text-left shadow-[0_10px_0_rgba(109,40,217,0.12)] md:p-8"
+            style={{ backfaceVisibility: "hidden" }}
+          >
             <div className="flex items-start justify-between gap-4">
-              <div>
+              <div className="min-w-0">
                 <p className="text-sm font-black uppercase tracking-[0.2em] text-[#8B5CF6]">
                   {partLabels[word.part_of_speech][language]} · {index + 1} / {total}
                 </p>
-                <h2 className="mt-6 text-6xl font-black text-[#1E1B4B]">{word.word_en}</h2>
-                <p className="mt-3 text-xl font-bold text-[#6B5E8F]">{word.pronunciation}</p>
+                <h2 className="mt-7 break-words text-5xl font-black text-[#1E1B4B] md:text-7xl">{word.word_en}</h2>
+                {word.pronunciation ? <p className="mt-4 text-xl font-bold text-[#6B5E8F]">{word.pronunciation}</p> : null}
+                {word.phonetic_ipa ? <p className="mt-2 text-lg font-black text-[#8B5CF6]">{word.phonetic_ipa}</p> : null}
               </div>
               <FavoriteButton active={word.favorite} onClick={(event) => {
                 event.stopPropagation();
                 onFavorite();
               }} />
             </div>
+            {word.image_url ? (
+              <img src={word.image_url} alt="" className="mx-auto max-h-32 rounded-3xl object-contain" />
+            ) : null}
             <div className="flex flex-wrap items-center gap-3">
               <VocabularyAudioButton word={word.word_en} audioUrl={word.audio_url} />
               <span className="rounded-full bg-[#F5F3FF] px-4 py-2 font-black text-[#6D28D9]">
@@ -505,39 +536,80 @@ export function VocabularyFlashcard({
               <span className="font-bold text-[#6B5E8F]">{c.flip}</span>
             </div>
           </div>
-        ) : (
-          <div className="grid min-h-[300px] gap-5 md:grid-cols-[1fr_1fr]">
-            <div>
-              <p className="text-sm font-black uppercase tracking-[0.2em] text-[#8B5CF6]">Meaning</p>
-              <h2 className="mt-4 text-4xl font-black text-[#1E1B4B]">{word.translation_kk}</h2>
-              <p className="mt-2 text-2xl font-black text-[#6B5E8F]">{word.translation_ru}</p>
-            </div>
-            <div className="rounded-3xl bg-[#F5F3FF] p-5">
-              <p className="font-black text-[#1E1B4B]">{word.example_en}</p>
-              <p className="mt-3 font-semibold text-[#6B5E8F]">{word.example_kk}</p>
-              <p className="mt-2 font-semibold text-[#6B5E8F]">{word.example_ru}</p>
+
+          <div
+            className="absolute inset-0 min-h-[420px] overflow-hidden rounded-[34px] border-2 border-[#C4B5FD] bg-[#F5F3FF] p-6 text-left shadow-[0_10px_0_rgba(109,40,217,0.12)] md:p-8"
+            style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
+          >
+            <div className="flex h-full max-h-[372px] flex-col gap-5 overflow-y-auto pr-1">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-sm font-black uppercase tracking-[0.2em] text-[#8B5CF6]">{word.word_en}</p>
+                  <h2 className="mt-2 text-4xl font-black text-[#1E1B4B]">{word.translation_kk}</h2>
+                  <p className="mt-2 text-2xl font-black text-[#6B5E8F]">{word.translation_ru}</p>
+                </div>
+                <VocabularyAudioButton word={word.word_en} audioUrl={word.audio_url} compact />
+              </div>
+              <div className="grid gap-4 md:grid-cols-3">
+                <ExampleBlock title="EN" text={word.example_en} />
+                <ExampleBlock title="KZ" text={word.example_kk} />
+                <ExampleBlock title="RU" text={word.example_ru} />
+              </div>
+              <div className="grid gap-3 md:grid-cols-2">
+                <div className="rounded-3xl border-2 border-[#DDD6FE] bg-white p-4">
+                  <p className="text-xs font-black uppercase tracking-widest text-[#8B5CF6]">Synonym</p>
+                  <p className="mt-2 font-black text-[#1E1B4B]">AI-Sana арқылы сұра</p>
+                </div>
+                <div className="rounded-3xl border-2 border-[#DDD6FE] bg-white p-4">
+                  <p className="text-xs font-black uppercase tracking-widest text-[#8B5CF6]">Antonym</p>
+                  <p className="mt-2 font-black text-[#1E1B4B]">AI-Sana арқылы сұра</p>
+                </div>
+              </div>
+              {onAskAI ? (
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onAskAI();
+                  }}
+                  className="w-fit rounded-2xl bg-[#6D28D9] px-5 py-3 font-black text-white shadow-[0_5px_0_#4C1D95]"
+                >
+                  Ask AI-Sana
+                </button>
+              ) : null}
             </div>
           </div>
-        )}
-      </button>
-      <div className="grid gap-3 md:grid-cols-2">
-        <button
-          type="button"
-          disabled={saving}
-          onClick={onReview}
-          className="rounded-2xl border-2 border-[#DDD6FE] bg-white px-5 py-4 font-black text-[#6D28D9] disabled:opacity-60"
-        >
-          {c.reviewAgain}
-        </button>
-        <button
-          type="button"
-          disabled={saving}
-          onClick={onKnown}
-          className="rounded-2xl bg-[#22C55E] px-5 py-4 font-black text-white shadow-[0_6px_0_#15803D] disabled:opacity-60"
-        >
-          {c.know}
-        </button>
+        </div>
       </div>
+      {flipped ? (
+        <div className="grid gap-3 md:grid-cols-2">
+          <button
+            type="button"
+            disabled={saving}
+            onClick={onReview}
+            className="rounded-2xl border-2 border-[#DDD6FE] bg-white px-5 py-4 font-black text-[#6D28D9] disabled:opacity-60"
+          >
+            {c.reviewAgain}
+          </button>
+          <button
+            type="button"
+            disabled={saving}
+            onClick={onKnown}
+            className="rounded-2xl bg-[#22C55E] px-5 py-4 font-black text-white shadow-[0_6px_0_#15803D] disabled:opacity-60"
+          >
+            {c.know}
+          </button>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function ExampleBlock({ title, text }: { title: string; text?: string }) {
+  return (
+    <div className="rounded-3xl bg-white p-4">
+      <p className="text-xs font-black uppercase tracking-widest text-[#8B5CF6]">{title}</p>
+      <p className="mt-2 font-bold text-[#1E1B4B]">{text || "—"}</p>
     </div>
   );
 }

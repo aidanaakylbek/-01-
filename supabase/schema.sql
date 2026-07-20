@@ -208,7 +208,7 @@ create table if not exists public.student_topic_unlocks (
   user_id uuid not null references public.users(id) on delete cascade,
   topic_id uuid not null references public.english_vocabulary_topics(id) on delete cascade,
   status text not null default 'locked'
-    check (status in ('locked', 'available', 'in_progress', 'completed', 'mastered')),
+    check (status in ('locked', 'available', 'in_progress', 'completed', 'mastered', 'needs_review')),
   unlocked_at timestamptz,
   completed_at timestamptz,
   mastered_at timestamptz,
