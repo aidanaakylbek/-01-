@@ -5,9 +5,9 @@ import { GameCard, GameLayout, ProgressBar } from "@/components/gamified-platfor
 import {
   DailyGoalCard,
   DailyWordCard,
+  VocabularyLearningPath,
   VocabularyEmptyState,
   VocabularyHero,
-  VocabularyTopicCard,
   vocabularyCopy,
 } from "@/components/vocabulary-ui";
 import { useLanguage } from "@/hooks/use-language";
@@ -98,23 +98,11 @@ function VocabularyPage() {
           </div>
         </GameCard>
 
-        <section className="space-y-4">
-          <div className="flex items-end justify-between gap-4">
-            <div>
-              <p className="text-sm font-black uppercase tracking-[0.22em] text-[#8B5CF6]">{c.featured}</p>
-              <h2 className="text-3xl font-black">{c.allTopics}</h2>
-            </div>
-          </div>
-          {overview.topics.length ? (
-            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-              {overview.topics.map((topic) => (
-                <VocabularyTopicCard key={topic.id} language={lang} topic={topic} />
-              ))}
-            </div>
-          ) : (
-            <VocabularyEmptyState text={c.noTopics} icon="auto_stories" />
-          )}
-        </section>
+        {overview.topics.length ? (
+          <VocabularyLearningPath language={lang} topics={overview.topics} />
+        ) : (
+          <VocabularyEmptyState text={c.noTopics} icon="auto_stories" />
+        )}
       </div>
     </GameLayout>
   );

@@ -108,7 +108,20 @@ export type VocabularyTopicProgress = {
   knownNouns: number;
   totalKnown: number;
   completionPercentage: number;
-  state: "not_started" | "in_progress" | "completed";
+  state: "locked" | "available" | "in_progress" | "completed" | "mastered";
+  unlocked: boolean;
+  lockedReason?: string;
+  tests: {
+    verbsPassed: boolean;
+    adjectivesPassed: boolean;
+    nounsPassed: boolean;
+    mixedPassed: boolean;
+  };
+  rewards?: {
+    xp: number;
+    coins: number;
+    badge: string;
+  };
 };
 
 export type VocabularyValidationResult = {
@@ -285,6 +298,7 @@ const topics = new Map<string, VocabularyTopic>([
     },
   ],
 ]);
+seedVocabularyPathTopics();
 
 const words = new Map<string, VocabularyWord>();
 
@@ -320,6 +334,7 @@ export async function getVocabularyTopic(slug: string): Promise<VocabularyTopicD
   const userId = await getCurrentUserId();
   const topic = topics.get(slug);
   if (!topic || !topic.is_published) return null;
+  assertTopicUnlocked(topic, userId);
 
   const topicWords = getTopicWords(topic.id).map((word) => withState(word, userId));
 
@@ -366,12 +381,16 @@ export async function saveVocabularyProgress(input: {
   if (!word || !word.is_active) {
     throw new Error("WORD_NOT_FOUND");
   }
+  const topic = topicsById(word.topic_id);
+  if (!topic) throw new Error("TOPIC_NOT_FOUND");
+  assertTopicUnlocked(topic, userId);
 
   const progressMap = getUserProgressMap(userId);
   const previous = progressMap.get(input.wordId) ?? newProgress(input.wordId);
   const next = updateProgress(previous, input.action);
   progressMap.set(input.wordId, next);
   updateDailyActivity(userId, input.wordId, input.action);
+  syncTopicUnlocks(userId, word.topic_id);
   return withState(word, userId);
 }
 
@@ -469,6 +488,7 @@ export async function startVocabularySectionTest(input: {
   const userId = await getCurrentUserId();
   const topic = topics.get(input.topicSlug);
   if (!topic || !topic.is_published) throw new Error("TOPIC_NOT_FOUND");
+  assertTopicUnlocked(topic, userId);
   const sectionWords = getTopicWords(topic.id).filter((word) => word.part_of_speech === input.partOfSpeech);
   if (sectionWords.length !== 15) throw new Error("SECTION_NOT_READY");
 
@@ -488,6 +508,7 @@ export async function startVocabularyMixedTest(topicSlug: string) {
   const userId = await getCurrentUserId();
   const topic = topics.get(topicSlug);
   if (!topic || !topic.is_published) throw new Error("TOPIC_NOT_FOUND");
+  assertTopicUnlocked(topic, userId);
   const topicWords = getTopicWords(topic.id);
   const questions = shuffle([
     ...buildSectionQuestions(topic.id, topicWords.filter((word) => word.part_of_speech === "verb"), "verb").slice(0, 5),
@@ -557,6 +578,7 @@ export async function completeVocabularyTest(attemptId: string) {
   recalculateAttempt(attempt);
   attempt.xpEarned = calculateTestXp(attempt);
   grantRewardOnce(userId, `vocabulary:test:${attempt.id}:completed`, attempt.xpEarned);
+  syncTopicUnlocks(userId, attempt.topicId);
   return getVocabularyTestResult(attemptId);
 }
 
@@ -653,6 +675,7 @@ export async function startVocabularyGame(input: {
   const userId = await getCurrentUserId();
   const topic = topics.get(input.topicSlug ?? "family");
   if (!topic) throw new Error("TOPIC_NOT_FOUND");
+  assertTopicUnlocked(topic, userId);
   const pairCount = input.mode === "challenge" ? 8 : input.mode === "easy" ? 4 : 6;
   const sourceWords = getTopicWords(topic.id).filter((word) => !input.partOfSpeech || word.part_of_speech === input.partOfSpeech);
   const picked = shuffle(sourceWords).slice(0, pairCount);
@@ -737,7 +760,7 @@ export async function getVocabularyAnalytics(): Promise<VocabularyAnalytics> {
 
 function getPublishedTopicSummaries(userId: string) {
   return [...topics.values()]
-    .filter((topic) => topic.is_published && isTopicPublishable(topic.id).canPublish)
+    .filter((topic) => topic.is_published)
     .sort((a, b) => a.order_index - b.order_index)
     .map((topic) => ({
       ...topic,
@@ -925,12 +948,13 @@ function scorePart(attempt: VocabularyTestAttempt, part: VocabularyPartOfSpeech)
 
 function isTopicCompleted(topicId: string, userId: string) {
   const attempts = [...testAttempts.values()].filter((attempt) => attempt.userId === userId && attempt.topicId === topicId);
+  const wordsLearned = getTopicWords(topicId).every((word) => getUserProgressMap(userId).get(word.id)?.status === "known");
   const passedMixed = attempts.some((attempt) => attempt.testType === "mixed_topic" && attempt.status === "completed" && attempt.percentage >= 70);
   const parts: VocabularyPartOfSpeech[] = ["verb", "adjective", "noun"];
   const passedParts = parts.every((part) =>
     attempts.some((attempt) => attempt.partOfSpeech === part && attempt.status === "completed" && attempt.percentage >= 70),
   );
-  return passedMixed && passedParts;
+  return wordsLearned && passedMixed && passedParts;
 }
 
 function isTopicMastered(topicId: string, userId: string) {
@@ -1087,15 +1111,70 @@ function calculateTopicProgress(topicId: string, userId: string): VocabularyTopi
   const knownAdjectives = knownWords.filter((word) => word.part_of_speech === "adjective").length;
   const knownNouns = knownWords.filter((word) => word.part_of_speech === "noun").length;
   const totalKnown = knownWords.length;
-  const completionPercentage = Math.round((totalKnown / 45) * 100);
+  const tests = getTopicTestStatus(topicId, userId);
+  const passedCount = [
+    tests.verbsPassed,
+    tests.adjectivesPassed,
+    tests.nounsPassed,
+    tests.mixedPassed,
+  ].filter(Boolean).length;
+  const completionPercentage = Math.round(((totalKnown + passedCount) / 49) * 100);
+  const unlocked = isTopicUnlocked(topicId, userId);
+  const completed = isTopicCompleted(topicId, userId);
+  const mastered = isTopicMastered(topicId, userId);
+  const hasStarted =
+    totalKnown > 0 ||
+    [...testAttempts.values()].some((attempt) => attempt.userId === userId && attempt.topicId === topicId);
   return {
     knownVerbs,
     knownAdjectives,
     knownNouns,
     totalKnown,
-    completionPercentage,
-    state: totalKnown === 0 ? "not_started" : totalKnown >= 45 ? "completed" : "in_progress",
+    completionPercentage: Math.max(0, Math.min(100, completionPercentage)),
+    state: !unlocked ? "locked" : mastered ? "mastered" : completed ? "completed" : hasStarted ? "in_progress" : "available",
+    unlocked,
+    lockedReason: unlocked ? undefined : "Complete the previous topic to unlock this one.",
+    tests,
+    rewards: completed || mastered ? { xp: 40, coins: 20, badge: "Topic Completed" } : undefined,
   };
+}
+
+function getTopicTestStatus(topicId: string, userId: string) {
+  const attempts = [...testAttempts.values()].filter((attempt) => attempt.userId === userId && attempt.topicId === topicId);
+  return {
+    verbsPassed: attempts.some((attempt) => attempt.partOfSpeech === "verb" && attempt.status === "completed" && attempt.percentage >= 70),
+    adjectivesPassed: attempts.some((attempt) => attempt.partOfSpeech === "adjective" && attempt.status === "completed" && attempt.percentage >= 70),
+    nounsPassed: attempts.some((attempt) => attempt.partOfSpeech === "noun" && attempt.status === "completed" && attempt.percentage >= 70),
+    mixedPassed: attempts.some((attempt) => attempt.testType === "mixed_topic" && attempt.status === "completed" && attempt.percentage >= 70),
+  };
+}
+
+function isTopicUnlocked(topicId: string, userId: string) {
+  const ordered = orderedVocabularyTopics();
+  const index = ordered.findIndex((topic) => topic.id === topicId);
+  if (index <= 0) return true;
+  const previous = ordered[index - 1];
+  return previous ? isTopicCompleted(previous.id, userId) : false;
+}
+
+function assertTopicUnlocked(topic: VocabularyTopic, userId: string) {
+  if (isTopicUnlocked(topic.id, userId)) return;
+  const error = new Error("VOCABULARY_TOPIC_LOCKED");
+  error.message = "Previous topic not completed.";
+  throw error;
+}
+
+function syncTopicUnlocks(userId: string, topicId: string) {
+  if (!isTopicCompleted(topicId, userId)) return;
+  const topic = topicsById(topicId);
+  if (!topic) return;
+  grantRewardOnce(userId, `vocabulary:topic:${topic.id}:completed`, 40);
+}
+
+function orderedVocabularyTopics() {
+  return [...topics.values()]
+    .filter((topic) => topic.is_published)
+    .sort((a, b) => a.order_index - b.order_index);
 }
 
 function withState(word: VocabularyWord, userId: string): VocabularyWordWithState {
@@ -1248,6 +1327,172 @@ function validateWordInput(input: Omit<VocabularyWord, "id" | "created_at" | "up
 
 function topicsById(topicId: string) {
   return [...topics.values()].find((topic) => topic.id === topicId);
+}
+
+function seedVocabularyPathTopics() {
+  const pathTopics: Array<Pick<VocabularyTopic, "slug" | "title_en" | "title_kk" | "title_ru" | "description_en" | "description_kk" | "description_ru" | "icon">> = [
+    {
+      slug: "school",
+      title_en: "School",
+      title_kk: "Мектеп",
+      title_ru: "Школа",
+      description_en: "Words for classroom, lessons, and study.",
+      description_kk: "Сынып, сабақ және оқу туралы сөздер.",
+      description_ru: "Слова о классе, уроках и учебе.",
+      icon: "school",
+    },
+    {
+      slug: "food",
+      title_en: "Food",
+      title_kk: "Тағам",
+      title_ru: "Еда",
+      description_en: "Food, drinks, and meals.",
+      description_kk: "Тағам, сусын және тамақтану сөздері.",
+      description_ru: "Еда, напитки и приемы пищи.",
+      icon: "restaurant",
+    },
+    {
+      slug: "house",
+      title_en: "House",
+      title_kk: "Үй",
+      title_ru: "Дом",
+      description_en: "Rooms, furniture, and home objects.",
+      description_kk: "Бөлмелер, жиһаз және үй заттары.",
+      description_ru: "Комнаты, мебель и домашние предметы.",
+      icon: "home",
+    },
+    {
+      slug: "clothes",
+      title_en: "Clothes",
+      title_kk: "Киім",
+      title_ru: "Одежда",
+      description_en: "Clothes and what people wear.",
+      description_kk: "Киім және киіну туралы сөздер.",
+      description_ru: "Одежда и вещи, которые носят.",
+      icon: "checkroom",
+    },
+    {
+      slug: "daily-routine",
+      title_en: "Daily Routine",
+      title_kk: "Күн тәртібі",
+      title_ru: "Распорядок дня",
+      description_en: "Everyday actions from morning to evening.",
+      description_kk: "Таңнан кешке дейінгі күнделікті әрекеттер.",
+      description_ru: "Ежедневные действия с утра до вечера.",
+      icon: "routine",
+    },
+    {
+      slug: "animals",
+      title_en: "Animals",
+      title_kk: "Жануарлар",
+      title_ru: "Животные",
+      description_en: "Common animals and their features.",
+      description_kk: "Жануарлар және олардың белгілері.",
+      description_ru: "Животные и их признаки.",
+      icon: "pets",
+    },
+    {
+      slug: "weather",
+      title_en: "Weather",
+      title_kk: "Ауа райы",
+      title_ru: "Погода",
+      description_en: "Weather, seasons, and temperature.",
+      description_kk: "Ауа райы, мезгілдер және температура.",
+      description_ru: "Погода, времена года и температура.",
+      icon: "partly_cloudy_day",
+    },
+    {
+      slug: "transport",
+      title_en: "Transport",
+      title_kk: "Көлік",
+      title_ru: "Транспорт",
+      description_en: "Transport and movement around the city.",
+      description_kk: "Көлік және қалада қозғалу сөздері.",
+      description_ru: "Транспорт и передвижение по городу.",
+      icon: "directions_bus",
+    },
+    {
+      slug: "travel",
+      title_en: "Travel",
+      title_kk: "Саяхат",
+      title_ru: "Путешествие",
+      description_en: "Travel, places, and directions.",
+      description_kk: "Саяхат, орындар және бағыттар.",
+      description_ru: "Путешествия, места и направления.",
+      icon: "travel_explore",
+    },
+    {
+      slug: "hobbies",
+      title_en: "Hobbies",
+      title_kk: "Хобби",
+      title_ru: "Хобби",
+      description_en: "Free time, hobbies, and interests.",
+      description_kk: "Бос уақыт, хобби және қызығушылықтар.",
+      description_ru: "Свободное время, хобби и интересы.",
+      icon: "sports_esports",
+    },
+    {
+      slug: "body",
+      title_en: "Body",
+      title_kk: "Дене",
+      title_ru: "Тело",
+      description_en: "Body parts and health words.",
+      description_kk: "Дене мүшелері және денсаулық сөздері.",
+      description_ru: "Части тела и слова о здоровье.",
+      icon: "accessibility_new",
+    },
+    {
+      slug: "nature",
+      title_en: "Nature",
+      title_kk: "Табиғат",
+      title_ru: "Природа",
+      description_en: "Nature, plants, and landscapes.",
+      description_kk: "Табиғат, өсімдіктер және жер бедері.",
+      description_ru: "Природа, растения и пейзажи.",
+      icon: "forest",
+    },
+    {
+      slug: "jobs",
+      title_en: "Jobs",
+      title_kk: "Мамандықтар",
+      title_ru: "Профессии",
+      description_en: "Jobs and people at work.",
+      description_kk: "Мамандықтар және еңбек туралы сөздер.",
+      description_ru: "Профессии и люди на работе.",
+      icon: "work",
+    },
+    {
+      slug: "emotions",
+      title_en: "Emotions",
+      title_kk: "Эмоциялар",
+      title_ru: "Эмоции",
+      description_en: "Feelings and character words.",
+      description_kk: "Сезімдер және мінезді сипаттайтын сөздер.",
+      description_ru: "Чувства и слова для описания характера.",
+      icon: "sentiment_satisfied",
+    },
+  ];
+
+  pathTopics.forEach((topic, index) => {
+    if (topics.has(topic.slug)) return;
+    topics.set(topic.slug, {
+      id: `vocab-topic-${topic.slug}`,
+      slug: topic.slug,
+      title_en: topic.title_en,
+      title_kk: topic.title_kk,
+      title_ru: topic.title_ru,
+      description_en: topic.description_en,
+      description_kk: topic.description_kk,
+      description_ru: topic.description_ru,
+      icon: topic.icon,
+      difficulty: "mixed",
+      order_index: index + 2,
+      is_published: true,
+      is_featured: false,
+      created_at: now,
+      updated_at: now,
+    });
+  });
 }
 
 function seedFamilyWords() {

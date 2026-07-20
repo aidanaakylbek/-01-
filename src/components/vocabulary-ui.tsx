@@ -25,6 +25,7 @@ export const vocabularyCopy = {
     featured: "Таңдаулы тақырыптар",
     allTopics: "Барлық тақырыптар",
     stats: "Сөздік статистикасы",
+    path: "Оқу жолы",
     search: "Сөз іздеу...",
     filters: "Сүзгі",
     verbs: "Етістіктер",
@@ -46,6 +47,11 @@ export const vocabularyCopy = {
     games: "Ойындар",
     weakWords: "Қиын сөздер",
     reviewSession: "Жеке қайталау",
+    locked: "Жабық",
+    available: "Бастау",
+    inProgress: "Жалғастыру",
+    mastered: "Меңгерілді",
+    lockedHint: "Алдыңғы тақырыпты аяқтаңыз.",
   },
   RU: {
     title: "Словарь",
@@ -56,6 +62,7 @@ export const vocabularyCopy = {
     featured: "Избранные темы",
     allTopics: "Все темы",
     stats: "Статистика словаря",
+    path: "Учебный путь",
     search: "Найти слово...",
     filters: "Фильтр",
     verbs: "Глаголы",
@@ -77,6 +84,11 @@ export const vocabularyCopy = {
     games: "Игры",
     weakWords: "Сложные слова",
     reviewSession: "Личное повторение",
+    locked: "Закрыто",
+    available: "Начать",
+    inProgress: "Продолжить",
+    mastered: "Освоено",
+    lockedHint: "Завершите предыдущую тему.",
   },
   EN: {
     title: "Vocabulary",
@@ -87,6 +99,7 @@ export const vocabularyCopy = {
     featured: "Featured Topics",
     allTopics: "All Topics",
     stats: "Vocabulary Statistics",
+    path: "Learning Path",
     search: "Search words...",
     filters: "Filter",
     verbs: "Verbs",
@@ -108,6 +121,11 @@ export const vocabularyCopy = {
     games: "Games",
     weakWords: "Weak Words",
     reviewSession: "Personalized Review",
+    locked: "Locked",
+    available: "Start",
+    inProgress: "Continue",
+    mastered: "Mastered",
+    lockedHint: "Complete the previous topic to unlock this one.",
   },
 } satisfies Record<VocabularyLanguage, Record<string, string>>;
 
@@ -226,17 +244,32 @@ export function VocabularyTopicCard({ language, topic }: { language: VocabularyL
   const title = language === "RU" ? topic.title_ru : language === "EN" ? topic.title_en : topic.title_kk;
   const description =
     language === "RU" ? topic.description_ru : language === "EN" ? topic.description_en : topic.description_kk;
-  const button = topic.progress.state === "not_started" ? c.start : c.continue;
+  const button =
+    topic.progress.state === "locked"
+      ? c.locked
+      : topic.progress.state === "available"
+        ? c.available
+        : topic.progress.state === "mastered"
+          ? c.mastered
+          : c.inProgress;
+  const locked = topic.progress.state === "locked";
+  const completed = topic.progress.state === "completed" || topic.progress.state === "mastered";
   return (
-    <GameCard className="bg-white/95 transition hover:-translate-y-1">
+    <GameCard className={`${locked ? "bg-[#F5F3FF] opacity-70" : "bg-white/95 transition hover:-translate-y-1"}`}>
       <div className="flex items-start gap-4">
-        <div className="grid h-16 w-16 shrink-0 place-items-center rounded-[22px] bg-[#6D28D9] text-white shadow-[0_6px_0_#4C1D95]">
-          <span className="material-symbols-outlined text-3xl">{topic.icon ?? "auto_stories"}</span>
+        <div
+          className={`grid h-16 w-16 shrink-0 place-items-center rounded-[22px] text-white shadow-[0_6px_0_rgba(76,29,149,0.35)] ${
+            completed ? "bg-[#FACC15] text-[#1E1B4B]" : locked ? "bg-[#C4B5FD] text-[#6B5E8F]" : "bg-[#6D28D9]"
+          }`}
+        >
+          <span className="material-symbols-outlined text-3xl">
+            {locked ? "lock" : completed ? "workspace_premium" : (topic.icon ?? "auto_stories")}
+          </span>
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-xs font-black uppercase tracking-widest text-[#8B5CF6]">{topic.difficulty}</p>
           <h3 className="mt-1 text-2xl font-black">{title}</h3>
-          <p className="mt-1 font-semibold text-[#6B5E8F]">{description}</p>
+          <p className="mt-1 font-semibold text-[#6B5E8F]">{locked ? c.lockedHint : description}</p>
         </div>
       </div>
       <div className="mt-5 rounded-3xl bg-[#F5F3FF] p-4">
@@ -244,21 +277,142 @@ export function VocabularyTopicCard({ language, topic }: { language: VocabularyL
           <span>{topic.progress.totalKnown} / {topic.counts.total} сөз</span>
           <span className="text-[#6D28D9]">{topic.progress.completionPercentage}%</span>
         </div>
-        <ProgressBar value={topic.progress.completionPercentage} />
+        <ProgressBar value={topic.progress.completionPercentage} danger={locked} />
         <div className="mt-3 grid gap-2 text-sm font-bold text-[#6B5E8F]">
-          <span>{c.verbs}: {topic.progress.knownVerbs} / 15</span>
-          <span>{c.adjectives}: {topic.progress.knownAdjectives} / 15</span>
-          <span>{c.nouns}: {topic.progress.knownNouns} / 15</span>
+          <span>{c.verbs}: {topic.progress.knownVerbs} / 15 {topic.progress.tests.verbsPassed ? "✅" : ""}</span>
+          <span>{c.adjectives}: {topic.progress.knownAdjectives} / 15 {topic.progress.tests.adjectivesPassed ? "✅" : ""}</span>
+          <span>{c.nouns}: {topic.progress.knownNouns} / 15 {topic.progress.tests.nounsPassed ? "✅" : ""}</span>
+          <span>Mixed Test: {topic.progress.tests.mixedPassed ? "✅" : "70%+"}</span>
         </div>
       </div>
-      <Link
-        to="/vocabulary/$topicSlug"
-        params={{ topicSlug: topic.slug }}
-        className="mt-5 inline-flex rounded-2xl bg-[#6D28D9] px-5 py-3 font-black text-white shadow-[0_5px_0_#4C1D95]"
-      >
-        {button}
-      </Link>
+      {locked ? (
+        <button
+          type="button"
+          disabled
+          className="mt-5 inline-flex cursor-not-allowed rounded-2xl bg-[#DDD6FE] px-5 py-3 font-black text-[#6B5E8F]"
+        >
+          {button}
+        </button>
+      ) : (
+        <Link
+          to="/vocabulary/$topicSlug"
+          params={{ topicSlug: topic.slug }}
+          className="mt-5 inline-flex rounded-2xl bg-[#6D28D9] px-5 py-3 font-black text-white shadow-[0_5px_0_#4C1D95]"
+        >
+          {button}
+        </Link>
+      )}
     </GameCard>
+  );
+}
+
+export function VocabularyLearningPath({
+  language,
+  topics,
+}: {
+  language: VocabularyLanguage;
+  topics: VocabularyTopicSummary[];
+}) {
+  const c = vocabularyCopy[language];
+  return (
+    <GameCard className="overflow-hidden bg-white/95">
+      <div className="flex items-end justify-between gap-4">
+        <div>
+          <p className="text-sm font-black uppercase tracking-[0.22em] text-[#8B5CF6]">AI-Sana Path</p>
+          <h2 className="text-3xl font-black">{c.path}</h2>
+        </div>
+        <span className="rounded-full bg-[#FACC15] px-4 py-2 font-black text-[#1E1B4B]">
+          {topics.filter((topic) => topic.progress.state === "completed" || topic.progress.state === "mastered").length} / {topics.length}
+        </span>
+      </div>
+      <div className="mt-8 space-y-0">
+        {topics.map((topic, index) => (
+          <VocabularyPathNode key={topic.id} language={language} topic={topic} index={index} isLast={index === topics.length - 1} />
+        ))}
+      </div>
+    </GameCard>
+  );
+}
+
+function VocabularyPathNode({
+  language,
+  topic,
+  index,
+  isLast,
+}: {
+  language: VocabularyLanguage;
+  topic: VocabularyTopicSummary;
+  index: number;
+  isLast: boolean;
+}) {
+  const c = vocabularyCopy[language];
+  const title = language === "RU" ? topic.title_ru : language === "EN" ? topic.title_en : topic.title_kk;
+  const description = language === "RU" ? topic.description_ru : language === "EN" ? topic.description_en : topic.description_kk;
+  const locked = topic.progress.state === "locked";
+  const completed = topic.progress.state === "completed" || topic.progress.state === "mastered";
+  const active = topic.progress.state === "available" || topic.progress.state === "in_progress";
+  const icon = locked ? "lock" : completed ? "check" : (topic.icon ?? "auto_stories");
+  const button = locked ? c.locked : topic.progress.state === "available" ? c.available : completed ? c.mastered : c.inProgress;
+
+  return (
+    <div className="grid grid-cols-[86px_minmax(0,1fr)] gap-4">
+      <div className="flex flex-col items-center">
+        <div
+          className={`grid h-20 w-20 place-items-center rounded-full border-4 text-white shadow-[0_8px_0_rgba(76,29,149,0.25)] ${
+            completed
+              ? "border-[#FACC15] bg-[#6D28D9]"
+              : active
+                ? "border-[#C084FC] bg-[#8B5CF6] motion-float"
+                : "border-[#DDD6FE] bg-[#C4B5FD] text-[#6B5E8F]"
+          }`}
+        >
+          <span className="material-symbols-outlined text-4xl">{icon}</span>
+        </div>
+        {!isLast ? <div className={`h-16 w-2 ${completed ? "bg-[#8B5CF6]" : "bg-[#DDD6FE]"}`} /> : null}
+      </div>
+      <div className={`mb-5 rounded-[28px] border-2 p-5 ${locked ? "border-[#DDD6FE] bg-[#F5F3FF]" : "border-[#DDD6FE] bg-white"}`}>
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="text-xs font-black uppercase tracking-widest text-[#8B5CF6]">Level {index + 1}</p>
+            <h3 className="mt-1 text-2xl font-black text-[#1E1B4B]">{title}</h3>
+            <p className="mt-1 font-semibold text-[#6B5E8F]">{locked ? c.lockedHint : description}</p>
+          </div>
+          <div className="shrink-0 text-right">
+            <p className="text-2xl font-black text-[#6D28D9]">{topic.progress.completionPercentage}%</p>
+            <p className="text-xs font-black uppercase tracking-widest text-[#6B5E8F]">{button}</p>
+          </div>
+        </div>
+        <ProgressBar value={topic.progress.completionPercentage} danger={locked} />
+        <div className="mt-4 flex flex-wrap gap-2 text-xs font-black">
+          <Requirement done={topic.progress.totalKnown >= 45} label="45 words" />
+          <Requirement done={topic.progress.tests.verbsPassed} label="Verbs" />
+          <Requirement done={topic.progress.tests.adjectivesPassed} label="Adjectives" />
+          <Requirement done={topic.progress.tests.nounsPassed} label="Nouns" />
+          <Requirement done={topic.progress.tests.mixedPassed} label="Mixed test" />
+        </div>
+        {locked ? (
+          <button type="button" disabled className="mt-4 rounded-2xl bg-[#DDD6FE] px-5 py-3 font-black text-[#6B5E8F]">
+            {button}
+          </button>
+        ) : (
+          <Link
+            to="/vocabulary/$topicSlug"
+            params={{ topicSlug: topic.slug }}
+            className="mt-4 inline-flex rounded-2xl bg-[#6D28D9] px-5 py-3 font-black text-white shadow-[0_5px_0_#4C1D95]"
+          >
+            {button}
+          </Link>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Requirement({ done, label }: { done: boolean; label: string }) {
+  return (
+    <span className={`rounded-full px-3 py-1.5 ${done ? "bg-[#DCFCE7] text-[#166534]" : "bg-[#F5F3FF] text-[#6B5E8F]"}`}>
+      {done ? "✓" : "•"} {label}
+    </span>
   );
 }
 
@@ -614,6 +768,20 @@ export function VocabularyTestResultCard({ language, result }: { language: Vocab
   const weak = result.weakWords.slice(0, 6);
   return (
     <GameCard className="bg-white/95">
+      {result.topicCompleted ? (
+        <div className="mb-5 rounded-[28px] border-2 border-[#FACC15] bg-[#FFFBEB] p-5 text-[#1E1B4B]">
+          <p className="text-3xl font-black">🎉 Great job!</p>
+          <p className="mt-2 text-lg font-bold">
+            You have completed this topic. Rewards: +40 XP, +20 Coins, 🏆 Topic Completed.
+          </p>
+          <Link
+            to="/vocabulary"
+            className="mt-4 inline-flex rounded-2xl bg-[#6D28D9] px-5 py-3 font-black text-white shadow-[0_5px_0_#4C1D95]"
+          >
+            Continue Learning
+          </Link>
+        </div>
+      ) : null}
       <p className="text-sm font-black uppercase tracking-[0.22em] text-[#8B5CF6]">AI-Sana Result</p>
       <h1 className="mt-3 text-5xl font-black text-[#1E1B4B]">{result.attempt.percentage}%</h1>
       <p className="mt-2 text-xl font-black">

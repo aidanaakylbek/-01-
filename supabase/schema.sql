@@ -203,6 +203,24 @@ create index if not exists student_vocabulary_progress_next_review_at_idx on pub
 create index if not exists student_favorite_vocabulary_user_id_idx on public.student_favorite_vocabulary(user_id);
 create index if not exists vocabulary_daily_activity_user_date_idx on public.vocabulary_daily_activity(user_id, activity_date);
 
+create table if not exists public.student_topic_unlocks (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references public.users(id) on delete cascade,
+  topic_id uuid not null references public.english_vocabulary_topics(id) on delete cascade,
+  status text not null default 'locked'
+    check (status in ('locked', 'available', 'in_progress', 'completed', 'mastered')),
+  unlocked_at timestamptz,
+  completed_at timestamptz,
+  mastered_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (user_id, topic_id)
+);
+
+create index if not exists student_topic_unlocks_user_id_idx on public.student_topic_unlocks(user_id);
+create index if not exists student_topic_unlocks_topic_id_idx on public.student_topic_unlocks(topic_id);
+create index if not exists student_topic_unlocks_status_idx on public.student_topic_unlocks(status);
+
 create table if not exists public.vocabulary_questions (
   id uuid primary key default gen_random_uuid(),
   topic_id uuid not null references public.english_vocabulary_topics(id) on delete cascade,
