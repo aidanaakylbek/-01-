@@ -744,7 +744,8 @@ export async function getVocabularyAIResponse(input: {
 }) {
   const topic = input.topicSlug ? topics.get(input.topicSlug) : topics.get(FIRST_A1_TOPIC_SLUG);
   const word = input.wordId ? words.get(input.wordId) : undefined;
-  const focus = word ?? (topic ? getTopicWords(topic.id).find((item) => item.part_of_speech === input.partOfSpeech) : undefined);
+  const requestedWord = findVocabularyWordInMessage(input.message, topic?.id);
+  const focus = requestedWord ?? word ?? (topic ? getTopicWords(topic.id).find((item) => item.part_of_speech === input.partOfSpeech) : undefined);
   const answer = buildLocalVocabularyAIAnswer(input.message, focus);
   return {
     answer,
@@ -1077,13 +1078,78 @@ function buildLocalVocabularyAIAnswer(message: string, word?: VocabularyWord) {
   if (!word) {
     return "Мен AI-Sana сөздік көмекшісімін. Қай сөзді түсіндіріп берейін? Сөзді немесе сөйлемді жазсаң, мағынасын, қолданылуын және мысалын көрсетемін.";
   }
+  const examples = buildStudentFriendlyExamples(word);
   if (/dialog|диалог|сөйлесу/i.test(clean)) {
-    return `Қысқа диалог:\nA: Do you ${word.word_en} your family?\nB: Yes, I do. ${word.example_en ?? ""}\nМағынасы: ${word.translation_kk}.`;
+    return [
+      `Қысқа диалог:`,
+      `A: Can you use "${word.word_en}" in a sentence?`,
+      `B: Yes. ${examples[0]}`,
+      `A: What does it mean?`,
+      `B: Қазақша: ${word.translation_kk}. Орысша: ${word.translation_ru}.`,
+    ].join("\n");
   }
   if (/story|әңгіме|история/i.test(clean)) {
-    return `Mini story: My family is important to me. I learn the word "${word.word_en}" today. ${word.example_en ?? ""}\nБұл сөздің мағынасы: ${word.translation_kk}.`;
+    return [
+      `Mini story:`,
+      `Today I learn the word "${word.word_en}".`,
+      examples[0],
+      examples[1],
+      `Мағынасы: ${word.translation_kk}.`,
+    ].join("\n");
   }
-  return `"${word.word_en}" сөзі ${word.part_of_speech} түріне жатады. Қазақша мағынасы: ${word.translation_kk}. Орысша: ${word.translation_ru}. Мысал: ${word.example_en ?? `I use ${word.word_en} in a sentence.`}`;
+  return [
+    `"${word.word_en}" сөзі ${partLabel(word.part_of_speech, "KZ").toLowerCase()} түріне жатады.`,
+    `Қазақша мағынасы: ${word.translation_kk}.`,
+    `Орысша мағынасы: ${word.translation_ru}.`,
+    ``,
+    `Мысалдар:`,
+    `1. ${examples[0]}`,
+    `2. ${examples[1]}`,
+    `3. ${examples[2]}`,
+    ``,
+    `Есте сақта: бұл сөзді қысқа сөйлемде қолдансаң, мағынасы тез түсінікті болады.`,
+  ].join("\n");
+}
+
+function findVocabularyWordInMessage(message: string, topicId?: string) {
+  const clean = normalizeTypedAnswer(message);
+  const source = topicId ? getTopicWords(topicId) : getPublishedActiveWords();
+  return (
+    source.find((word) => isVocabularyWordMentioned(clean, word.word_en)) ??
+    source.find((word) => isVocabularyWordMentioned(clean, word.translation_kk)) ??
+    source.find((word) => isVocabularyWordMentioned(clean, word.translation_ru)) ??
+    getPublishedActiveWords().find((word) => isVocabularyWordMentioned(clean, word.word_en)) ??
+    getPublishedActiveWords().find((word) => isVocabularyWordMentioned(clean, word.translation_kk)) ??
+    getPublishedActiveWords().find((word) => isVocabularyWordMentioned(clean, word.translation_ru))
+  );
+}
+
+function isVocabularyWordMentioned(message: string, value: string) {
+  const normalized = normalizeTypedAnswer(value);
+  if (!normalized || normalized.length < 2) return false;
+  return message === normalized || message.includes(` ${normalized} `) || message.startsWith(`${normalized} `) || message.endsWith(` ${normalized}`);
+}
+
+function buildStudentFriendlyExamples(word: VocabularyWord) {
+  if (word.part_of_speech === "verb") {
+    return [
+      `I ${word.word_en} every day.`,
+      `I ${word.word_en} at school.`,
+      `We ${word.word_en} together.`,
+    ];
+  }
+  if (word.part_of_speech === "adjective") {
+    return [
+      `She is ${word.word_en}.`,
+      `My friend is ${word.word_en}.`,
+      `This is a ${word.word_en} person.`,
+    ];
+  }
+  return [
+    `This is my ${word.word_en}.`,
+    `I see a ${word.word_en}.`,
+    `The ${word.word_en} is here.`,
+  ];
 }
 
 function normalizeTypedAnswer(value: string) {
