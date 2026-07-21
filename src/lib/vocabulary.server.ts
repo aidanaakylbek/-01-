@@ -262,7 +262,7 @@ export type VocabularyGameSession = {
   partOfSpeech?: VocabularyPartOfSpeech;
   gameType: VocabularyGameType;
   mode: "easy" | "normal" | "challenge";
-  items: Array<{ id: string; word: string; match: string; imageUrl?: string }>;
+  items: Array<{ id: string; word: string; match: string; matchRu?: string; imageUrl?: string }>;
   totalItems: number;
   correctItems: number;
   incorrectItems: number;
@@ -705,6 +705,7 @@ export async function startVocabularyGame(input: {
       id: word.id,
       word: word.word_en,
       match: word.translation_kk,
+      matchRu: word.translation_ru,
       imageUrl: word.image_url,
     })),
     totalItems: picked.length,

@@ -980,29 +980,159 @@ export function VocabularyGamesGrid({
         ))}
       </div>
       <GameCard className="bg-white/95">
-        <h2 className="text-2xl font-black">Ойын сессиясы</h2>
         {activeSession ? (
-          <div className="mt-4 space-y-3">
-            {activeSession.items.map((item) => (
-              <div key={item.id} className="flex items-center justify-between rounded-2xl bg-[#F5F3FF] p-3 font-black">
-                <span>{item.word}</span>
-                <span className="text-[#6D28D9]">{item.match}</span>
-              </div>
-            ))}
-            <button
-              type="button"
-              onClick={() => onComplete(activeSession)}
-              className="w-full rounded-2xl bg-[#FACC15] px-5 py-3 font-black text-[#1E1B4B] shadow-[0_5px_0_#D97706]"
-            >
-              Аяқтау (+XP)
-            </button>
-          </div>
+          <VocabularyActiveGame key={activeSession.id} language={language} session={activeSession} onComplete={onComplete} />
         ) : (
-          <p className="mt-3 font-bold text-[#6B5E8F]">Ойынды таңда. Алғашқы нұсқада жұптарды көру және аяқтау логикасы қосылды.</p>
+          <>
+            <h2 className="text-2xl font-black">Ойын сессиясы</h2>
+            <p className="mt-3 font-bold text-[#6B5E8F]">Ойынды таңда. Сөзді аудармасымен сәйкестендіріп, XP жина.</p>
+          </>
         )}
       </GameCard>
     </div>
   );
+}
+
+function VocabularyActiveGame({
+  language,
+  session,
+  onComplete,
+}: {
+  language: VocabularyLanguage;
+  session: VocabularyGameSession;
+  onComplete: (session: VocabularyGameSession) => void;
+}) {
+  const [selectedWordId, setSelectedWordId] = useState<string | undefined>();
+  const [matchedIds, setMatchedIds] = useState<string[]>([]);
+  const [wrongPair, setWrongPair] = useState<{ wordId: string; matchId: string } | undefined>();
+  const [attempts, setAttempts] = useState(0);
+  const [finishing, setFinishing] = useState(false);
+
+  const translations = useMemo(() => stableGameShuffle(session.items), [session.id, session.items]);
+  const matchedSet = useMemo(() => new Set(matchedIds), [matchedIds]);
+  const complete = matchedIds.length >= session.totalItems && session.totalItems > 0;
+
+  const selectMatch = (matchId: string) => {
+    if (!selectedWordId || matchedSet.has(matchId)) return;
+    setAttempts((value) => value + 1);
+    if (selectedWordId === matchId) {
+      setMatchedIds((current) => (current.includes(matchId) ? current : [...current, matchId]));
+      setWrongPair(undefined);
+      setSelectedWordId(undefined);
+      return;
+    }
+    setWrongPair({ wordId: selectedWordId, matchId });
+    window.setTimeout(() => setWrongPair(undefined), 700);
+  };
+
+  const finish = async () => {
+    if (!complete || finishing) return;
+    setFinishing(true);
+    await onComplete({
+      ...session,
+      correctItems: session.totalItems,
+      incorrectItems: Math.max(0, attempts - session.totalItems),
+    });
+    setFinishing(false);
+  };
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <p className="text-sm font-black uppercase tracking-[0.18em] text-[#8B5CF6]">{session.gameType.replaceAll("_", " ")}</p>
+        <h2 className="text-2xl font-black">Ойын сессиясы</h2>
+        <p className="mt-1 font-bold text-[#6B5E8F]">Сол жақтан ағылшын сөзін, оң жақтан дұрыс аудармасын таңда.</p>
+      </div>
+
+      <div className="rounded-2xl bg-[#F5F3FF] p-3">
+        <div className="flex items-center justify-between text-sm font-black text-[#6B5E8F]">
+          <span>{matchedIds.length} / {session.totalItems}</span>
+          <span>{complete ? "Жарайсың!" : "Жұптарды тап"}</span>
+        </div>
+        <div className="mt-2 h-3 overflow-hidden rounded-full bg-[#EDE9FE]">
+          <div
+            className="h-full rounded-full bg-[#22C55E] transition-all"
+            style={{ width: `${Math.round((matchedIds.length / Math.max(1, session.totalItems)) * 100)}%` }}
+          />
+        </div>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="space-y-2">
+          {session.items.map((item) => {
+            const matched = matchedSet.has(item.id);
+            const selected = selectedWordId === item.id;
+            const wrong = wrongPair?.wordId === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                disabled={matched}
+                onClick={() => {
+                  setSelectedWordId(item.id);
+                  setWrongPair(undefined);
+                }}
+                className={[
+                  "w-full rounded-2xl border-2 px-3 py-3 text-left font-black transition",
+                  matched ? "border-[#22C55E] bg-[#DCFCE7] text-[#166534]" : "",
+                  selected ? "border-[#6D28D9] bg-[#EDE9FE] text-[#1E1B4B]" : "",
+                  wrong ? "border-[#EF4444] bg-[#FEE2E2]" : "",
+                  !matched && !selected && !wrong ? "border-[#DDD6FE] bg-white hover:border-[#8B5CF6]" : "",
+                ].join(" ")}
+              >
+                {item.word}
+              </button>
+            );
+          })}
+        </div>
+        <div className="space-y-2">
+          {translations.map((item) => {
+            const matched = matchedSet.has(item.id);
+            const wrong = wrongPair?.matchId === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                disabled={matched}
+                onClick={() => selectMatch(item.id)}
+                className={[
+                  "w-full rounded-2xl border-2 px-3 py-3 text-left font-black transition",
+                  matched ? "border-[#22C55E] bg-[#DCFCE7] text-[#166534]" : "",
+                  wrong ? "border-[#EF4444] bg-[#FEE2E2]" : "",
+                  !matched && !wrong ? "border-[#DDD6FE] bg-[#F5F3FF] hover:border-[#8B5CF6]" : "",
+                ].join(" ")}
+              >
+                {language === "RU" ? item.matchRu ?? item.match : item.match}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {wrongPair ? (
+        <p className="rounded-2xl bg-[#FEE2E2] px-4 py-3 font-black text-[#991B1B]">Бұл жұп сәйкес емес. Басқа аударманы байқап көр.</p>
+      ) : complete ? (
+        <p className="rounded-2xl bg-[#DCFCE7] px-4 py-3 font-black text-[#166534]">Барлық жұп дұрыс! Енді XP алуға болады.</p>
+      ) : null}
+
+      <button
+        type="button"
+        disabled={!complete || finishing}
+        onClick={finish}
+        className="w-full rounded-2xl bg-[#FACC15] px-5 py-3 font-black text-[#1E1B4B] shadow-[0_5px_0_#D97706] disabled:bg-[#DDD6FE] disabled:text-[#6B5E8F] disabled:shadow-none"
+      >
+        {finishing ? "Сақталуда..." : "Аяқтау (+XP)"}
+      </button>
+    </div>
+  );
+}
+
+function stableGameShuffle<T extends { id: string }>(items: T[]) {
+  return [...items].sort((a, b) => {
+    const left = [...a.id].reduce((sum, char) => sum + char.charCodeAt(0), 0) % 17;
+    const right = [...b.id].reduce((sum, char) => sum + char.charCodeAt(0), 0) % 17;
+    return left - right || a.id.localeCompare(b.id);
+  });
 }
 
 export function WeakWordsList({ words, language }: { words: VocabularyWordWithState[]; language: VocabularyLanguage }) {
