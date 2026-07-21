@@ -184,6 +184,7 @@ export type VocabularyQuestion = {
     translation_kk: string;
     translation_ru: string;
     part_of_speech: VocabularyPartOfSpeech;
+    example_en?: string;
   };
   questionText: Record<VocabularyLanguage, string>;
   options: string[];
@@ -834,6 +835,7 @@ function buildQuestion(
     translation_kk: translationKk,
     translation_ru: translationRu,
     part_of_speech: word.part_of_speech,
+    example_en: word.example_en,
   };
   const question: VocabularyQuestion = {
     id: createId("vocab-question"),
@@ -844,9 +846,9 @@ function buildQuestion(
     promptLanguage: "KZ",
     answerLanguage: "EN",
     taskLabel: {
-      KZ: "Ағылшынша аудармасын таңдаңыз",
-      RU: "Выберите перевод на английский",
-      EN: "Choose the English translation",
+      KZ: "Choose the correct English word",
+      RU: "Choose the correct English word",
+      EN: "Choose the correct meaning",
     },
     targetText: {
       KZ: translationKk,
@@ -855,9 +857,9 @@ function buildQuestion(
     },
     targetWord,
     questionText: {
-      KZ: "Ағылшынша аудармасын таңдаңыз",
-      RU: "Выберите перевод на английский",
-      EN: "Choose the English translation",
+      KZ: `"${translationKk}" сөзінің ағылшынша аудармасын таңдаңыз.`,
+      RU: `Выберите английский перевод слова "${translationRu}".`,
+      EN: `Choose the meaning of "${word.word_en}".`,
     },
     options: {
       KZ: options.map((item) => item.word_en),
@@ -866,9 +868,9 @@ function buildQuestion(
     }.KZ,
     correctAnswer: word.word_en,
     explanation: {
-      KZ: `${word.word_en} — ${translationKk}. Сөз табы: ${partLabel(word.part_of_speech, "KZ")}.`,
-      RU: `${word.word_en} — ${translationRu}. Часть речи: ${partLabel(word.part_of_speech, "RU")}.`,
-      EN: `${word.word_en} — ${translationKk}. Part of speech: ${partLabel(word.part_of_speech, "EN")}.`,
+      KZ: `${capitalizeWord(word.word_en)} — ${translationKk}. Сөз табы: ${partLabel(word.part_of_speech, "KZ")}.${word.example_en ? ` Мысал: ${word.example_en}` : ""}`,
+      RU: `${capitalizeWord(word.word_en)} — ${translationRu}. Часть речи: ${partLabel(word.part_of_speech, "RU")}.${word.example_en ? ` Пример: ${word.example_en}` : ""}`,
+      EN: `${capitalizeWord(word.word_en)} — ${translationKk}. Part of speech: ${partLabel(word.part_of_speech, "EN")}.${word.example_en ? ` Example: ${word.example_en}` : ""}`,
     },
     promptAudioText: undefined,
     promptImageUrl: undefined,
@@ -884,6 +886,7 @@ function buildOptions(word: VocabularyWord, pool: VocabularyWord[]) {
   const distractors = shuffle(
     pool.filter(
       (item) =>
+        item.is_active &&
         item.id !== word.id &&
         item.topic_id === word.topic_id &&
         item.part_of_speech === word.part_of_speech &&
@@ -943,6 +946,10 @@ function partLabel(partOfSpeech: VocabularyPartOfSpeech, language: VocabularyLan
     noun: { KZ: "Зат есім", RU: "Существительное", EN: "Noun" },
   } satisfies Record<VocabularyPartOfSpeech, Record<VocabularyLanguage, string>>;
   return labels[partOfSpeech][language];
+}
+
+function capitalizeWord(value: string) {
+  return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
 function getOwnedAttempt(userId: string, attemptId: string) {

@@ -792,12 +792,15 @@ export function VocabularyTestRunner({
 
   const taskLabel = current.taskLabel?.[language] ?? current.questionText[language];
   const targetText = current.targetText?.[language] ?? current.targetWord?.translation_kk ?? current.questionText[language];
+  const isFinalReviewedQuestion = Boolean(review && answeredIds.size >= attempt.totalQuestions);
+  const correctFeedbackTitle = language === "RU" ? "Правильно!" : language === "EN" ? "Correct!" : "Дұрыс!";
+  const wrongFeedbackTitle = language === "RU" ? "Повторим ещё раз." : language === "EN" ? "Let’s review this one." : "Қайталап көрейік.";
 
   return (
     <GameCard className="bg-white/95">
       <div className="flex items-center justify-between gap-3">
         <p className="font-black text-[#8B5CF6]">
-          {currentIndex + 1} / {attempt.totalQuestions} сұрақ
+          Question {currentIndex + 1} / {attempt.totalQuestions}
         </p>
         <p className="rounded-2xl bg-[#F5F3FF] px-4 py-2 font-black text-[#6D28D9]">
           {attempt.correctAnswers} дұрыс
@@ -818,14 +821,14 @@ export function VocabularyTestRunner({
       {current.questionType === "type_word" ? (
         <TypingAnswer disabled={saving || submitted} onSubmit={(value) => void submit(value)} />
       ) : (
-        <div className="mt-6 grid gap-3">
+        <div className="mt-5 grid gap-2">
           {current.options.map((option) => (
             <button
               key={option}
               type="button"
               disabled={saving || submitted}
               onClick={() => void submit(option)}
-              className={`min-h-14 rounded-3xl border-2 px-5 py-3 text-left text-lg font-black transition ${
+              className={`min-h-12 rounded-2xl border-2 px-4 py-2.5 text-left text-base font-black transition md:text-lg ${
                 submitted && option === current.correctAnswer
                   ? "border-[#22C55E] bg-[#DCFCE7] text-[#166534]"
                   : submitted && option === review?.selectedAnswer
@@ -840,8 +843,9 @@ export function VocabularyTestRunner({
       )}
       {review ? (
         <div className={`mt-5 rounded-3xl p-5 font-bold ${review.feedback.correct ? "bg-[#DCFCE7] text-[#166534]" : "bg-[#FEE2E2] text-[#991B1B]"}`}>
-          <p className="text-xl font-black">{review.feedback.correct ? "Дұрыс!" : "Қайталап көрейік."}</p>
+          <p className="text-xl font-black">{review.feedback.correct ? `✅ ${correctFeedbackTitle}` : `❌ ${wrongFeedbackTitle}`}</p>
           <p className="mt-2">{review.feedback.explanation[language]}</p>
+          {review.feedback.correct ? <p className="mt-2 text-lg font-black">+2 XP</p> : null}
           {!review.feedback.correct ? (
             <p className="mt-2">
               Дұрыс жауап: <span className="font-black">{review.feedback.correctAnswer}</span>
@@ -850,10 +854,16 @@ export function VocabularyTestRunner({
           <button
             type="button"
             disabled={saving}
-            onClick={goNext}
+            onClick={() => {
+              if (isFinalReviewedQuestion) {
+                void onComplete();
+                return;
+              }
+              goNext();
+            }}
             className="mt-4 rounded-2xl bg-[#6D28D9] px-6 py-3 font-black text-white shadow-[0_5px_0_#4C1D95] disabled:opacity-60"
           >
-            {answeredIds.size >= attempt.totalQuestions ? "Нәтижені көру" : "Келесі"}
+            {isFinalReviewedQuestion ? "Нәтижені көру" : "Next"}
           </button>
         </div>
       ) : null}
