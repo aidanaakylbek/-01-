@@ -4,6 +4,7 @@ import { useMemo, useState, type MouseEvent } from "react";
 import { GameCard, ProgressBar } from "@/components/gamified-platform";
 import type {
   VocabularyAIResponse,
+  VocabularyAnswerFeedback,
   VocabularyGameConfig,
   VocabularyGameSession,
   VocabularyLanguage,
@@ -138,6 +139,12 @@ const partLabels = {
   noun: { KZ: "Зат есімдер", RU: "Существительные", EN: "Nouns" },
 } satisfies Record<VocabularyPartOfSpeech, Record<VocabularyLanguage, string>>;
 
+const singularPartLabels = {
+  verb: { KZ: "Етістік", RU: "Глагол", EN: "Verb" },
+  adjective: { KZ: "Сын есім", RU: "Прилагательное", EN: "Adjective" },
+  noun: { KZ: "Зат есім", RU: "Существительное", EN: "Noun" },
+} satisfies Record<VocabularyPartOfSpeech, Record<VocabularyLanguage, string>>;
+
 export function VocabularyHero({
   language,
   stats,
@@ -189,7 +196,7 @@ export function DailyWordCard({
       </div>
       <div className="mt-5 grid gap-3 md:grid-cols-2">
         <div className="rounded-3xl bg-[#F5F3FF] p-4">
-          <p className="text-xs font-black uppercase tracking-widest text-[#8B5CF6]">{partLabels[word.part_of_speech][language]}</p>
+          <p className="text-xs font-black uppercase tracking-widest text-[#8B5CF6]">{singularPartLabels[word.part_of_speech][language]}</p>
           <p className="mt-2 text-xl font-black">{word.translation_kk}</p>
           <p className="font-bold text-[#6B5E8F]">{word.translation_ru}</p>
         </div>
@@ -512,7 +519,7 @@ export function VocabularyFlashcard({
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
                 <p className="text-sm font-black uppercase tracking-[0.2em] text-[#8B5CF6]">
-                  {partLabels[word.part_of_speech][language]} · {index + 1} / {total}
+                  {singularPartLabels[word.part_of_speech][language]} · {index + 1} / {total}
                 </p>
                 <h2 className="mt-7 break-words text-5xl font-black text-[#1E1B4B] md:text-7xl">{word.word_en}</h2>
                 {word.pronunciation ? <p className="mt-4 text-xl font-bold text-[#6B5E8F]">{word.pronunciation}</p> : null}
@@ -728,15 +735,24 @@ export function VocabularyTestRunner({
   language: VocabularyLanguage;
   attempt: VocabularyTestAttempt;
   saving: boolean;
-  onAnswer: (question: VocabularyQuestion, answer: string, responseTimeMs: number) => Promise<void>;
+  onAnswer: (
+    question: VocabularyQuestion,
+    answer: string,
+    responseTimeMs: number,
+  ) => Promise<{ attempt: VocabularyTestAttempt; feedback: VocabularyAnswerFeedback }>;
   onComplete: () => Promise<void>;
 }) {
   const [startedAt, setStartedAt] = useState(Date.now());
+  const [review, setReview] = useState<{
+    question: VocabularyQuestion;
+    selectedAnswer: string;
+    feedback: VocabularyAnswerFeedback;
+  } | null>(null);
   const answeredIds = new Set(attempt.answers.map((answer) => answer.questionId));
-  const current = attempt.questions.find((question) => !answeredIds.has(question.id));
+  const nextQuestion = attempt.questions.find((question) => !answeredIds.has(question.id));
+  const current = review?.question ?? nextQuestion;
   const currentIndex = current ? attempt.questions.findIndex((question) => question.id === current.id) : attempt.questions.length;
-  const lastAnswer = attempt.answers.at(-1);
-  const lastQuestion = lastAnswer ? attempt.questions.find((question) => question.id === lastAnswer.questionId) : undefined;
+  const submitted = Boolean(review);
 
   if (!current) {
     return (
@@ -759,9 +775,23 @@ export function VocabularyTestRunner({
   }
 
   const submit = async (answer: string) => {
-    await onAnswer(current, answer, Date.now() - startedAt);
+    if (review) return;
+    const response = await onAnswer(current, answer, Date.now() - startedAt);
+    setReview({
+      question: current,
+      selectedAnswer: answer,
+      feedback: response.feedback,
+    });
     setStartedAt(Date.now());
   };
+
+  const goNext = () => {
+    setReview(null);
+    setStartedAt(Date.now());
+  };
+
+  const taskLabel = current.taskLabel?.[language] ?? current.questionText[language];
+  const targetText = current.targetText?.[language] ?? current.targetWord?.translation_kk ?? current.questionText[language];
 
   return (
     <GameCard className="bg-white/95">
@@ -774,31 +804,57 @@ export function VocabularyTestRunner({
         </p>
       </div>
       <ProgressBar value={Math.round((answeredIds.size / attempt.totalQuestions) * 100)} />
-      <h1 className="mt-6 text-3xl font-black text-[#1E1B4B]">{current.questionText[language]}</h1>
+      <div className="mt-6 rounded-[28px] border-2 border-[#DDD6FE] bg-[#F5F3FF] p-5">
+        <p className="text-sm font-black uppercase tracking-[0.22em] text-[#8B5CF6]">{taskLabel}</p>
+        <h1 className="mt-3 break-words text-4xl font-black text-[#1E1B4B]">{targetText}</h1>
+        <p className="mt-3 text-sm font-black text-[#6B5E8F]">
+          {singularPartLabels[current.partOfSpeech][language]}
+        </p>
+      </div>
       {current.promptAudioText ? <VocabularyAudioButton word={current.promptAudioText} /> : null}
       {current.promptImageUrl ? (
         <img src={current.promptImageUrl} alt="" className="mt-4 max-h-56 rounded-3xl border-2 border-[#DDD6FE] object-contain" />
       ) : null}
       {current.questionType === "type_word" ? (
-        <TypingAnswer disabled={saving} onSubmit={(value) => void submit(value)} />
+        <TypingAnswer disabled={saving || submitted} onSubmit={(value) => void submit(value)} />
       ) : (
         <div className="mt-6 grid gap-3">
           {current.options.map((option) => (
             <button
               key={option}
               type="button"
-              disabled={saving}
+              disabled={saving || submitted}
               onClick={() => void submit(option)}
-              className="rounded-3xl border-2 border-[#DDD6FE] bg-[#F5F3FF] px-5 py-4 text-left text-lg font-black text-[#1E1B4B] transition hover:-translate-y-0.5 hover:border-[#8B5CF6] disabled:opacity-60"
+              className={`min-h-14 rounded-3xl border-2 px-5 py-3 text-left text-lg font-black transition ${
+                submitted && option === current.correctAnswer
+                  ? "border-[#22C55E] bg-[#DCFCE7] text-[#166534]"
+                  : submitted && option === review?.selectedAnswer
+                    ? "border-[#EF4444] bg-[#FEE2E2] text-[#991B1B]"
+                    : "border-[#DDD6FE] bg-[#F5F3FF] text-[#1E1B4B] hover:-translate-y-0.5 hover:border-[#8B5CF6]"
+              } disabled:opacity-90`}
             >
               {option}
             </button>
           ))}
         </div>
       )}
-      {lastAnswer && lastQuestion ? (
-        <div className={`mt-5 rounded-3xl p-4 font-bold ${lastAnswer.isCorrect ? "bg-[#DCFCE7] text-[#166534]" : "bg-[#FEE2E2] text-[#991B1B]"}`}>
-          {lastAnswer.isCorrect ? "Дұрыс!" : "Бұл сөзді тағы бір рет қайталайық."} {lastQuestion.explanation[language]}
+      {review ? (
+        <div className={`mt-5 rounded-3xl p-5 font-bold ${review.feedback.correct ? "bg-[#DCFCE7] text-[#166534]" : "bg-[#FEE2E2] text-[#991B1B]"}`}>
+          <p className="text-xl font-black">{review.feedback.correct ? "Дұрыс!" : "Қайталап көрейік."}</p>
+          <p className="mt-2">{review.feedback.explanation[language]}</p>
+          {!review.feedback.correct ? (
+            <p className="mt-2">
+              Дұрыс жауап: <span className="font-black">{review.feedback.correctAnswer}</span>
+            </p>
+          ) : null}
+          <button
+            type="button"
+            disabled={saving}
+            onClick={goNext}
+            className="mt-4 rounded-2xl bg-[#6D28D9] px-6 py-3 font-black text-white shadow-[0_5px_0_#4C1D95] disabled:opacity-60"
+          >
+            {answeredIds.size >= attempt.totalQuestions ? "Нәтижені көру" : "Келесі"}
+          </button>
         </div>
       ) : null}
     </GameCard>

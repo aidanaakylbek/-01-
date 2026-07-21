@@ -174,6 +174,17 @@ export type VocabularyQuestion = {
   wordId: string;
   partOfSpeech: VocabularyPartOfSpeech;
   questionType: VocabularyQuestionType;
+  promptLanguage: VocabularyLanguage;
+  answerLanguage: VocabularyLanguage;
+  taskLabel: Record<VocabularyLanguage, string>;
+  targetText: Record<VocabularyLanguage, string>;
+  targetWord: {
+    id: string;
+    word_en: string;
+    translation_kk: string;
+    translation_ru: string;
+    part_of_speech: VocabularyPartOfSpeech;
+  };
   questionText: Record<VocabularyLanguage, string>;
   options: string[];
   correctAnswer: string;
@@ -210,6 +221,18 @@ export type VocabularyTestAnswer = {
   isCorrect: boolean;
   responseTimeMs?: number;
   answeredAt: string;
+};
+
+export type VocabularyAnswerFeedback = {
+  correct: boolean;
+  correctAnswer: string;
+  explanation: Record<VocabularyLanguage, string>;
+  almostCorrect: boolean;
+};
+
+export type VocabularyAnswerResponse = {
+  attempt: VocabularyTestAttempt;
+  feedback: VocabularyAnswerFeedback;
 };
 
 export type VocabularyTestResult = {
@@ -468,8 +491,8 @@ export async function startVocabularySectionTest(input: {
   const topic = topics.get(input.topicSlug);
   if (!topic || !topic.is_published) throw new Error("TOPIC_NOT_FOUND");
   assertTopicUnlocked(topic, userId);
-  const sectionWords = getTopicWords(topic.id).filter((word) => word.part_of_speech === input.partOfSpeech);
-  if (sectionWords.length !== 15) throw new Error("SECTION_NOT_READY");
+  const sectionWords = getTopicWords(topic.id).filter((word) => word.is_active && word.part_of_speech === input.partOfSpeech);
+  validateSectionPool(topic.id, sectionWords, input.partOfSpeech);
 
   const questions = buildSectionQuestions(topic.id, sectionWords, input.partOfSpeech);
   const attempt = createAttempt({
@@ -489,14 +512,17 @@ export async function startVocabularyMixedTest(topicSlug: string) {
   if (!topic || !topic.is_published) throw new Error("TOPIC_NOT_FOUND");
   assertTopicUnlocked(topic, userId);
   const topicWords = getTopicWords(topic.id);
+  validateSectionPool(topic.id, topicWords.filter((word) => word.is_active && word.part_of_speech === "verb"), "verb");
+  validateSectionPool(topic.id, topicWords.filter((word) => word.is_active && word.part_of_speech === "adjective"), "adjective");
+  validateSectionPool(topic.id, topicWords.filter((word) => word.is_active && word.part_of_speech === "noun"), "noun");
   const questions = shuffle([
-    ...buildSectionQuestions(topic.id, topicWords.filter((word) => word.part_of_speech === "verb"), "verb").slice(0, 5),
+    ...buildSectionQuestions(topic.id, topicWords.filter((word) => word.is_active && word.part_of_speech === "verb"), "verb").slice(0, 5),
     ...buildSectionQuestions(
       topic.id,
-      topicWords.filter((word) => word.part_of_speech === "adjective"),
+      topicWords.filter((word) => word.is_active && word.part_of_speech === "adjective"),
       "adjective",
     ).slice(0, 5),
-    ...buildSectionQuestions(topic.id, topicWords.filter((word) => word.part_of_speech === "noun"), "noun").slice(0, 5),
+    ...buildSectionQuestions(topic.id, topicWords.filter((word) => word.is_active && word.part_of_speech === "noun"), "noun").slice(0, 5),
   ]);
   const attempt = createAttempt({
     userId,
@@ -513,14 +539,23 @@ export async function answerVocabularyTest(input: {
   questionId: string;
   answer: string;
   responseTimeMs?: number;
-}) {
+}): Promise<VocabularyAnswerResponse> {
   const userId = await getCurrentUserId();
   const attempt = getOwnedAttempt(userId, input.attemptId);
   if (attempt.status !== "in_progress") throw new Error("ATTEMPT_COMPLETED");
   const question = attempt.questions.find((item) => item.id === input.questionId);
   if (!question) throw new Error("QUESTION_NOT_FOUND");
   if (attempt.answers.some((answer) => answer.questionId === question.id)) {
-    return attempt;
+    const previousAnswer = attempt.answers.find((answer) => answer.questionId === question.id)!;
+    return {
+      attempt,
+      feedback: {
+        correct: previousAnswer.isCorrect,
+        correctAnswer: question.correctAnswer,
+        explanation: question.explanation,
+        almostCorrect: false,
+      },
+    };
   }
 
   const evaluation = evaluateAnswer(question, input.answer);
@@ -779,14 +814,9 @@ function buildSectionQuestions(
   sectionWords: VocabularyWord[],
   partOfSpeech: VocabularyPartOfSpeech,
 ): VocabularyQuestion[] {
-  const templates: VocabularyQuestionType[] =
-    partOfSpeech === "verb"
-      ? ["translation_choice", "sentence_completion", "listening_choice", "type_word", "context_choice"]
-      : partOfSpeech === "adjective"
-        ? ["translation_choice", "sentence_completion", "antonym_choice", "type_word", "listening_choice"]
-        : ["translation_choice", "sentence_completion", "type_word", "listening_choice", "context_choice"];
+  validateSectionPool(topicId, sectionWords, partOfSpeech);
   const picked = shuffle(sectionWords).slice(0, 10);
-  return picked.map((word, index) => buildQuestion(topicId, word, templates[index % templates.length]!, sectionWords));
+  return picked.map((word) => buildQuestion(topicId, word, "translation_choice", sectionWords));
 }
 
 function buildQuestion(
@@ -798,67 +828,121 @@ function buildQuestion(
   const options = buildOptions(word, sectionWords);
   const translationKk = word.translation_kk;
   const translationRu = word.translation_ru;
-  const sentence = word.example_en || `I use the word ${word.word_en}.`;
-  const blankSentence = sentence.replace(new RegExp(`\\b${escapeRegExp(word.word_en)}\\b`, "i"), "_____");
-  const questionText =
-    questionType === "type_word"
-      ? {
-          KZ: `"${translationKk}" сөзін ағылшынша жаз.`,
-          RU: `Напиши по-английски слово "${translationRu}".`,
-          EN: `Type the English word for "${translationKk}".`,
-        }
-      : questionType === "sentence_completion"
-        ? {
-            KZ: `Сөйлемді толықтыр: ${blankSentence}`,
-            RU: `Заполни пропуск: ${blankSentence}`,
-            EN: `Complete the sentence: ${blankSentence}`,
-          }
-        : questionType === "listening_choice"
-          ? {
-              KZ: "Тыңдап, дұрыс сөзді таңда.",
-              RU: "Послушай и выбери правильное слово.",
-              EN: "Listen and choose the correct word.",
-            }
-          : questionType === "antonym_choice"
-            ? {
-                KZ: `"${word.word_en}" сөзіне ең жақын мағынаны таңда.`,
-                RU: `Выбери значение слова "${word.word_en}".`,
-                EN: `Choose the meaning of "${word.word_en}".`,
-              }
-            : questionType === "context_choice"
-              ? {
-                  KZ: `Қай сөз осы жағдайға сәйкес келеді: ${word.example_kk ?? translationKk}`,
-                  RU: `Какое слово подходит к ситуации: ${word.example_ru ?? translationRu}`,
-                  EN: `Which word fits this situation: ${sentence}`,
-                }
-              : {
-                  KZ: `"${word.word_en}" сөзінің дұрыс аудармасын таңда.`,
-                  RU: `Выбери правильный перевод слова "${word.word_en}".`,
-                  EN: `Choose the correct translation for "${word.word_en}".`,
-                };
-  const correctAnswer = questionType === "type_word" || questionType === "listening_choice" ? word.word_en : translationKk;
-  return {
+  const targetWord = {
+    id: word.id,
+    word_en: word.word_en,
+    translation_kk: translationKk,
+    translation_ru: translationRu,
+    part_of_speech: word.part_of_speech,
+  };
+  const question: VocabularyQuestion = {
     id: createId("vocab-question"),
     topicId,
     wordId: word.id,
     partOfSpeech: word.part_of_speech,
-    questionType,
-    questionText,
-    options: questionType === "type_word" ? [] : questionType === "listening_choice" ? options.map((item) => item.word_en) : options.map((item) => item.translation_kk),
-    correctAnswer,
-    explanation: {
-      KZ: `Дұрыс жауап: ${word.word_en}. Мағынасы: ${translationKk}.`,
-      RU: `Правильный ответ: ${word.word_en}. Значение: ${translationRu}.`,
-      EN: `Correct answer: ${word.word_en}. Meaning: ${translationKk}.`,
+    questionType: "translation_choice",
+    promptLanguage: "KZ",
+    answerLanguage: "EN",
+    taskLabel: {
+      KZ: "Ағылшынша аудармасын таңдаңыз",
+      RU: "Выберите перевод на английский",
+      EN: "Choose the English translation",
     },
-    promptAudioText: questionType === "listening_choice" ? word.word_en : undefined,
-    promptImageUrl: questionType === "image_choice" ? word.image_url : undefined,
+    targetText: {
+      KZ: translationKk,
+      RU: translationRu,
+      EN: translationKk,
+    },
+    targetWord,
+    questionText: {
+      KZ: "Ағылшынша аудармасын таңдаңыз",
+      RU: "Выберите перевод на английский",
+      EN: "Choose the English translation",
+    },
+    options: {
+      KZ: options.map((item) => item.word_en),
+      RU: options.map((item) => item.word_en),
+      EN: options.map((item) => item.translation_kk),
+    }.KZ,
+    correctAnswer: word.word_en,
+    explanation: {
+      KZ: `${word.word_en} — ${translationKk}. Сөз табы: ${partLabel(word.part_of_speech, "KZ")}.`,
+      RU: `${word.word_en} — ${translationRu}. Часть речи: ${partLabel(word.part_of_speech, "RU")}.`,
+      EN: `${word.word_en} — ${translationKk}. Part of speech: ${partLabel(word.part_of_speech, "EN")}.`,
+    },
+    promptAudioText: undefined,
+    promptImageUrl: undefined,
   };
+
+  question.answerLanguage = "EN";
+
+  assertValidQuestionSnapshot(question, sectionWords);
+  return question;
 }
 
 function buildOptions(word: VocabularyWord, pool: VocabularyWord[]) {
-  const distractors = shuffle(pool.filter((item) => item.id !== word.id)).slice(0, 3);
-  return shuffle([word, ...distractors]);
+  const distractors = shuffle(
+    pool.filter(
+      (item) =>
+        item.id !== word.id &&
+        item.topic_id === word.topic_id &&
+        item.part_of_speech === word.part_of_speech &&
+        normalizeTypedAnswer(item.word_en) !== normalizeTypedAnswer(word.word_en) &&
+        normalizeTypedAnswer(item.translation_kk) !== normalizeTypedAnswer(word.translation_kk) &&
+        normalizeTypedAnswer(item.translation_ru) !== normalizeTypedAnswer(word.translation_ru),
+    ),
+  ).slice(0, 3);
+  const picked = shuffle([word, ...distractors]);
+  if (picked.length !== 4) throw new Error("QUESTION_OPTIONS_NOT_READY");
+  return picked;
+}
+
+function validateSectionPool(
+  topicId: string,
+  sectionWords: VocabularyWord[],
+  partOfSpeech: VocabularyPartOfSpeech,
+) {
+  const activeWords = sectionWords.filter((word) => word.is_active);
+  const invalidWords = activeWords.filter((word) => word.topic_id !== topicId || word.part_of_speech !== partOfSpeech);
+
+  if (activeWords.length !== 15 || invalidWords.length > 0) {
+    console.error("Vocabulary section validation failed", {
+      topicId,
+      partOfSpeech,
+      activeCount: activeWords.length,
+      invalidWordIds: invalidWords.map((word) => word.id),
+    });
+    throw new Error("SECTION_NOT_READY");
+  }
+}
+
+function assertValidQuestionSnapshot(question: VocabularyQuestion, pool: VocabularyWord[]) {
+  const target = words.get(question.wordId);
+  const optionSet = new Set(question.options.map(normalizeTypedAnswer));
+
+  if (!target) throw new Error("QUESTION_TARGET_NOT_FOUND");
+  if (target.topic_id !== question.topicId) throw new Error("QUESTION_TOPIC_MISMATCH");
+  if (target.part_of_speech !== question.partOfSpeech) throw new Error("QUESTION_PART_MISMATCH");
+  if (question.targetWord.id !== target.id) throw new Error("QUESTION_SNAPSHOT_MISMATCH");
+  if (optionSet.size !== question.options.length) throw new Error("QUESTION_DUPLICATE_OPTIONS");
+  if (!optionSet.has(normalizeTypedAnswer(question.correctAnswer))) throw new Error("QUESTION_CORRECT_OPTION_MISSING");
+
+  const correctCount = question.options.filter((option) => normalizeTypedAnswer(option) === normalizeTypedAnswer(question.correctAnswer)).length;
+  if (correctCount !== 1) throw new Error("QUESTION_CORRECT_OPTION_DUPLICATED");
+
+  const allowedAnswers = new Set(pool.map((word) => normalizeTypedAnswer(word.word_en)));
+  for (const option of question.options) {
+    if (!allowedAnswers.has(normalizeTypedAnswer(option))) throw new Error("QUESTION_OPTION_OUTSIDE_SECTION");
+  }
+}
+
+function partLabel(partOfSpeech: VocabularyPartOfSpeech, language: VocabularyLanguage) {
+  const labels = {
+    verb: { KZ: "Етістік", RU: "Глагол", EN: "Verb" },
+    adjective: { KZ: "Сын есім", RU: "Прилагательное", EN: "Adjective" },
+    noun: { KZ: "Зат есім", RU: "Существительное", EN: "Noun" },
+  } satisfies Record<VocabularyPartOfSpeech, Record<VocabularyLanguage, string>>;
+  return labels[partOfSpeech][language];
 }
 
 function getOwnedAttempt(userId: string, attemptId: string) {

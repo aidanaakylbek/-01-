@@ -32,6 +32,7 @@ function VocabularyFinalTestPage() {
         data: { attemptId: attempt.id, questionId: question.id, answer: rawAnswer, responseTimeMs },
       });
       setAttempt(response.attempt);
+      return response;
     } finally {
       setSaving(false);
     }

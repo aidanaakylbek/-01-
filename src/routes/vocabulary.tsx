@@ -97,7 +97,11 @@ function VocabularyPage() {
           <Link to="/vocabulary/review/personalized" className="rounded-2xl border-2 border-[#DDD6FE] bg-white px-5 py-3 font-black text-[#6D28D9]">
             {c.reviewSession}
           </Link>
-          <Link to="/vocabulary/games" className="rounded-2xl border-2 border-[#DDD6FE] bg-white px-5 py-3 font-black text-[#6D28D9]">
+          <Link
+            to="/vocabulary/games"
+            search={{ topic: currentTopic?.slug ?? "greetings-polite-words" }}
+            className="rounded-2xl border-2 border-[#DDD6FE] bg-white px-5 py-3 font-black text-[#6D28D9]"
+          >
             {c.games}
           </Link>
           <Link to="/vocabulary/weak-words" className="rounded-2xl border-2 border-[#DDD6FE] bg-white px-5 py-3 font-black text-[#6D28D9]">

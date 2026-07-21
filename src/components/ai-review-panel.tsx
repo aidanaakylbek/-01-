@@ -6,6 +6,7 @@ type ReviewPayload = {
   taskTitle: string;
   taskType: "task" | "test" | "diagnostic";
   subject: string;
+  exam?: string;
   score: number;
   totalQuestions?: number;
   correctAnswers?: number;
