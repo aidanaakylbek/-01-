@@ -1002,6 +1002,27 @@ function VocabularyActiveGame({
   session: VocabularyGameSession;
   onComplete: (session: VocabularyGameSession) => void;
 }) {
+  if (session.gameType === "memory") {
+    return <VocabularyMemoryGame language={language} session={session} onComplete={onComplete} />;
+  }
+  if (session.gameType === "type_word" || session.gameType === "unscramble" || session.gameType === "sentence_builder") {
+    return <VocabularyTypingGame language={language} session={session} onComplete={onComplete} />;
+  }
+  if (session.gameType === "listen_choose" || session.gameType === "speed_round" || session.gameType === "image_to_word" || session.gameType === "word_to_image") {
+    return <VocabularyChoiceGame language={language} session={session} onComplete={onComplete} />;
+  }
+  return <VocabularyMatchGame language={language} session={session} onComplete={onComplete} />;
+}
+
+function VocabularyMatchGame({
+  language,
+  session,
+  onComplete,
+}: {
+  language: VocabularyLanguage;
+  session: VocabularyGameSession;
+  onComplete: (session: VocabularyGameSession) => void;
+}) {
   const [selectedWordId, setSelectedWordId] = useState<string | undefined>();
   const [matchedIds, setMatchedIds] = useState<string[]>([]);
   const [wrongPair, setWrongPair] = useState<{ wordId: string; matchId: string } | undefined>();
@@ -1127,11 +1148,338 @@ function VocabularyActiveGame({
   );
 }
 
-function stableGameShuffle<T extends { id: string }>(items: T[]) {
+function VocabularyMemoryGame({
+  language,
+  session,
+  onComplete,
+}: {
+  language: VocabularyLanguage;
+  session: VocabularyGameSession;
+  onComplete: (session: VocabularyGameSession) => void;
+}) {
+  const cards = useMemo(
+    () =>
+      stableGameShuffle(
+        session.items.flatMap((item) => [
+          { cardId: `${item.id}:word`, pairId: item.id, label: item.word, kind: "word" },
+          { cardId: `${item.id}:match`, pairId: item.id, label: gameTranslation(item, language), kind: "match" },
+        ]),
+      ),
+    [language, session.id, session.items],
+  );
+  const [openCards, setOpenCards] = useState<string[]>([]);
+  const [matchedIds, setMatchedIds] = useState<string[]>([]);
+  const [wrongCards, setWrongCards] = useState<string[]>([]);
+  const [attempts, setAttempts] = useState(0);
+  const [finishing, setFinishing] = useState(false);
+  const matchedSet = useMemo(() => new Set(matchedIds), [matchedIds]);
+  const complete = matchedIds.length >= session.totalItems && session.totalItems > 0;
+
+  const chooseCard = (card: (typeof cards)[number]) => {
+    if (matchedSet.has(card.pairId) || openCards.includes(card.cardId) || openCards.length >= 2) return;
+    const nextOpen = [...openCards, card.cardId];
+    setOpenCards(nextOpen);
+    if (nextOpen.length !== 2) return;
+    setAttempts((value) => value + 1);
+    const [firstId, secondId] = nextOpen;
+    const first = cards.find((item) => item.cardId === firstId);
+    const second = cards.find((item) => item.cardId === secondId);
+    if (first && second && first.pairId === second.pairId && first.kind !== second.kind) {
+      setMatchedIds((current) => [...current, first.pairId]);
+      window.setTimeout(() => setOpenCards([]), 250);
+      return;
+    }
+    setWrongCards(nextOpen);
+    window.setTimeout(() => {
+      setWrongCards([]);
+      setOpenCards([]);
+    }, 800);
+  };
+
+  return (
+    <div className="space-y-4">
+      <VocabularyGameHeader
+        eyebrow="memory"
+        title="Есте сақтау ойыны"
+        subtitle="Карточкаларды ашып, ағылшын сөзін аудармасымен жұптастыр."
+        done={matchedIds.length}
+        total={session.totalItems}
+      />
+      <div className="grid grid-cols-2 gap-2">
+        {cards.map((card) => {
+          const visible = openCards.includes(card.cardId) || matchedSet.has(card.pairId);
+          const wrong = wrongCards.includes(card.cardId);
+          return (
+            <button
+              key={card.cardId}
+              type="button"
+              onClick={() => chooseCard(card)}
+              disabled={matchedSet.has(card.pairId)}
+              className={[
+                "min-h-20 rounded-2xl border-2 px-2 py-3 text-center font-black transition",
+                visible ? "border-[#8B5CF6] bg-white text-[#1E1B4B]" : "border-[#DDD6FE] bg-[#6D28D9] text-white",
+                matchedSet.has(card.pairId) ? "border-[#22C55E] bg-[#DCFCE7] text-[#166534]" : "",
+                wrong ? "border-[#EF4444] bg-[#FEE2E2] text-[#991B1B]" : "",
+              ].join(" ")}
+            >
+              {visible ? card.label : "?"}
+            </button>
+          );
+        })}
+      </div>
+      <VocabularyFinishButton
+        complete={complete}
+        finishing={finishing}
+        onClick={async () => {
+          setFinishing(true);
+          await onComplete({ ...session, correctItems: session.totalItems, incorrectItems: Math.max(0, attempts - session.totalItems) });
+          setFinishing(false);
+        }}
+      />
+    </div>
+  );
+}
+
+function VocabularyChoiceGame({
+  language,
+  session,
+  onComplete,
+}: {
+  language: VocabularyLanguage;
+  session: VocabularyGameSession;
+  onComplete: (session: VocabularyGameSession) => void;
+}) {
+  const [index, setIndex] = useState(0);
+  const [selected, setSelected] = useState<string | undefined>();
+  const [correctCount, setCorrectCount] = useState(0);
+  const [incorrectCount, setIncorrectCount] = useState(0);
+  const [finishing, setFinishing] = useState(false);
+  const current = session.items[index];
+  const options = useMemo(() => stableGameShuffle(session.items).map((item) => gameTranslation(item, language)), [language, session.id, session.items]);
+  const correct = current ? gameTranslation(current, language) : "";
+  const answered = Boolean(selected);
+
+  const next = async () => {
+    if (!current || !selected) return;
+    const isLast = index >= session.items.length - 1;
+    const nextCorrect = correctCount + (selected === correct ? 1 : 0);
+    const nextIncorrect = incorrectCount + (selected === correct ? 0 : 1);
+    if (isLast) {
+      setFinishing(true);
+      await onComplete({ ...session, correctItems: nextCorrect, incorrectItems: nextIncorrect });
+      setFinishing(false);
+      return;
+    }
+    setCorrectCount(nextCorrect);
+    setIncorrectCount(nextIncorrect);
+    setSelected(undefined);
+    setIndex((value) => value + 1);
+  };
+
+  if (!current) return <p className="font-bold text-[#6B5E8F]">Бұл ойын үшін сөздер табылмады.</p>;
+
+  return (
+    <div className="space-y-4">
+      <VocabularyGameHeader
+        eyebrow={session.gameType.replaceAll("_", " ")}
+        title={session.gameType === "speed_round" ? "Жылдам таңдау" : "Дұрыс жауапты таңда"}
+        subtitle={`${index + 1} / ${session.totalItems} сұрақ. Ағылшын сөзінің дұрыс аудармасын таңда.`}
+        done={index}
+        total={session.totalItems}
+      />
+      <div className="rounded-3xl bg-[#F5F3FF] p-5 text-center">
+        <p className="text-sm font-black uppercase tracking-widest text-[#8B5CF6]">English word</p>
+        <p className="mt-2 text-4xl font-black text-[#1E1B4B]">{current.word}</p>
+      </div>
+      <div className="space-y-2">
+        {options.map((option) => {
+          const isCorrect = answered && option === correct;
+          const isWrong = answered && selected === option && option !== correct;
+          return (
+            <button
+              key={option}
+              type="button"
+              disabled={answered}
+              onClick={() => setSelected(option)}
+              className={[
+                "w-full rounded-2xl border-2 px-4 py-3 text-left font-black transition",
+                isCorrect ? "border-[#22C55E] bg-[#DCFCE7] text-[#166534]" : "",
+                isWrong ? "border-[#EF4444] bg-[#FEE2E2] text-[#991B1B]" : "",
+                !isCorrect && !isWrong ? "border-[#DDD6FE] bg-white hover:border-[#8B5CF6]" : "",
+              ].join(" ")}
+            >
+              {option}
+            </button>
+          );
+        })}
+      </div>
+      {answered ? (
+        <p className={`rounded-2xl px-4 py-3 font-black ${selected === correct ? "bg-[#DCFCE7] text-[#166534]" : "bg-[#FEE2E2] text-[#991B1B]"}`}>
+          {selected === correct ? "Дұрыс!" : `Дұрыс жауап: ${correct}`}
+        </p>
+      ) : null}
+      <button
+        type="button"
+        disabled={!answered || finishing}
+        onClick={next}
+        className="w-full rounded-2xl bg-[#6D28D9] px-5 py-3 font-black text-white shadow-[0_5px_0_#4C1D95] disabled:bg-[#DDD6FE] disabled:shadow-none"
+      >
+        {finishing ? "Сақталуда..." : index >= session.items.length - 1 ? "Аяқтау (+XP)" : "Келесі"}
+      </button>
+    </div>
+  );
+}
+
+function VocabularyTypingGame({
+  language,
+  session,
+  onComplete,
+}: {
+  language: VocabularyLanguage;
+  session: VocabularyGameSession;
+  onComplete: (session: VocabularyGameSession) => void;
+}) {
+  const [index, setIndex] = useState(0);
+  const [answer, setAnswer] = useState("");
+  const [checked, setChecked] = useState(false);
+  const [correctCount, setCorrectCount] = useState(0);
+  const [incorrectCount, setIncorrectCount] = useState(0);
+  const [finishing, setFinishing] = useState(false);
+  const current = session.items[index];
+  const normalizedAnswer = answer.trim().toLowerCase();
+  const correct = current ? normalizedAnswer === current.word.toLowerCase() || (session.gameType === "sentence_builder" && normalizedAnswer.includes(current.word.toLowerCase())) : false;
+
+  const next = async () => {
+    if (!current) return;
+    if (!checked) {
+      setChecked(true);
+      return;
+    }
+    const isLast = index >= session.items.length - 1;
+    const nextCorrect = correctCount + (correct ? 1 : 0);
+    const nextIncorrect = incorrectCount + (correct ? 0 : 1);
+    if (isLast) {
+      setFinishing(true);
+      await onComplete({ ...session, correctItems: nextCorrect, incorrectItems: nextIncorrect });
+      setFinishing(false);
+      return;
+    }
+    setCorrectCount(nextCorrect);
+    setIncorrectCount(nextIncorrect);
+    setAnswer("");
+    setChecked(false);
+    setIndex((value) => value + 1);
+  };
+
+  if (!current) return <p className="font-bold text-[#6B5E8F]">Бұл ойын үшін сөздер табылмады.</p>;
+
+  const prompt = gameTranslation(current, language);
+  const scrambled = stableLetters(current.word);
+
+  return (
+    <div className="space-y-4">
+      <VocabularyGameHeader
+        eyebrow={session.gameType.replaceAll("_", " ")}
+        title={session.gameType === "sentence_builder" ? "Сөйлем құрастыр" : session.gameType === "unscramble" ? "Әріптерді ретте" : "Сөзді жаз"}
+        subtitle={`${index + 1} / ${session.totalItems} тапсырма`}
+        done={index}
+        total={session.totalItems}
+      />
+      <div className="rounded-3xl bg-[#F5F3FF] p-5">
+        <p className="text-sm font-black uppercase tracking-widest text-[#8B5CF6]">Prompt</p>
+        <p className="mt-2 text-3xl font-black text-[#1E1B4B]">{prompt}</p>
+        {session.gameType === "unscramble" ? <p className="mt-3 rounded-2xl bg-white px-4 py-3 text-2xl font-black tracking-[0.2em]">{scrambled}</p> : null}
+      </div>
+      <input
+        value={answer}
+        disabled={checked}
+        onChange={(event) => setAnswer(event.target.value)}
+        placeholder={session.gameType === "sentence_builder" ? "Example: I say hello." : "English word..."}
+        className="w-full rounded-2xl border-2 border-[#DDD6FE] bg-white px-4 py-3 text-xl font-black outline-none focus:border-[#6D28D9]"
+      />
+      {checked ? (
+        <p className={`rounded-2xl px-4 py-3 font-black ${correct ? "bg-[#DCFCE7] text-[#166534]" : "bg-[#FEE2E2] text-[#991B1B]"}`}>
+          {correct ? `Дұрыс! ${current.word} — ${prompt}` : `Дұрыс жауап: ${current.word} — ${prompt}`}
+        </p>
+      ) : null}
+      <button
+        type="button"
+        disabled={!answer.trim() || finishing}
+        onClick={next}
+        className="w-full rounded-2xl bg-[#6D28D9] px-5 py-3 font-black text-white shadow-[0_5px_0_#4C1D95] disabled:bg-[#DDD6FE] disabled:shadow-none"
+      >
+        {finishing ? "Сақталуда..." : checked ? (index >= session.items.length - 1 ? "Аяқтау (+XP)" : "Келесі") : "Тексеру"}
+      </button>
+    </div>
+  );
+}
+
+function VocabularyGameHeader({
+  eyebrow,
+  title,
+  subtitle,
+  done,
+  total,
+}: {
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  done: number;
+  total: number;
+}) {
+  return (
+    <div className="space-y-3">
+      <div>
+        <p className="text-sm font-black uppercase tracking-[0.18em] text-[#8B5CF6]">{eyebrow}</p>
+        <h2 className="text-2xl font-black">{title}</h2>
+        <p className="mt-1 font-bold text-[#6B5E8F]">{subtitle}</p>
+      </div>
+      <div className="h-3 overflow-hidden rounded-full bg-[#EDE9FE]">
+        <div className="h-full rounded-full bg-[#22C55E] transition-all" style={{ width: `${Math.round((done / Math.max(1, total)) * 100)}%` }} />
+      </div>
+    </div>
+  );
+}
+
+function VocabularyFinishButton({
+  complete,
+  finishing,
+  onClick,
+}: {
+  complete: boolean;
+  finishing: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      disabled={!complete || finishing}
+      onClick={onClick}
+      className="w-full rounded-2xl bg-[#FACC15] px-5 py-3 font-black text-[#1E1B4B] shadow-[0_5px_0_#D97706] disabled:bg-[#DDD6FE] disabled:text-[#6B5E8F] disabled:shadow-none"
+    >
+      {finishing ? "Сақталуда..." : "Аяқтау (+XP)"}
+    </button>
+  );
+}
+
+function gameTranslation(item: VocabularyGameSession["items"][number], language: VocabularyLanguage) {
+  return language === "RU" ? item.matchRu ?? item.match : item.match;
+}
+
+function stableLetters(word: string) {
+  const letters = word.split("");
+  const sorted = [...letters].sort((a, b) => b.localeCompare(a));
+  const scrambled = sorted.join("");
+  return scrambled.toLowerCase() === word.toLowerCase() ? letters.reverse().join("") : scrambled;
+}
+
+function stableGameShuffle<T extends { id?: string; cardId?: string }>(items: T[]) {
   return [...items].sort((a, b) => {
-    const left = [...a.id].reduce((sum, char) => sum + char.charCodeAt(0), 0) % 17;
-    const right = [...b.id].reduce((sum, char) => sum + char.charCodeAt(0), 0) % 17;
-    return left - right || a.id.localeCompare(b.id);
+    const aKey = a.id ?? a.cardId ?? "";
+    const bKey = b.id ?? b.cardId ?? "";
+    const left = [...aKey].reduce((sum, char) => sum + char.charCodeAt(0), 0) % 17;
+    const right = [...bKey].reduce((sum, char) => sum + char.charCodeAt(0), 0) % 17;
+    return left - right || aKey.localeCompare(bKey);
   });
 }
 
