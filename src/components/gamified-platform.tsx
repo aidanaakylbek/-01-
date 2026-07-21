@@ -195,7 +195,7 @@ function useAccessGate() {
         account &&
         isTelegramVerified(account) &&
         hasActiveSubscription(account) &&
-        pathname === "/",
+        isFullGameShellRoute(pathname),
     ),
     redirecting,
     paywalled: Boolean(authenticated && account && isTelegramVerified(account) && isPaidRoute(pathname) && !hasActiveSubscription(account)),
@@ -203,10 +203,6 @@ function useAccessGate() {
 }
 
 function isSimpleShellRoute(pathname: string) {
-  if (pathname === "/vocabulary" || pathname.startsWith("/vocabulary/")) {
-    return true;
-  }
-
   return [
     "/",
     "/login",
@@ -221,6 +217,25 @@ function isSimpleShellRoute(pathname: string) {
     "/careers",
     "/privacy",
   ].includes(pathname);
+}
+
+function isFullGameShellRoute(pathname: string) {
+  return (
+    pathname === "/" ||
+    pathname.startsWith("/home") ||
+    pathname.startsWith("/vocabulary") ||
+    pathname.startsWith("/lesson") ||
+    pathname.startsWith("/subjects") ||
+    pathname.startsWith("/plan") ||
+    pathname.startsWith("/progress") ||
+    pathname.startsWith("/reports") ||
+    pathname.startsWith("/profile") ||
+    pathname.startsWith("/leaderboard") ||
+    pathname.startsWith("/shop") ||
+    pathname.startsWith("/topic-challenge") ||
+    pathname.startsWith("/exam") ||
+    pathname.startsWith("/explain-solution")
+  );
 }
 
 function isTelegramVerified(account: Account) {
@@ -299,6 +314,7 @@ function isPaidRoute(pathname: string) {
     pathname.startsWith("/lesson") ||
     pathname.startsWith("/subjects") ||
     pathname.startsWith("/plan") ||
+    pathname.startsWith("/vocabulary") ||
     pathname.startsWith("/progress") ||
     pathname.startsWith("/reports") ||
     pathname.startsWith("/shop") ||
