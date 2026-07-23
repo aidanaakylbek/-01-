@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { AibiMark } from "@/components/aibi-mark";
 import { ReadableMathText } from "@/components/readable-math-text";
 import { useLanguage } from "@/hooks/use-language";
+import aiSanaHero from "@/assets/ai-sana-hero.jpg";
 
 type ChatMessage = {
   role: "user" | "assistant";
@@ -19,6 +20,7 @@ export function AIAssistant() {
     null,
   );
   const [voiceStatus, setVoiceStatus] = useState("");
+  const [footerOverlap, setFooterOverlap] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -30,6 +32,35 @@ export function AIAssistant() {
   useEffect(() => {
     return () => {
       audioRef.current?.pause();
+    };
+  }, []);
+
+  useEffect(() => {
+    let frame = 0;
+
+    const updateFooterOffset = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const footer = document.querySelector("footer");
+
+        if (!footer) {
+          setFooterOverlap(0);
+          return;
+        }
+
+        const overlap = Math.max(0, window.innerHeight - footer.getBoundingClientRect().top);
+        setFooterOverlap(Math.ceil(overlap));
+      });
+    };
+
+    updateFooterOffset();
+    window.addEventListener("scroll", updateFooterOffset, { passive: true });
+    window.addEventListener("resize", updateFooterOffset);
+
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", updateFooterOffset);
+      window.removeEventListener("resize", updateFooterOffset);
     };
   }, []);
 
@@ -171,14 +202,17 @@ export function AIAssistant() {
     <>
       <button
         aria-label="Open AI Tutor"
-        className="fixed bottom-8 right-8 z-40 w-14 h-14 bg-secondary text-on-secondary rounded-full shadow-lg hover:shadow-xl hover:bg-secondary-container hover:text-on-secondary-container transition-all flex items-center justify-center btn-squish border border-secondary"
+        className="fixed bottom-[calc(var(--ai-fab-footer-offset,0px)+max(1rem,env(safe-area-inset-bottom)))] right-4 z-40 flex h-14 w-14 cursor-pointer items-center justify-center overflow-hidden rounded-full border border-secondary bg-secondary shadow-lg outline-none transition-all hover:shadow-xl focus-visible:ring-2 focus-visible:ring-secondary focus-visible:ring-offset-2 md:bottom-[calc(var(--ai-fab-footer-offset,0px)+2rem)] md:right-8"
         onClick={() => setIsOpen(true)}
+        style={{ "--ai-fab-footer-offset": `${footerOverlap}px` } as React.CSSProperties}
+        type="button"
       >
-        <AibiMark
-          className="border-0 shadow-none"
-          label="Open AI-Sana Tutor"
-          shape="circle"
-          size="lg"
+        <img
+          alt=""
+          aria-hidden="true"
+          className="h-full w-full object-cover"
+          draggable={false}
+          src={aiSanaHero}
         />
       </button>
 
