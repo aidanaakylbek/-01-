@@ -6,6 +6,10 @@ import aiSanaAnimated from "@/assets/ai-sana-animated.mp4";
 import { useLanguage } from "@/hooks/use-language";
 import { getAccountDashboard } from "@/lib/api/account.functions";
 import type { DashboardAccount } from "@/lib/account-store.server";
+import {
+  generateAdaptiveLearningPath,
+  type AdaptiveLearningPathStep,
+} from "@/lib/adaptive-learning-path";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -19,14 +23,6 @@ export const Route = createFileRoute("/")({
   }),
   component: Dashboard,
 });
-
-const lessonNodes = [
-  { title: "Диагностика", state: "current", icon: "quiz", href: "/diagnostic" },
-  { title: "Логика", state: "locked", icon: "lock", href: "/plan" },
-  { title: "Математика", state: "locked", icon: "lock", href: "/subjects#nis" },
-  { title: "Оқу сауаттылығы", state: "locked", icon: "menu_book", href: "/subjects#bil" },
-  { title: "Апталық тест", state: "locked", icon: "quiz", href: "/progress" },
-];
 
 export function Dashboard() {
   const { language } = useLanguage();
@@ -54,7 +50,12 @@ export function Dashboard() {
 
   const completedLessons = dashboard?.completedLessons ?? 0;
   const xpToday = completedLessons > 0 ? completedLessons * 40 : 0;
-  const currentLessonHref = completedLessons > 0 ? "/plan" : "/diagnostic";
+  const adaptivePath = dashboard
+    ? generateAdaptiveLearningPath(dashboard.account, dashboard.examAttempts)
+    : null;
+  const learningSteps = adaptivePath?.steps ?? [];
+  const currentLessonHref =
+    adaptivePath?.nextHref ?? (completedLessons > 0 ? "/plan" : "/diagnostic");
   const c =
     language === "RU"
       ? {
@@ -63,6 +64,18 @@ export function Dashboard() {
           coach: "Сегодня пройди 3 урока. Еще 2 вопроса осталось!",
           start: "Начать текущий урок",
           ready: "Ты готов к следующему уровню!",
+          pathEyebrow: "AI-Sana path",
+          pathTitle: "Личный учебный путь",
+          pathFallback: "Завершите диагностику, и AI-Sana построит ваш персональный план.",
+          pathReady: "AI-план готов",
+          diagnosticFirst: "Сначала диагностика",
+          stepLabel: "Шаг",
+          lockedLabel: "Закрыто",
+          completedLabel: "✓ Завершено",
+          currentLabel: "Сейчас",
+          practiceLabel: "Практика",
+          testLabel: "Тест",
+          lessonsLabel: "урок",
         }
       : language === "EN"
         ? {
@@ -71,6 +84,18 @@ export function Dashboard() {
             coach: "Complete 3 lessons today. Only 2 questions left!",
             start: "Start current lesson",
             ready: "You are ready for the next level!",
+            pathEyebrow: "AI-Sana path",
+            pathTitle: "Personal learning path",
+            pathFallback: "Finish the diagnostic test and AI-Sana will build your personal plan.",
+            pathReady: "AI plan ready",
+            diagnosticFirst: "Diagnostic first",
+            stepLabel: "Step",
+            lockedLabel: "Locked",
+            completedLabel: "✓ Completed",
+            currentLabel: "Current",
+            practiceLabel: "Practice",
+            testLabel: "Topic Test",
+            lessonsLabel: "lesson",
           }
         : {
             titleLines: ["НЗМ, БИЛ және РФММ-ға", "дайындық платформасы"],
@@ -79,6 +104,18 @@ export function Dashboard() {
             coach: "Бүгін 3 сабақ өт! Тағы 2 сұрақ қалды!",
             start: "Қазіргі сабақты бастау",
             ready: "Келесі деңгейге дайынсың!",
+            pathEyebrow: "AI-Sana path",
+            pathTitle: "Жеке оқу жолың",
+            pathFallback: "Диагностиканы аяқтағаннан кейін AI-Sana жеке оқу жолын құрады.",
+            pathReady: "AI жоспар дайын",
+            diagnosticFirst: "Алдымен диагностика",
+            stepLabel: "Қадам",
+            lockedLabel: "Жабық",
+            completedLabel: "✓ Аяқталды",
+            currentLabel: "Қазір",
+            practiceLabel: "Жаттығу",
+            testLabel: "Тақырып тесті",
+            lessonsLabel: "сабақ",
           };
 
   return (
@@ -163,19 +200,22 @@ export function Dashboard() {
             <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
               <div>
                 <p className="text-sm font-black uppercase tracking-[0.25em] text-[#8B5CF6]">
-                  Learning Path
+                  {c.pathEyebrow}
                 </p>
-                <h2 className="mt-2 text-3xl font-black">Жарайсың!</h2>
+                <h2 className="mt-2 text-3xl font-black">{c.pathTitle}</h2>
+                <p className="mt-2 max-w-2xl font-bold text-[#6B5E8F]">
+                  {adaptivePath?.updateMessage ?? c.pathFallback}
+                </p>
               </div>
               <div className="rounded-2xl bg-[#F5F3FF] px-4 py-3 font-black text-[#6D28D9]">
-                ⭐ 0 XP today
+                {dashboard?.account.diagnosticCompleted ? c.pathReady : c.diagnosticFirst}
               </div>
             </div>
-            <div className="relative mx-auto max-w-xl py-4">
-              <div className="absolute left-1/2 top-12 h-[calc(100%-6rem)] w-4 -translate-x-1/2 rounded-full bg-[#DDD6FE]" />
+            <div className="relative mx-auto max-w-3xl py-4">
+              <div className="absolute left-10 top-12 h-[calc(100%-6rem)] w-4 rounded-full bg-[#DDD6FE] md:left-1/2 md:-translate-x-1/2" />
               <div className="relative space-y-8">
-                {lessonNodes.map((node, index) => (
-                  <LessonNode key={node.title} node={node} index={index} />
+                {learningSteps.map((node, index) => (
+                  <LessonNode key={node.id} copy={c} node={node} index={index} />
                 ))}
               </div>
             </div>
@@ -197,31 +237,97 @@ export function Dashboard() {
   );
 }
 
-function LessonNode({ node, index }: { node: (typeof lessonNodes)[number]; index: number }) {
+function LessonNode({
+  copy,
+  node,
+  index,
+}: {
+  copy: {
+    completedLabel: string;
+    currentLabel: string;
+    lockedLabel: string;
+    lessonsLabel: string;
+    practiceLabel: string;
+    stepLabel: string;
+    testLabel: string;
+  };
+  node: AdaptiveLearningPathStep;
+  index: number;
+}) {
   const side = index % 2 === 0 ? "md:mr-auto" : "md:ml-auto";
   const stateClass =
-    node.state === "done"
+    node.state === "completed"
       ? "bg-[#22C55E] text-white shadow-[0_8px_0_#15803D]"
       : node.state === "current"
         ? "bg-[#8B5CF6] text-white shadow-[0_8px_0_#5B21B6] animate-[reward-pop_0.8s_ease_both]"
-        : "bg-[#EDE9FE] text-[#8B5CF6] shadow-[0_8px_0_#DDD6FE]";
+        : node.state === "review"
+          ? "bg-[#FACC15] text-[#1E1B4B] shadow-[0_8px_0_#CA8A04]"
+          : "bg-[#EDE9FE] text-[#8B5CF6] shadow-[0_8px_0_#DDD6FE]";
+  const icon =
+    node.state === "locked"
+      ? "lock"
+      : node.state === "completed"
+        ? "check"
+        : node.kind === "test" || node.kind === "weekly" || node.kind === "monthly"
+          ? "quiz"
+          : node.kind === "practice" || node.kind === "revision"
+            ? "psychology"
+            : "play_arrow";
+  const content = (
+    <>
+      <div className={`grid h-20 w-20 shrink-0 place-items-center rounded-full ${stateClass}`}>
+        <span className="material-symbols-outlined text-4xl">{icon}</span>
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="text-xs font-black uppercase tracking-widest text-[#8B5CF6]">
+            {copy.stepLabel} {index + 1}
+          </p>
+          <span className="rounded-full bg-[#F5F3FF] px-3 py-1 text-xs font-black text-[#6D28D9]">
+            {node.state === "locked"
+              ? copy.lockedLabel
+              : node.state === "completed"
+                ? copy.completedLabel
+                : copy.currentLabel}
+          </span>
+          <span className="ml-auto rounded-full bg-[#EDE9FE] px-3 py-1 text-xs font-black text-[#6D28D9]">
+            {node.progress}%
+          </span>
+        </div>
+        <h3 className="mt-2 text-xl font-black text-[#1E1B4B]">{node.title}</h3>
+        <p className="mt-1 text-sm font-bold text-[#6B5E8F]">{node.aiMessage}</p>
+        <ProgressBar value={node.progress} />
+        <div className="mt-3 flex flex-wrap gap-2 text-xs font-black text-[#4C1D95]">
+          <span className="rounded-full bg-white px-3 py-1 shadow-sm">
+            {node.lessons} {copy.lessonsLabel}
+          </span>
+          <span className="rounded-full bg-white px-3 py-1 shadow-sm">
+            {copy.practiceLabel}: {node.practiceStatus}
+          </span>
+          <span className="rounded-full bg-white px-3 py-1 shadow-sm">
+            {copy.testLabel}: {node.testStatus}
+          </span>
+        </div>
+      </div>
+    </>
+  );
+
+  if (node.state === "locked") {
+    return (
+      <div
+        className={`relative z-10 flex w-full items-center gap-4 rounded-[28px] border-2 border-[#DDD6FE] bg-white/70 p-4 opacity-70 md:w-[82%] ${side}`}
+      >
+        {content}
+      </div>
+    );
+  }
+
   return (
     <Link
       to={node.href as never}
-      className={`relative z-10 flex w-full items-center gap-4 rounded-[28px] border-2 border-[#DDD6FE] bg-white p-4 transition hover:-translate-y-1 md:w-[72%] ${side}`}
+      className={`relative z-10 flex w-full items-center gap-4 rounded-[28px] border-2 border-[#DDD6FE] bg-white p-4 transition hover:-translate-y-1 md:w-[82%] ${side}`}
     >
-      <div className={`grid h-20 w-20 shrink-0 place-items-center rounded-full ${stateClass}`}>
-        <span className="material-symbols-outlined text-4xl">
-          {node.state === "locked" ? "lock" : node.icon}
-        </span>
-      </div>
-      <div>
-        <p className="text-xs font-black uppercase tracking-widest text-[#8B5CF6]">
-          Lesson {index + 1}
-        </p>
-        <h3 className="text-xl font-black text-[#1E1B4B]">{node.title}</h3>
-        <p className="mt-1 text-sm font-bold text-[#6B5E8F]">Қатеңді AI-Sana түсіндіреді</p>
-      </div>
+      {content}
     </Link>
   );
 }
