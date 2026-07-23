@@ -61,8 +61,7 @@ export function Dashboard() {
     language === "RU"
       ? {
           titleLines: ["Платформа подготовки", "к НИШ, БИЛ и РФМШ"],
-          subtitle:
-            "AI Tutor, личный план, ежедневные задания и полный контроль прогресса помогают идти к цели.",
+          subtitle: "AI Tutor, личный план и ежедневные задания помогают двигаться к цели.",
           coach: "Сегодня пройди 3 урока. Еще 2 вопроса осталось!",
           start: "Начать текущий урок",
           boss: "Boss Test открылся!",
@@ -74,8 +73,7 @@ export function Dashboard() {
       : language === "EN"
         ? {
             titleLines: ["NIS, BIL and RFMS", "preparation platform"],
-            subtitle:
-              "AI Tutor, a personal plan, daily tasks and full progress tracking help you move toward your goal.",
+            subtitle: "AI Tutor, a personal plan and daily tasks help you move toward your goal.",
             coach: "Complete 3 lessons today. Only 2 questions left!",
             start: "Start current lesson",
             boss: "Boss Test unlocked!",
@@ -87,7 +85,7 @@ export function Dashboard() {
         : {
             titleLines: ["НЗМ, БИЛ және РФММ-ға", "дайындық платформасы"],
             subtitle:
-              "AI Tutor, жеке оқу жоспары, күнделікті тапсырмалар және толық прогресс бақылауы арқылы мақсатыңа жақында.",
+              "AI Tutor, жеке оқу жоспары және күнделікті тапсырмалар арқылы мақсатыңа жақында.",
             coach: "Бүгін 3 сабақ өт! Тағы 2 сұрақ қалды!",
             start: "Қазіргі сабақты бастау",
             boss: "Boss Test ашылды!",
@@ -102,19 +100,19 @@ export function Dashboard() {
       <div className="space-y-5">
         <section className="relative overflow-hidden rounded-[34px] bg-gradient-to-br from-[#1E1B4B] via-[#6D28D9] to-[#8B5CF6] p-5 text-white shadow-[0_12px_0_rgba(30,27,75,0.25)] md:p-8">
           <div className="absolute right-[-60px] top-[-70px] h-48 w-48 rounded-full bg-[#C084FC]/25 blur-3xl" />
-          <div className="relative grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-center xl:grid-cols-[minmax(0,1fr)_400px]">
-            <div>
+          <div className="relative grid gap-6 lg:grid-cols-[minmax(0,1.3fr)_300px] lg:items-center xl:grid-cols-[minmax(0,1.35fr)_340px]">
+            <div className="min-w-0">
               <p className="text-sm font-black uppercase tracking-[0.25em] text-[#FACC15]">
                 AI-Sana Quest
               </p>
-              <h1 className="mt-3 max-w-3xl text-[2rem] font-black leading-[1.05] tracking-tight sm:text-[2.5rem] md:text-[3.5rem] xl:text-[4rem]">
+              <h1 className="mt-3 max-w-4xl text-[2rem] font-black leading-[1.08] tracking-tight sm:text-[2.25rem] md:text-[2.85rem] lg:text-[3.35rem] xl:text-[3.5rem]">
                 <span className="block">{c.titleLines[0]}</span>
                 <span className="block">{c.titleLines[1]}</span>
               </h1>
-              <p className="mt-4 max-w-2xl text-base font-semibold leading-relaxed text-[#EDE9FE] md:text-lg">
+              <p className="mt-6 max-w-3xl text-base font-semibold leading-relaxed text-[#EDE9FE] md:text-lg">
                 {c.subtitle}
               </p>
-              <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <Link
                   to={currentLessonHref as never}
                   className="inline-flex justify-center rounded-2xl bg-[#FACC15] px-6 py-4 text-center font-black text-[#1E1B4B] shadow-[0_6px_0_#CA8A04] transition hover:-translate-y-0.5"
@@ -144,9 +142,9 @@ export function Dashboard() {
                 )}
               </div>
             </div>
-            <div className="relative min-h-[270px] overflow-visible sm:min-h-[310px]">
+            <div className="relative min-h-[250px] overflow-visible sm:min-h-[290px] lg:self-center">
               <div className="absolute right-2 top-8 h-48 w-48 rounded-full bg-white/15 blur-2xl" />
-              <div className="relative mx-auto flex h-full max-w-[380px] items-center justify-center">
+              <div className="relative mx-auto flex h-full max-w-[330px] items-center justify-center">
                 {xpToday > 0 ? (
                   <div className="absolute right-3 top-2 rounded-[22px] border-2 border-white/30 bg-white/20 px-4 py-3 font-black text-white shadow-[0_8px_0_rgba(30,27,75,0.18)] backdrop-blur-md animate-[sana-bubble_3.2s_ease-in-out_infinite]">
                     ⭐ +{xpToday} XP
@@ -162,7 +160,7 @@ export function Dashboard() {
                   <div className="absolute -left-3 top-9 z-10 rounded-2xl border-2 border-white/50 bg-white px-4 py-2 text-sm font-black text-[#6D28D9] shadow-[0_6px_0_rgba(30,27,75,0.16)] animate-[sana-bubble_2.8s_ease-in-out_infinite]">
                     Сәлем!
                   </div>
-                  <div className="relative h-52 w-52 overflow-hidden rounded-full border-4 border-white bg-white shadow-[0_16px_0_rgba(30,27,75,0.18)] md:h-72 md:w-72">
+                  <div className="relative h-52 w-52 overflow-hidden rounded-full border-4 border-white bg-white shadow-[0_16px_0_rgba(30,27,75,0.18)] md:h-64 md:w-64">
                     <video
                       aria-label="Animated AI-Sana tutor"
                       autoPlay
