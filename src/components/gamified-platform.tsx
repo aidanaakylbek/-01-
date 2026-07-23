@@ -458,7 +458,6 @@ function GameSidebar() {
   const location = useLocation();
   const c = labels[language];
   const items: NavItem[] = [
-    { label: c.home, icon: "home", to: "/" },
     { label: c.path, icon: "route", to: "/home" },
     { label: c.practice, icon: "exercise", to: "/plan" },
     { label: c.tutor, icon: "smart_toy", to: "/explain-solution" },
@@ -504,7 +503,6 @@ function MobileGameNav() {
   const location = useLocation();
   const c = labels[language];
   const items: NavItem[] = [
-    { label: c.home, icon: "home", to: "/" },
     { label: c.practice, icon: "exercise", to: "/plan" },
     { label: c.tutor, icon: "smart_toy", to: "/explain-solution" },
     { label: c.vocabulary, icon: "auto_stories", to: "/vocabulary" },
@@ -513,7 +511,7 @@ function MobileGameNav() {
   ];
   return (
     <nav className="fixed inset-x-3 bottom-3 z-50 rounded-[26px] border-2 border-[#DDD6FE] bg-white/95 p-2 shadow-[0_8px_0_rgba(109,40,217,0.18)] backdrop-blur md:hidden">
-      <div className="grid grid-cols-6 gap-1">
+      <div className="grid grid-cols-5 gap-1">
         {items.map((item) => {
           const active = location.pathname === item.to;
           return (
