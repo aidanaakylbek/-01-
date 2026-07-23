@@ -10,6 +10,14 @@ type AibiMarkProps = HTMLAttributes<HTMLDivElement> & {
   shape?: "circle" | "square";
 };
 
+const sizePixels = {
+  sm: 32,
+  md: 40,
+  lg: 56,
+  xl: 96,
+  hero: 208,
+};
+
 const sizeClasses = {
   sm: "w-8 h-8",
   md: "w-10 h-10",
@@ -23,8 +31,11 @@ export function AibiMark({
   label = "AI-Sana",
   size = "md",
   shape = "square",
+  style,
   ...props
 }: AibiMarkProps) {
+  const pixelSize = sizePixels[size];
+
   return (
     <div
       aria-label={label}
@@ -35,6 +46,14 @@ export function AibiMark({
         className,
       )}
       role="img"
+      style={{
+        borderRadius: shape === "circle" ? "9999px" : "8px",
+        height: pixelSize,
+        minHeight: pixelSize,
+        minWidth: pixelSize,
+        width: pixelSize,
+        ...style,
+      }}
       {...props}
     >
       <img
@@ -42,7 +61,10 @@ export function AibiMark({
         aria-hidden="true"
         className="h-full w-full object-cover"
         draggable={false}
+        height={pixelSize}
         src={aiSanaHero}
+        style={{ display: "block", height: "100%", objectFit: "cover", width: "100%" }}
+        width={pixelSize}
       />
     </div>
   );

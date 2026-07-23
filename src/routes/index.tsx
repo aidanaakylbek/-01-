@@ -1,10 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import {
-  GameCard,
-  GameLayout,
-  ProgressBar,
-  RightWidgets,
-} from "@/components/gamified-platform";
+import { GameCard, GameLayout, ProgressBar, RightWidgets } from "@/components/gamified-platform";
 import aiSanaPoster from "@/assets/ai-sana-hero.jpg";
 import aiSanaAnimated from "@/assets/ai-sana-animated.mp4";
 import { useLanguage } from "@/hooks/use-language";
@@ -116,12 +111,22 @@ export function Dashboard() {
                       aria-label="Animated AI-Sana tutor"
                       autoPlay
                       className="h-full w-full scale-[1.42] object-cover object-[center_62%]"
+                      height={288}
                       loop
                       muted
                       playsInline
                       poster={aiSanaPoster}
                       preload="auto"
                       src={aiSanaAnimated}
+                      style={{
+                        display: "block",
+                        height: "100%",
+                        maxHeight: 288,
+                        maxWidth: 288,
+                        objectFit: "cover",
+                        width: "100%",
+                      }}
+                      width={288}
                     />
                     <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-white via-white/70 to-transparent" />
                     <span className="sana-wave-line sana-wave-line-1" />
@@ -161,7 +166,9 @@ export function Dashboard() {
             <GameCard className="bg-[#FFF7CC]">
               <div className="text-5xl">🎁</div>
               <h3 className="mt-3 text-2xl font-black">{c.ready}</h3>
-              <p className="mt-2 font-semibold text-[#6B5E8F]">Алғашқы сабақтан кейін прогресс басталады.</p>
+              <p className="mt-2 font-semibold text-[#6B5E8F]">
+                Алғашқы сабақтан кейін прогресс басталады.
+              </p>
               <ProgressBar value={0} />
             </GameCard>
             <GameCard className="border-[#FACC15] bg-[#1E1B4B] text-white">
@@ -182,13 +189,7 @@ export function Dashboard() {
   );
 }
 
-function LessonNode({
-  node,
-  index,
-}: {
-  node: (typeof lessonNodes)[number];
-  index: number;
-}) {
+function LessonNode({ node, index }: { node: (typeof lessonNodes)[number]; index: number }) {
   const side = index % 2 === 0 ? "md:mr-auto" : "md:ml-auto";
   const stateClass =
     node.state === "done"
