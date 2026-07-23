@@ -382,7 +382,6 @@ export function GameTopBar({ compact = false }: { compact?: boolean }) {
         {!compact ? (
           <div className="hidden flex-1 items-center justify-center gap-2 md:flex">
             <StatusPill icon="🔥" value={`${dashboard?.completedLessons ?? 0} күн`} />
-            <StatusPill icon="❤️" value="5" />
             <StatusPill icon="💎" value="0" />
           </div>
         ) : (
