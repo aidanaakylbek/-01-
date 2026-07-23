@@ -19,7 +19,6 @@ const labels = {
     practice: "Жаттығу",
     progress: "Прогресс",
     profile: "Профиль",
-    leaderboard: "Рейтинг",
     shop: "Дүкен",
     vocabulary: "Сөздік",
     today: "Бүгінгі мақсат",
@@ -38,7 +37,6 @@ const labels = {
     practice: "Практика",
     progress: "Прогресс",
     profile: "Профиль",
-    leaderboard: "Лига",
     shop: "Магазин",
     vocabulary: "Словарь",
     today: "Цель дня",
@@ -57,7 +55,6 @@ const labels = {
     practice: "Practice",
     progress: "Progress",
     profile: "Profile",
-    leaderboard: "Leaderboard",
     shop: "Shop",
     vocabulary: "Vocabulary",
     today: "Daily Goal",
@@ -231,7 +228,6 @@ function isFullGameShellRoute(pathname: string) {
     pathname.startsWith("/progress") ||
     pathname.startsWith("/reports") ||
     pathname.startsWith("/profile") ||
-    pathname.startsWith("/leaderboard") ||
     pathname.startsWith("/shop") ||
     pathname.startsWith("/topic-challenge") ||
     pathname.startsWith("/explain-solution")
@@ -460,7 +456,6 @@ function GameSidebar() {
     { label: c.vocabulary, icon: "auto_stories", to: "/vocabulary" },
     { label: c.progress, icon: "monitoring", to: "/progress" },
     { label: c.profile, icon: "person", to: "/profile" },
-    { label: c.leaderboard, icon: "leaderboard", to: "/leaderboard" },
     { label: c.shop, icon: "storefront", to: "/shop" },
   ];
   return (

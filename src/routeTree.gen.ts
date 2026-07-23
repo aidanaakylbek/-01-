@@ -24,7 +24,6 @@ import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PlanRouteImport } from './routes/plan'
 import { Route as PaymentRouteImport } from './routes/payment'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as ExplainSolutionRouteImport } from './routes/explain-solution'
 import { Route as ExamRouteImport } from './routes/exam'
@@ -133,11 +132,6 @@ const PaymentRoute = PaymentRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LeaderboardRoute = LeaderboardRouteImport.update({
-  id: '/leaderboard',
-  path: '/leaderboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HomeRoute = HomeRouteImport.update({
@@ -327,7 +321,6 @@ export interface FileRoutesByFullPath {
   '/exam': typeof ExamRoute
   '/explain-solution': typeof ExplainSolutionRoute
   '/home': typeof HomeRoute
-  '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
   '/payment': typeof PaymentRoute
   '/plan': typeof PlanRoute
@@ -379,7 +372,6 @@ export interface FileRoutesByTo {
   '/exam': typeof ExamRoute
   '/explain-solution': typeof ExplainSolutionRoute
   '/home': typeof HomeRoute
-  '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
   '/payment': typeof PaymentRoute
   '/plan': typeof PlanRoute
@@ -432,7 +424,6 @@ export interface FileRoutesById {
   '/exam': typeof ExamRoute
   '/explain-solution': typeof ExplainSolutionRoute
   '/home': typeof HomeRoute
-  '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
   '/payment': typeof PaymentRoute
   '/plan': typeof PlanRoute
@@ -486,7 +477,6 @@ export interface FileRouteTypes {
     | '/exam'
     | '/explain-solution'
     | '/home'
-    | '/leaderboard'
     | '/login'
     | '/payment'
     | '/plan'
@@ -538,7 +528,6 @@ export interface FileRouteTypes {
     | '/exam'
     | '/explain-solution'
     | '/home'
-    | '/leaderboard'
     | '/login'
     | '/payment'
     | '/plan'
@@ -590,7 +579,6 @@ export interface FileRouteTypes {
     | '/exam'
     | '/explain-solution'
     | '/home'
-    | '/leaderboard'
     | '/login'
     | '/payment'
     | '/plan'
@@ -643,7 +631,6 @@ export interface RootRouteChildren {
   ExamRoute: typeof ExamRoute
   ExplainSolutionRoute: typeof ExplainSolutionRoute
   HomeRoute: typeof HomeRoute
-  LeaderboardRoute: typeof LeaderboardRoute
   LoginRoute: typeof LoginRoute
   PaymentRoute: typeof PaymentRoute
   PlanRoute: typeof PlanRoute
@@ -783,13 +770,6 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/leaderboard': {
-      id: '/leaderboard'
-      path: '/leaderboard'
-      fullPath: '/leaderboard'
-      preLoaderRoute: typeof LeaderboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/home': {
@@ -1088,7 +1068,6 @@ const rootRouteChildren: RootRouteChildren = {
   ExamRoute: ExamRoute,
   ExplainSolutionRoute: ExplainSolutionRoute,
   HomeRoute: HomeRoute,
-  LeaderboardRoute: LeaderboardRoute,
   LoginRoute: LoginRoute,
   PaymentRoute: PaymentRoute,
   PlanRoute: PlanRoute,
