@@ -75,13 +75,7 @@ const labels = {
   },
 } satisfies Record<Lang, Record<string, string>>;
 
-export function GameLayout({
-  children,
-  right,
-}: {
-  children: ReactNode;
-  right?: ReactNode;
-}) {
+export function GameLayout({ children, right }: { children: ReactNode; right?: ReactNode }) {
   const location = useLocation();
   const access = useAccessGate();
   const simpleShell = isSimpleShellRoute(location.pathname);
@@ -140,18 +134,20 @@ function useAccessGate() {
   useEffect(() => {
     let mounted = true;
     setLoadingAccess(true);
-    void getAccountDashboard().then((dashboard) => {
-      if (mounted) {
-        setAccount(dashboard.account);
-        setAuthenticated(dashboard.authenticated);
-        setLoadingAccess(false);
-      }
-    }).catch(() => {
-      if (mounted) {
-        setAuthenticated(false);
-        setLoadingAccess(false);
-      }
-    });
+    void getAccountDashboard()
+      .then((dashboard) => {
+        if (mounted) {
+          setAccount(dashboard.account);
+          setAuthenticated(dashboard.authenticated);
+          setLoadingAccess(false);
+        }
+      })
+      .catch(() => {
+        if (mounted) {
+          setAuthenticated(false);
+          setLoadingAccess(false);
+        }
+      });
 
     return () => {
       mounted = false;
@@ -194,13 +190,19 @@ function useAccessGate() {
     authenticated,
     fullGameShell: Boolean(
       authenticated &&
-        account &&
-        isTelegramVerified(account) &&
-        hasActiveSubscription(account) &&
-        isFullGameShellRoute(pathname),
+      account &&
+      isTelegramVerified(account) &&
+      hasActiveSubscription(account) &&
+      isFullGameShellRoute(pathname),
     ),
     redirecting,
-    paywalled: Boolean(authenticated && account && isTelegramVerified(account) && isPaidRoute(pathname) && !hasActiveSubscription(account)),
+    paywalled: Boolean(
+      authenticated &&
+      account &&
+      isTelegramVerified(account) &&
+      isPaidRoute(pathname) &&
+      !hasActiveSubscription(account),
+    ),
   };
 }
 
@@ -245,7 +247,10 @@ function isTelegramVerified(account: Account) {
     return true;
   }
 
-  return account.telegramParentVerified || (account.parentTelegramConnected && account.parentPhoneVerified);
+  return (
+    account.telegramParentVerified ||
+    (account.parentTelegramConnected && account.parentPhoneVerified)
+  );
 }
 
 function hasActiveSubscription(account: Account) {
@@ -265,14 +270,7 @@ function hasActiveSubscription(account: Account) {
 }
 
 function isProtectedBeforeLogin(pathname: string) {
-  return ![
-    "/",
-    "/login",
-    "/register",
-    "/about",
-    "/careers",
-    "/privacy",
-  ].includes(pathname);
+  return !["/", "/login", "/register", "/about", "/careers", "/privacy"].includes(pathname);
 }
 
 function isProtectedBeforeTelegram(pathname: string) {
@@ -300,14 +298,16 @@ function isProtectedBeforeDiagnostic(pathname: string) {
 }
 
 function isPaidRoute(pathname: string) {
-  if ([
-    "/diagnostic",
-    "/diagnostic-test",
-    "/diagnostic-result",
-    "/pricing",
-    "/payment",
-    "/verify-parent-telegram",
-  ].includes(pathname)) {
+  if (
+    [
+      "/diagnostic",
+      "/diagnostic-test",
+      "/diagnostic-result",
+      "/pricing",
+      "/payment",
+      "/verify-parent-telegram",
+    ].includes(pathname)
+  ) {
     return false;
   }
 
@@ -333,14 +333,21 @@ function PaywallCard() {
         <div>
           <h2 className="text-2xl font-black text-[#1E1B4B]">Жазылым қажет</h2>
           <p className="mt-2 font-semibold text-[#6B5E8F]">
-            Диагностикалық тест тегін. Толық сабақтар, жаттығулар және AI түсіндірмелерін ашу үшін тариф таңдаңыз.
+            Диагностикалық тест тегін. Толық сабақтар, жаттығулар және AI түсіндірмелерін ашу үшін
+            тариф таңдаңыз.
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
-          <Link className="rounded-2xl bg-[#6D28D9] px-5 py-3 font-black text-white shadow-[0_5px_0_#4C1D95]" to="/pricing">
+          <Link
+            className="rounded-2xl bg-[#6D28D9] px-5 py-3 font-black text-white shadow-[0_5px_0_#4C1D95]"
+            to="/pricing"
+          >
             Тарифтерді көру
           </Link>
-          <Link className="rounded-2xl border-2 border-[#DDD6FE] bg-white px-5 py-3 font-black text-[#6D28D9]" to="/diagnostic">
+          <Link
+            className="rounded-2xl border-2 border-[#DDD6FE] bg-white px-5 py-3 font-black text-[#6D28D9]"
+            to="/diagnostic"
+          >
             Диагностикалық тестке өту
           </Link>
         </div>
@@ -463,14 +470,9 @@ function GameSidebar() {
   return (
     <aside className="hidden max-h-[calc(100vh-5rem)] overflow-y-auto overscroll-contain pr-1 md:sticky md:top-20 md:block">
       <div className="rounded-[28px] border-2 border-[#DDD6FE] bg-white p-3 shadow-[0_10px_0_rgba(109,40,217,0.10)]">
-        <div className="mb-3 rounded-3xl bg-gradient-to-br from-[#8B5CF6] to-[#6D28D9] p-3 text-white shadow-[0_6px_0_rgba(76,29,149,0.28)]">
-          <div className="flex items-center gap-3">
-            <AibiMark size="lg" className="bg-white" />
-            <div>
-              <p className="text-xs font-black uppercase tracking-widest opacity-80">AI-Sana</p>
-              <p className="text-sm font-black leading-tight">Келесі деңгейге дайынсың!</p>
-            </div>
-          </div>
+        <div className="mb-3 flex items-center gap-3 px-2 py-1">
+          <AibiMark size="md" className="bg-white" />
+          <span className="text-lg font-black text-[#6D28D9]">AI-Sana</span>
         </div>
         <nav className="space-y-1.5">
           {items.map((item) => {
@@ -574,7 +576,9 @@ export function RightWidgets() {
         </div>
         <ProgressBar value={Math.min(100, Math.round((completedLessons / 3) * 100))} />
         <p className="mt-3 text-sm font-bold text-[#6B5E8F]">
-          {completedLessons >= 3 ? c.reward : `Тағы ${Math.max(0, 3 - completedLessons)} сабақ қалды.`}
+          {completedLessons >= 3
+            ? c.reward
+            : `Тағы ${Math.max(0, 3 - completedLessons)} сабақ қалды.`}
         </p>
       </GameCard>
       <GameCard>
