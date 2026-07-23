@@ -17,7 +17,6 @@ const labels = {
     home: "Басты бет",
     path: "Оқу жолы",
     practice: "Жаттығу",
-    tutor: "AI Tutor",
     progress: "Прогресс",
     profile: "Профиль",
     leaderboard: "Рейтинг",
@@ -37,7 +36,6 @@ const labels = {
     home: "Главная",
     path: "Путь",
     practice: "Практика",
-    tutor: "AI Tutor",
     progress: "Прогресс",
     profile: "Профиль",
     leaderboard: "Лига",
@@ -57,7 +55,6 @@ const labels = {
     home: "Home",
     path: "Learning Path",
     practice: "Practice",
-    tutor: "AI Tutor",
     progress: "Progress",
     profile: "Profile",
     leaderboard: "Leaderboard",
@@ -460,7 +457,6 @@ function GameSidebar() {
   const items: NavItem[] = [
     { label: c.path, icon: "route", to: "/home" },
     { label: c.practice, icon: "exercise", to: "/plan" },
-    { label: c.tutor, icon: "smart_toy", to: "/explain-solution" },
     { label: c.vocabulary, icon: "auto_stories", to: "/vocabulary" },
     { label: c.progress, icon: "monitoring", to: "/progress" },
     { label: c.profile, icon: "person", to: "/profile" },
@@ -504,7 +500,6 @@ function MobileGameNav() {
   const c = labels[language];
   const items: NavItem[] = [
     { label: c.practice, icon: "exercise", to: "/plan" },
-    { label: c.tutor, icon: "smart_toy", to: "/explain-solution" },
     { label: c.vocabulary, icon: "auto_stories", to: "/vocabulary" },
     { label: c.progress, icon: "monitoring", to: "/progress" },
     { label: c.shop, icon: "storefront", to: "/shop" },
