@@ -1,14 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 
 import aiSanaHero from "@/assets/ai-sana-hero.jpg";
 import { AibiMark } from "@/components/aibi-mark";
 import { GameCard, GameLayout, ProgressBar } from "@/components/gamified-platform";
 import { ReadableMathText } from "@/components/readable-math-text";
 import { useLanguage } from "@/hooks/use-language";
-import { getAccountDashboard, updateMentorStyle } from "@/lib/api/account.functions";
-import { mentorStyles } from "@/lib/ai-mentor";
-import type { Account, AITutorMessage, MentorStyle } from "@/lib/account-store.server";
+import { getAccountDashboard } from "@/lib/api/account.functions";
+import type { AITutorMessage } from "@/lib/account-store.server";
 
 export const Route = createFileRoute("/explain-solution")({
   head: () => ({ meta: [{ title: "AI Tutor — AI-Sana" }] }),
@@ -31,16 +30,8 @@ type TutorContext = {
   weakTopic: string;
 };
 
-const mentorExamples: Record<MentorStyle, string> = {
-  soft: "Ештеңе етпейді, бірге жайлап түсініп алайық.",
-  strict: "Қатені нақты табамыз да, келесі қадамды жасаймыз.",
-  friendly: "Қара, бәрін оңай тілмен түсіндіріп беремін.",
-  olympiad: "Шешімнің логикасын тереңірек қарап, қиынырақ мысал көреміз.",
-};
-
 function AITutorPage() {
   const { language } = useLanguage();
-  const [account, setAccount] = useState<Account | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: "welcome",
@@ -52,7 +43,6 @@ function AITutorPage() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [mentorStyle, setMentorStyle] = useState<MentorStyle>("friendly");
   const [tutorContext, setTutorContext] = useState<TutorContext>({
     examType: "NIS / BIL / RFMS",
     mode: "lesson",
@@ -71,8 +61,6 @@ function AITutorPage() {
         send: "Отправить",
         thinking: "AI-Sana думает...",
         empty: "Сначала напиши вопрос.",
-        styleTitle: "Стиль AI-ментора",
-        styleSubtitle: "Выбери удобный формат объяснения.",
         currentTopic: "Текущая тема",
         topicValue: "Проценты и логика",
         weak: "Слабые темы",
@@ -88,8 +76,6 @@ function AITutorPage() {
         send: "Жіберу",
         thinking: "AI-Sana ойланып жатыр...",
         empty: "Алдымен сұрағыңды жаз.",
-        styleTitle: "AI-ментор стилі",
-        styleSubtitle: "Өзіңе ыңғайлы менторды таңда.",
         currentTopic: "Қазіргі тақырып",
         topicValue: "Пайыздар және логика",
         weak: "Әлсіз тақырыптар",
@@ -122,9 +108,6 @@ function AITutorPage() {
     void getAccountDashboard().then((dashboard) => {
       if (!mounted) return;
 
-      setAccount(dashboard.account);
-      setMentorStyle(dashboard.account.mentorStyle ?? "friendly");
-
       const history = dashboard.aiTutorMessages
         .slice(-20)
         .map((message: AITutorMessage) => ({
@@ -146,10 +129,6 @@ function AITutorPage() {
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages, loading]);
-
-  const mentorTitle = useMemo(() => {
-    return mentorStyles.find((style) => style.id === mentorStyle)?.title[language] ?? "AI-Sana";
-  }, [language, mentorStyle]);
 
   const sendMessage = async (text: string) => {
     const trimmed = text.trim();
@@ -179,7 +158,6 @@ function AITutorPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           context: tutorContext,
-          mentorStyle,
           message: trimmed,
           messages: messages.slice(-8).map((message) => ({
             role: message.role,
@@ -223,26 +201,11 @@ function AITutorPage() {
     void sendMessage(input);
   };
 
-  const selectMentorStyle = async (style: MentorStyle) => {
-    setMentorStyle(style);
-    setError("");
-
-    try {
-      const updated = await updateMentorStyle({ data: { mentorStyle: style } });
-      setAccount(updated);
-    } catch (error) {
-      console.error("Mentor style save failed", error);
-    }
-  };
-
   return (
       <GameLayout
         right={
           <TutorSidebar
-            account={account}
             copy={copy}
-            mentorStyle={mentorStyle}
-            mentorTitle={mentorTitle}
             topic={tutorContext.topic}
           />
         }
@@ -264,7 +227,7 @@ function AITutorPage() {
               <div className="relative rounded-[34px] border-4 border-white/40 bg-white p-3 shadow-[0_10px_0_rgba(30,27,75,0.25)]">
                 <img className="h-56 w-full rounded-[26px] object-cover object-top" src={aiSanaHero} alt="AI-Sana tutor" />
                 <div className="absolute -left-5 top-6 rounded-2xl bg-[#FACC15] px-3 py-2 text-sm font-black text-[#1E1B4B] shadow-[0_5px_0_#CA8A04]">
-                  {mentorTitle}
+                  AI-Sana
                 </div>
               </div>
             </div>
@@ -278,7 +241,9 @@ function AITutorPage() {
                 <AibiMark size="md" />
                 <div>
                   <h2 className="text-xl font-black text-[#1E1B4B]">AI-Sana</h2>
-                  <p className="text-sm font-bold text-[#6B5E8F]">{mentorExamples[mentorStyle]}</p>
+                  <p className="text-sm font-bold text-[#6B5E8F]">
+                    {language === "RU" ? "Объясняет просто, по шагам и с примерами." : "Қарапайым тілмен, қадамдап және мысалмен түсіндіреді."}
+                  </p>
                 </div>
               </div>
               <button
@@ -323,40 +288,6 @@ function AITutorPage() {
             </div>
           </GameCard>
 
-          <GameCard className="bg-white/95">
-            <p className="text-sm font-black uppercase tracking-[0.22em] text-[#8B5CF6]">{copy.styleTitle}</p>
-            <h2 className="mt-2 text-2xl font-black text-[#1E1B4B]">{copy.styleSubtitle}</h2>
-            <div className="mt-4 space-y-3">
-              {mentorStyles.map((style) => {
-                const selected = style.id === mentorStyle;
-                return (
-                  <button
-                    key={style.id}
-                    className={`w-full rounded-[24px] border-2 p-4 text-left transition hover:-translate-y-0.5 ${
-                      selected
-                        ? "border-[#8B5CF6] bg-[#EDE9FE] shadow-[0_6px_0_rgba(109,40,217,0.18)]"
-                        : "border-[#DDD6FE] bg-white"
-                    }`}
-                    type="button"
-                    onClick={() => void selectMentorStyle(style.id)}
-                  >
-                    <div className="flex gap-3">
-                      <span className="material-symbols-outlined grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#6D28D9] text-white">
-                        {style.icon}
-                      </span>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <p className="font-black text-[#1E1B4B]">{style.title[language]}</p>
-                          {selected ? <span className="text-xs font-black text-[#22C55E]">Таңдалды</span> : null}
-                        </div>
-                        <p className="mt-1 text-sm font-semibold text-[#6B5E8F]">{style.description[language]}</p>
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </GameCard>
         </div>
       </div>
     </GameLayout>
@@ -382,16 +313,10 @@ function ChatBubble({ message }: { message: ChatMessage }) {
 }
 
 function TutorSidebar({
-  account,
   copy,
-  mentorStyle,
-  mentorTitle,
   topic,
 }: {
-  account: Account | null;
   copy: Record<string, string>;
-  mentorStyle: MentorStyle;
-  mentorTitle: string;
   topic: string;
 }) {
   return (
@@ -418,14 +343,6 @@ function TutorSidebar({
         <p className="mt-3 font-bold text-[#EDE9FE]">{copy.goal}</p>
       </GameCard>
 
-      <GameCard className="bg-white/95">
-        <p className="text-sm font-black uppercase tracking-[0.22em] text-[#8B5CF6]">Mentor</p>
-        <h2 className="mt-2 text-2xl font-black text-[#1E1B4B]">{mentorTitle}</h2>
-        <p className="mt-2 font-semibold text-[#6B5E8F]">{mentorExamples[mentorStyle]}</p>
-        <p className="mt-4 rounded-2xl bg-[#F5F3FF] px-4 py-3 text-sm font-black text-[#6D28D9]">
-          {account?.name ? `${account.name} үшін сақталды` : "Аккаунт жүктеліп жатыр"}
-        </p>
-      </GameCard>
     </div>
   );
 }

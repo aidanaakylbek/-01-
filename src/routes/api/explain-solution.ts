@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { buildMentorSystemPrompt } from "@/lib/ai-mentor";
-import { getAccessError, getDashboardAccount, saveSolutionExplanationLog } from "@/lib/account-store.server";
+import { getAccessError, saveSolutionExplanationLog } from "@/lib/account-store.server";
 
 const requestSchema = z.object({
   language: z.enum(["EN", "KZ", "RU"]).default("EN"),
@@ -53,7 +53,6 @@ export const Route = createFileRoute("/api/explain-solution")({
         ].join("\n");
 
         try {
-          const dashboard = await getDashboardAccount();
           const response = await fetch("https://api.openai.com/v1/responses", {
             method: "POST",
             headers: {
@@ -62,7 +61,7 @@ export const Route = createFileRoute("/api/explain-solution")({
             },
             body: JSON.stringify({
               model: "gpt-5.4-mini",
-              instructions: `${buildMentorSystemPrompt(dashboard.account.mentorStyle)}\n\n${languageInstruction}`,
+              instructions: `${buildMentorSystemPrompt()}\n\n${languageInstruction}`,
               input: prompt,
               max_output_tokens: 1800,
               temperature: 0.35,

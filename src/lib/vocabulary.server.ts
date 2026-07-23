@@ -740,7 +740,6 @@ export async function getVocabularyAIResponse(input: {
   topicSlug?: string;
   wordId?: string;
   partOfSpeech?: VocabularyPartOfSpeech;
-  mentorStyle?: string;
 }) {
   const topic = input.topicSlug ? topics.get(input.topicSlug) : topics.get(FIRST_A1_TOPIC_SLUG);
   const word = input.wordId ? words.get(input.wordId) : undefined;

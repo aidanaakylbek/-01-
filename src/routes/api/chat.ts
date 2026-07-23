@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { buildMentorSystemPrompt } from "@/lib/ai-mentor";
-import { getAccessError, getDashboardAccount } from "@/lib/account-store.server";
+import { getAccessError } from "@/lib/account-store.server";
 
 const TUTOR_BEHAVIOR_PROMPT =
   "Answer any normal study question naturally, like ChatGPT, but in a tutor style for pupils aged 10-14. Understand short, misspelled, mixed Kazakh/Russian/English messages by context. Do not give canned template answers. Do not keep asking the pupil to rewrite the question. If the question is unclear, make the most helpful reasonable assumption, answer with an example, and ask only one focused follow-up question. For math and logic, explain the method first, then give the answer. If the pupil answers a test question, check it and give a full explanation whether it is right or wrong. Keep answers clear, compact, and useful. Write formulas in a textbook-friendly way, not as raw code. Never show raw LaTeX commands like \\frac, \\text, \\left, \\right, \\[, \\], or Markdown math blocks. For fractions, write a clear spoken phrase and a simple expression, for example: '5-ті 20-ға бөлеміз, кейін 100%-ға көбейтеміз' and '5 ÷ 20 × 100% = 25%'. Avoid slash-style fractions such as 5/20 in final explanations. Use math symbols pupils can read: ×, ÷, =, %, +, −.";
@@ -72,8 +72,7 @@ export const Route = createFileRoute("/api/chat")({
         }
 
         try {
-          const dashboard = await getDashboardAccount();
-          const mentorPrompt = `${buildMentorSystemPrompt(dashboard.account.mentorStyle)}\n\n${TUTOR_BEHAVIOR_PROMPT}`;
+          const mentorPrompt = `${buildMentorSystemPrompt()}\n\n${TUTOR_BEHAVIOR_PROMPT}`;
           const conversation = buildConversation(recentMessages);
           const latestImages = lastUserImages(recentMessages);
           const models = getOpenAiModels(recentMessages, latestImages);

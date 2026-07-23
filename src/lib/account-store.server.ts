@@ -15,7 +15,6 @@ import {
   listPaymentRequestRows,
   markReportSent,
   updateDiagnosticResult,
-  updateMentor,
   updatePaymentRequestRow,
   verifyParentTelegram,
   wasReportSent,
@@ -146,7 +145,7 @@ export type AITutorMessage = {
   diagnosticResultId?: string;
   role: "user" | "assistant";
   message: string;
-  mentorStyle: MentorStyle;
+  mentorStyle?: MentorStyle;
   createdAt: string;
 };
 
@@ -821,23 +820,6 @@ function createUniqueParentInviteCode() {
   } while (existingCodes.has(inviteCode));
 
   return inviteCode;
-}
-
-export async function updateMentorStyle(style: MentorStyle) {
-  const account = await getActiveStoredAccount();
-
-  if (!account) {
-    throw new Error("AUTH_REQUIRED");
-  }
-
-  if (isSupabaseConfigured()) {
-    const updated = await updateMentor(account.id, style);
-    return toPublicAccount(updated);
-  }
-
-  account.mentorStyle = style;
-  accounts.set(account.email, account);
-  return toPublicAccount(account);
 }
 
 export async function saveExamAttempt(attempt: Omit<ExamAttempt, "id" | "createdAt">) {

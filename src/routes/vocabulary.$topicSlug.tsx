@@ -109,7 +109,6 @@ function VocabularyTopicPage() {
             topicSlug: topic.slug,
             wordId: activeWord?.id,
             partOfSpeech: activePart,
-            mentorStyle: "friendly",
           },
         }),
       );

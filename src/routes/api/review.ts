@@ -2,7 +2,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { buildMentorSystemPrompt } from "@/lib/ai-mentor";
-import { getAccessError, getDashboardAccount } from "@/lib/account-store.server";
+import { getAccessError } from "@/lib/account-store.server";
 
 const REVIEW_PROMPT =
   "You are AI-Sana AI Tutor. After a pupil finishes a task or test, give a clear, kind, and useful review. Use this structure: 1) short congratulations and score, 2) what went well, 3) mistakes and weak topics, 4) step-by-step correction method, 5) if question attempts are provided, review every provided question, including correct answers. For correct answers, explain why the answer is correct and name the method. For wrong answers, explain the mistake kindly and show the right method, 6) 2-3 similar practice questions, 7) clear next step. Keep it age-appropriate for pupils aged 10-14. Use the same language as the pupil or task when possible. Be encouraging, specific, and practical. Always finish the review with a clear next step.";
@@ -77,8 +77,7 @@ export const Route = createFileRoute("/api/review")({
         }
 
         const result = parsed.data;
-        const dashboard = await getDashboardAccount();
-        const mentorPrompt = `${buildMentorSystemPrompt(dashboard.account.mentorStyle)}\n\n${REVIEW_PROMPT}`;
+        const mentorPrompt = `${buildMentorSystemPrompt()}\n\n${REVIEW_PROMPT}`;
         const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_API_KEY });
         const contents = [
           `Review language: ${languageName[result.language]}`,

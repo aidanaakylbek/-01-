@@ -1,7 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AibiMark } from "@/components/aibi-mark";
 import { GameCard, GameLayout, MascotCoach, ProgressBar } from "@/components/gamified-platform";
-import { mentorStyles } from "@/lib/ai-mentor";
 import { useLanguage } from "@/hooks/use-language";
 import { logoutAccount } from "@/lib/api/account.functions";
 
@@ -17,11 +16,10 @@ function ProfileRoute() {
     language === "RU"
       ? {
           title: "Профиль ученика",
-          subtitle: "Твой уровень, серия, награды и стиль AI-наставника.",
+          subtitle: "Твой уровень, серия и награды.",
           coach: "Профиль готов. Продолжай серию и забирай награды за уроки!",
           league: "Фиолетовая лига",
           history: "История обучения",
-          mentor: "Стиль AI-наставника",
           coins: "Sana Coins",
           logout: "Выйти из аккаунта",
           stats: ["XP", "Серия", "Бейджи", "Точность"],
@@ -30,11 +28,10 @@ function ProfileRoute() {
       : language === "EN"
         ? {
             title: "Student Profile",
-            subtitle: "Your level, streak, rewards, and AI mentor style.",
+            subtitle: "Your level, streak, and rewards.",
             coach: "Profile is ready. Keep your streak and claim lesson rewards!",
             league: "Purple League",
             history: "Study history",
-            mentor: "AI mentor style",
             coins: "Sana Coins",
             logout: "Log out",
             stats: ["XP", "Streak", "Badges", "Accuracy"],
@@ -42,11 +39,10 @@ function ProfileRoute() {
           }
         : {
             title: "Оқушы профилі",
-            subtitle: "Деңгейің, күндік серияң, марапаттарың және AI-ментор стилі.",
+            subtitle: "Деңгейің, күндік серияң және марапаттарың.",
             coach: "Профиль дайын. Серияңды сақтап, сабақ сыйлықтарын жинай бер!",
             league: "Күлгін лига",
             history: "Оқу тарихы",
-            mentor: "AI-ментор стилі",
             coins: "Sana Coins",
             logout: "Аккаунттан шығу",
             stats: ["XP", "Серия", "Белгілер", "Дәлдік"],
@@ -104,34 +100,13 @@ function ProfileRoute() {
           ))}
         </section>
 
-        <section className="grid gap-5 xl:grid-cols-[1fr_1fr]">
+        <section>
           <GameCard>
             <h2 className="text-2xl font-black text-[#1E1B4B]">{c.history}</h2>
             <ProgressBar value={0} />
             <p className="mt-5 rounded-2xl border-2 border-[#DDD6FE] bg-[#F5F3FF] p-4 font-black text-[#6B5E8F]">
               Оқу тарихы бірінші диагностикадан кейін пайда болады.
             </p>
-          </GameCard>
-
-          <GameCard>
-            <h2 className="text-2xl font-black text-[#1E1B4B]">{c.mentor}</h2>
-            <div className="mt-5 grid gap-3">
-              {mentorStyles.map((style, index) => (
-                <div
-                  key={style.id}
-                  className={`rounded-[24px] border-2 p-4 ${
-                    index === 2
-                      ? "border-[#6D28D9] bg-[#EDE9FE] shadow-[0_6px_0_#C4B5FD]"
-                      : "border-[#DDD6FE] bg-white"
-                  }`}
-                >
-                  <p className="text-lg font-black text-[#1E1B4B]">{style.title[language]}</p>
-                  <p className="mt-1 font-semibold text-[#6B5E8F]">
-                    {style.description[language]}
-                  </p>
-                </div>
-              ))}
-            </div>
           </GameCard>
         </section>
       </div>

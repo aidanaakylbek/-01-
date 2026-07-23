@@ -186,7 +186,6 @@ export const getVocabularyAIResponseFn = createServerFn({ method: "POST" })
       topicSlug: z.string().optional(),
       wordId: z.string().optional(),
       partOfSpeech: partOfSpeechSchema.optional(),
-      mentorStyle: z.string().optional(),
     }),
   )
   .handler(async ({ data }) => getVocabularyAIResponse(data));

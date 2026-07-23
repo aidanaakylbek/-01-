@@ -17,7 +17,6 @@ import {
   saveSolutionExplanationLog as saveStoredSolutionExplanationLog,
   saveWeakTopicProgress as saveStoredWeakTopicProgress,
   updatePaymentRequest as updateStoredPaymentRequest,
-  updateMentorStyle as updateStoredMentorStyle,
 } from "../account-store.server";
 
 export const getAccountDashboard = createServerFn({ method: "GET" }).handler(async () => {
@@ -75,16 +74,6 @@ export const loginAccount = createServerFn({ method: "POST" })
 export const logoutAccount = createServerFn({ method: "POST" }).handler(async () => {
   return logoutStoredAccount();
 });
-
-export const updateMentorStyle = createServerFn({ method: "POST" })
-  .inputValidator(
-    z.object({
-      mentorStyle: z.enum(["soft", "strict", "friendly", "olympiad"]),
-    }),
-  )
-  .handler(async ({ data }) => {
-    return updateStoredMentorStyle(data.mentorStyle);
-  });
 
 export const saveExamAttempt = createServerFn({ method: "POST" })
   .inputValidator(

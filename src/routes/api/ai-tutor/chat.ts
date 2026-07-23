@@ -8,10 +8,7 @@ import {
   getDashboardAccount,
   hasActiveSubscription,
   saveAITutorMessages,
-  type MentorStyle,
 } from "@/lib/account-store.server";
-
-const mentorSchema = z.enum(["soft", "strict", "friendly", "olympiad"]);
 
 const chatRequestSchema = z.object({
   context: z
@@ -32,7 +29,6 @@ const chatRequestSchema = z.object({
     .optional(),
   diagnosticResultId: z.string().optional(),
   lessonId: z.string().optional(),
-  mentorStyle: mentorSchema.optional(),
   message: z.string().trim().min(1).max(3000),
   messages: z
     .array(
@@ -123,7 +119,6 @@ export const Route = createFileRoute("/api/ai-tutor/chat")({
           );
         }
 
-        const mentorStyle = parsed.data.mentorStyle ?? account.mentorStyle ?? "friendly";
         const answerLanguage = detectLanguage(parsed.data.message);
         const prompt = buildTutorPrompt({
           accountName: account.name,
@@ -131,7 +126,6 @@ export const Route = createFileRoute("/api/ai-tutor/chat")({
           history: parsed.data.messages ?? [],
           language: answerLanguage,
           message: parsed.data.message,
-          mentorStyle,
         });
 
         if (!process.env.OPENAI_API_KEY) {
@@ -142,7 +136,7 @@ export const Route = createFileRoute("/api/ai-tutor/chat")({
         }
 
         try {
-          const aiMessage = await generateAiTutorReply(prompt, mentorStyle, answerLanguage);
+          const aiMessage = await generateAiTutorReply(prompt, answerLanguage);
 
           await saveAITutorMessages([
             {
@@ -150,7 +144,6 @@ export const Route = createFileRoute("/api/ai-tutor/chat")({
               lessonId: parsed.data.lessonId,
               questionId: parsed.data.questionId,
               message: parsed.data.message,
-              mentorStyle,
               role: "user",
             },
             {
@@ -158,12 +151,11 @@ export const Route = createFileRoute("/api/ai-tutor/chat")({
               lessonId: parsed.data.lessonId,
               questionId: parsed.data.questionId,
               message: aiMessage,
-              mentorStyle,
               role: "assistant",
             },
           ]);
 
-          return Response.json({ message: aiMessage, mentorStyle });
+          return Response.json({ message: aiMessage });
         } catch (error) {
           console.error("AI Tutor chat failed", error);
           return Response.json(
@@ -181,14 +173,12 @@ function buildTutorPrompt({
   context,
   history,
   language,
-  mentorStyle,
   message,
 }: {
   accountName: string;
   context?: z.infer<typeof chatRequestSchema>["context"];
   history: Array<{ role: "user" | "assistant"; content: string }>;
   language: "KZ" | "RU" | "EN";
-  mentorStyle: MentorStyle;
   message: string;
 }) {
   const contextText = context
@@ -217,7 +207,6 @@ function buildTutorPrompt({
   return [
     `Student name: ${accountName}`,
     `Answer language: ${language}`,
-    `Selected mentor style: ${mentorStyle}`,
     "",
     "Current learning context:",
     contextText,
@@ -229,7 +218,7 @@ function buildTutorPrompt({
   ].join("\n");
 }
 
-async function generateAiTutorReply(prompt: string, mentorStyle: MentorStyle, language: "KZ" | "RU" | "EN") {
+async function generateAiTutorReply(prompt: string, language: "KZ" | "RU" | "EN") {
   const apiKey = process.env.OPENAI_API_KEY;
 
   if (!apiKey) {
@@ -238,7 +227,7 @@ async function generateAiTutorReply(prompt: string, mentorStyle: MentorStyle, la
 
   const instruction = [
     AI_TUTOR_BASE_PROMPT,
-    buildMentorSystemPrompt(mentorStyle),
+    buildMentorSystemPrompt(),
     getLanguageInstruction(language),
   ].join("\n\n");
 
