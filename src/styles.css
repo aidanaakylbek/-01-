@@ -171,6 +171,9 @@
   * {
     border-color: var(--color-outline-variant);
   }
+  html {
+    scroll-padding-top: 80px;
+  }
   body {
     background:
       radial-gradient(circle at 10% 0%, rgba(167, 139, 250, 0.26), transparent 28%),

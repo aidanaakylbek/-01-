@@ -100,9 +100,9 @@ export function GameLayout({
 
   if (useSimpleShell) {
     return (
-      <div className="min-h-screen bg-[#F5F3FF] text-[#1E1B4B]">
+      <div className="flex min-h-screen flex-col bg-[#F5F3FF] text-[#1E1B4B]">
         <GameTopBar compact />
-        <main className="mx-auto min-h-[calc(100vh-420px)] w-full max-w-6xl px-4 py-8 md:px-6 md:py-12">
+        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 md:px-6 md:py-12">
           {children}
         </main>
         <SiteFooter />
@@ -111,15 +111,17 @@ export function GameLayout({
   }
 
   return (
-    <div className="min-h-screen bg-[#F5F3FF] text-[#1E1B4B]">
+    <div className="flex min-h-screen flex-col bg-[#F5F3FF] text-[#1E1B4B]">
       <GameTopBar />
-      <div className="mx-auto grid w-full max-w-[1440px] gap-5 px-3 pb-24 pt-4 md:grid-cols-[216px_minmax(0,1fr)] md:px-5 lg:grid-cols-[220px_minmax(0,1fr)_300px] xl:grid-cols-[232px_minmax(0,1fr)_316px]">
+      <div className="mx-auto grid w-full max-w-[1440px] flex-1 items-start gap-5 px-3 pb-24 pt-4 md:grid-cols-[216px_minmax(0,1fr)] md:px-5 lg:grid-cols-[220px_minmax(0,1fr)_300px] xl:grid-cols-[232px_minmax(0,1fr)_316px]">
         <GameSidebar />
         <main className="min-w-0 space-y-5">
           {access.paywalled ? <PaywallCard /> : null}
           {children}
         </main>
-        <aside className="hidden lg:block">{right ?? <RightWidgets />}</aside>
+        <aside className="hidden max-h-[calc(100vh-5rem)] overflow-y-auto overscroll-contain pr-1 lg:sticky lg:top-20 lg:block">
+          {right ?? <RightWidgets />}
+        </aside>
       </div>
       <SiteFooter />
       <MobileGameNav />
@@ -459,8 +461,8 @@ function GameSidebar() {
     { label: c.shop, icon: "storefront", to: "/shop" },
   ];
   return (
-    <aside className="hidden md:block">
-      <div className="sticky top-20 rounded-[28px] border-2 border-[#DDD6FE] bg-white p-3 shadow-[0_10px_0_rgba(109,40,217,0.10)]">
+    <aside className="hidden max-h-[calc(100vh-5rem)] overflow-y-auto overscroll-contain pr-1 md:sticky md:top-20 md:block">
+      <div className="rounded-[28px] border-2 border-[#DDD6FE] bg-white p-3 shadow-[0_10px_0_rgba(109,40,217,0.10)]">
         <div className="mb-3 rounded-3xl bg-gradient-to-br from-[#8B5CF6] to-[#6D28D9] p-3 text-white shadow-[0_6px_0_rgba(76,29,149,0.28)]">
           <div className="flex items-center gap-3">
             <AibiMark size="lg" className="bg-white" />
@@ -562,7 +564,7 @@ export function RightWidgets() {
   const weakTopics = dashboard?.risks ?? [];
 
   return (
-    <div className="sticky top-20 space-y-4">
+    <div className="space-y-4">
       <GameCard className="bg-white/95">
         <div className="flex items-center justify-between">
           <div>
