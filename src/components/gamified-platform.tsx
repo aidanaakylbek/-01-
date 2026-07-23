@@ -559,9 +559,6 @@ export function RightWidgets() {
   }, []);
 
   const completedLessons = dashboard?.completedLessons ?? 0;
-  const averageAccuracy = dashboard?.averageAccuracy ?? 0;
-  const weeklyValues = dashboard?.accuracyTrend.map((item) => item.accuracy) ?? [0, 0, 0, 0, 0, 0, 0];
-  const weakTopics = dashboard?.risks ?? [];
 
   return (
     <div className="space-y-4">
@@ -577,59 +574,17 @@ export function RightWidgets() {
         </div>
         <ProgressBar value={Math.min(100, Math.round((completedLessons / 3) * 100))} />
         <p className="mt-3 text-sm font-bold text-[#6B5E8F]">
-          {completedLessons > 0 ? c.reward : "Прогресс сабақтан кейін басталады."}
+          {completedLessons >= 3 ? c.reward : `Тағы ${Math.max(0, 3 - completedLessons)} сабақ қалды.`}
         </p>
-      </GameCard>
-      <GameCard className="bg-white/95">
-        <h3 className="text-lg font-black">{c.weak}</h3>
-        {weakTopics.length > 0 ? (
-          weakTopics.map((topic) => <WeakTopic key={topic.title} name={topic.title} value={topic.accuracy} />)
-        ) : (
-          <p className="mt-3 text-sm font-bold text-[#6B5E8F]">Әлі анықталмады. Алдымен диагностика өт.</p>
-        )}
-      </GameCard>
-      <GameCard className="bg-white/95">
-        <h3 className="text-lg font-black">{c.weekly}</h3>
-        <div className="mt-4 flex h-28 items-end gap-2">
-          {weeklyValues.map((h, i) => (
-            <div className="flex flex-1 flex-col items-center gap-2" key={i}>
-              <div
-                className="w-full rounded-t-xl bg-gradient-to-t from-[#6D28D9] to-[#C084FC]"
-                style={{ height: `${h}%` }}
-              />
-            </div>
-          ))}
-        </div>
-        <p className="mt-3 text-3xl font-black text-[#6D28D9]">{averageAccuracy}%</p>
       </GameCard>
       <GameCard>
         <h3 className="text-lg font-black">{c.parent}</h3>
         <p className="mt-2 text-sm font-semibold text-[#6B5E8F]">
-          {completedLessons} сабақ, {averageAccuracy}% дұрыс жауап. Есеп прогресс жиналғаннан кейін толығады.
+          {completedLessons > 0
+            ? `${completedLessons} сабақ аяқталды. Есеп прогресс жиналғаннан кейін толығады.`
+            : "Ата-ана есебі алғашқы оқу аптасынан кейін қолжетімді болады."}
         </p>
       </GameCard>
-      <GameCard className="bg-[#1E1B4B] text-white">
-        <h3 className="text-lg font-black">{c.ai}</h3>
-        <p className="mt-2 text-sm text-[#DDD6FE]">{c.aiText}</p>
-        <Link
-          to="/explain-solution"
-          className="mt-4 inline-flex rounded-2xl bg-[#FACC15] px-4 py-3 font-black text-[#1E1B4B] shadow-[0_5px_0_#CA8A04]"
-        >
-          {c.example}
-        </Link>
-      </GameCard>
-    </div>
-  );
-}
-
-function WeakTopic({ name, value }: { name: string; value: number }) {
-  return (
-    <div className="mt-4">
-      <div className="mb-2 flex justify-between text-sm font-black">
-        <span>{name}</span>
-        <span className="text-[#EF4444]">{value}%</span>
-      </div>
-      <ProgressBar value={value} danger />
     </div>
   );
 }
