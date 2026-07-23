@@ -106,7 +106,31 @@ export const saveExamAttempt = createServerFn({ method: "POST" })
 export const saveDiagnosticResult = createServerFn({ method: "POST" })
   .inputValidator(
     z.object({
+      aiRecommendation: z.string().optional(),
+      assignedLevel: z.enum(["Бастапқы", "Негізгі", "Орта", "Жоғары"]).optional(),
+      attempts: z
+        .array(
+          z.object({
+            correctAnswer: z.string(),
+            explanation: z.string(),
+            isCorrect: z.boolean(),
+            question: z.string(),
+            questionId: z.string(),
+            subject: z.string(),
+            topic: z.string(),
+            userAnswer: z.string(),
+          }),
+        )
+        .optional(),
+      completedAt: z.string().optional(),
+      diagnosticVersion: z.string().optional(),
+      recommendedStartingLesson: z.string().optional(),
       score: z.number().min(0).max(100),
+      startedAt: z.string().optional(),
+      strongTopics: z.array(z.string().min(1)).max(10).optional(),
+      subjectLevels: z.record(z.enum(["Бастапқы", "Негізгі", "Орта", "Жоғары"])).optional(),
+      subjectScores: z.record(z.number().min(0).max(100)).optional(),
+      topicScores: z.record(z.number().min(0).max(100)).optional(),
       weakTopics: z.array(z.string().min(1)).max(10),
     }),
   )

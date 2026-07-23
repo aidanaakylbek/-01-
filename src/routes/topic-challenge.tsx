@@ -1,11 +1,6 @@
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  GameCard,
-  GameLayout,
-  MascotCoach,
-  ProgressBar,
-} from "@/components/gamified-platform";
+import { GameCard, GameLayout, MascotCoach, ProgressBar } from "@/components/gamified-platform";
 import { challengeLevels, challengeTopics } from "@/data/topic-challenge";
 import { useLanguage } from "@/hooks/use-language";
 import { saveWeakTopicProgress } from "@/lib/api/account.functions";
@@ -80,17 +75,18 @@ function TopicChallenge() {
             <p className="text-sm font-black uppercase tracking-widest text-[#8B5CF6]">
               {c.progressTitle}
             </p>
-            <h3 className="mt-2 text-3xl font-black text-[#1E1B4B]">
-              {result.percent}%
-            </h3>
-            <ProgressBar value={result.percent} danger={result.percent < activeLevel.targetPercent} />
+            <h3 className="mt-2 text-3xl font-black text-[#1E1B4B]">{result.percent}%</h3>
+            <ProgressBar
+              value={result.percent}
+              danger={result.percent < activeLevel.targetPercent}
+            />
             <p className="mt-3 text-sm font-bold text-[#6B5E8F]">
               {result.correct}/{activeLevel.questions.length} · {activeLevel.targetPercent}%
             </p>
           </GameCard>
           <GameCard className="bg-[#1E1B4B] text-white">
             <p className="text-sm font-black uppercase tracking-widest text-[#FACC15]">
-              Boss Mode
+              Final Level
             </p>
             <h3 className="mt-2 text-2xl font-black">{c.bossTitle}</h3>
             <p className="mt-2 font-semibold text-[#DDD6FE]">{c.bossText}</p>
@@ -264,7 +260,7 @@ const copy = {
     answerPlaceholder: "Type your answer",
     check: "Check level",
     progressTitle: "Current result",
-    bossTitle: "Boss Test opens after level 5",
+    bossTitle: "Final test opens after level 5",
     bossText: "Score 70% step by step, then prove the topic is no longer scary.",
     coach: "Start with the easiest level. AI-Sana will show what to repeat after each try.",
     badges: ["5 levels", "+XP", "AI feedback"],
@@ -282,7 +278,7 @@ const copy = {
     answerPlaceholder: "Жауабыңды жаз",
     check: "Деңгейді тексеру",
     progressTitle: "Қазіргі нәтиже",
-    bossTitle: "Boss Test 5-деңгейден кейін ашылады",
+    bossTitle: "Қорытынды тест 5-деңгейден кейін ашылады",
     bossText: "70%-ға біртіндеп жетіп, бұл тақырып енді қиын емес екенін дәлелде.",
     coach: "Ең жеңіл деңгейден баста. Әр әрекеттен кейін AI-Sana нені қайталау керегін көрсетеді.",
     badges: ["5 деңгей", "+XP", "AI түсіндірме"],
@@ -300,7 +296,7 @@ const copy = {
     answerPlaceholder: "Введите ответ",
     check: "Проверить уровень",
     progressTitle: "Текущий результат",
-    bossTitle: "Boss Test откроется после 5 уровня",
+    bossTitle: "Итоговый тест откроется после 5 уровня",
     bossText: "Набери 70% шаг за шагом и докажи, что тема больше не страшная.",
     coach: "Начни с самого легкого уровня. AI-Sana покажет, что повторить после каждой попытки.",
     badges: ["5 уровней", "+XP", "AI-разбор"],

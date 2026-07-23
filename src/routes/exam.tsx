@@ -3,36 +3,36 @@ import { GameCard, GameLayout, ProgressBar } from "@/components/gamified-platfor
 import { useLanguage } from "@/hooks/use-language";
 
 export const Route = createFileRoute("/exam")({
-  head: () => ({ meta: [{ title: "Boss Test — AI-Sana" }] }),
-  component: BossTestPage,
+  head: () => ({ meta: [{ title: "Monthly Test — AI-Sana" }] }),
+  component: MonthlyTestPage,
 });
 
-function BossTestPage() {
+function MonthlyTestPage() {
   const { language } = useLanguage();
   const c =
     language === "RU"
       ? {
-          title: "Boss Test открыт!",
-          subtitle: "Набери 80%, чтобы перейти на следующий уровень.",
-          start: "Начать Boss Test",
-          reward: "Награда после прохождения",
+          title: "Итоговый тест",
+          subtitle: "Проверь прогресс по основным предметам за месяц.",
+          start: "Начать тест",
+          reward: "Итог после прохождения",
           sections: ["Математика", "Логика", "Чтение", "Английский"],
           badge: "Значок: Purple Solver",
         }
       : language === "EN"
         ? {
-            title: "Boss Test unlocked!",
-            subtitle: "Score 80% to move to the next level.",
-            start: "Start Boss Test",
-            reward: "Reward after completion",
+            title: "Monthly Test",
+            subtitle: "Check your progress across the main subjects.",
+            start: "Start test",
+            reward: "Result after completion",
             sections: ["Math", "Logic", "Reading", "English"],
             badge: "Badge: Purple Solver",
           }
         : {
-            title: "Boss Test ашылды!",
-            subtitle: "Келесі деңгейге өту үшін 80% жина.",
-            start: "Boss Test бастау",
-            reward: "Аяқтағаннан кейінгі сыйлық",
+            title: "Айлық қорытынды тест",
+            subtitle: "Негізгі пәндер бойынша айлық прогресті тексер.",
+            start: "Тестті бастау",
+            reward: "Аяқтағаннан кейінгі нәтиже",
             sections: ["Математика", "Логика", "Оқу", "Ағылшын"],
             badge: "Белгі: Purple Solver",
           };

@@ -237,7 +237,6 @@ function isFullGameShellRoute(pathname: string) {
     pathname.startsWith("/leaderboard") ||
     pathname.startsWith("/shop") ||
     pathname.startsWith("/topic-challenge") ||
-    pathname.startsWith("/exam") ||
     pathname.startsWith("/explain-solution")
   );
 }
@@ -291,6 +290,9 @@ function isProtectedBeforeDiagnostic(pathname: string) {
     "/verify-parent-telegram",
     "/diagnostic",
     "/diagnostic-test",
+    "/diagnostic-result",
+    "/pricing",
+    "/payment",
     "/about",
     "/careers",
     "/privacy",
@@ -321,7 +323,6 @@ function isPaidRoute(pathname: string) {
     pathname.startsWith("/reports") ||
     pathname.startsWith("/shop") ||
     pathname.startsWith("/topic-challenge") ||
-    pathname.startsWith("/exam") ||
     pathname.startsWith("/explain-solution")
   );
 }

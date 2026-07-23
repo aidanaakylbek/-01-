@@ -465,7 +465,7 @@ function buildRecentItems(dashboard: DashboardAccount, c: Copy): ActivityItem[] 
   if (dashboard.account.diagnosticCompleted) {
     items.push({
       date: c.today,
-      meta: `${dashboard.account.diagnosticScore ?? dashboard.averageAccuracy}% · +40 XP`,
+      meta: `${dashboard.account.diagnosticScore ?? 0}% · бастапқы деңгей анықталды`,
       title: c.diagnosticDone,
     });
   }

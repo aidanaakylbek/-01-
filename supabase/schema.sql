@@ -15,7 +15,18 @@ create table if not exists public.users (
   subscription_started_at timestamptz,
   subscription_expires_at timestamptz,
   diagnostic_completed boolean not null default false,
+  diagnostic_started_at timestamptz,
+  diagnostic_completed_at timestamptz,
+  diagnostic_version text,
   diagnostic_score integer,
+  diagnostic_assigned_level text,
+  diagnostic_attempts jsonb,
+  diagnostic_ai_recommendation text,
+  diagnostic_recommended_starting_lesson text,
+  diagnostic_strong_topics text[],
+  diagnostic_subject_levels jsonb,
+  diagnostic_subject_scores jsonb,
+  diagnostic_topic_scores jsonb,
   diagnostic_weak_topics text[],
   mentor_style text not null default 'friendly'
     check (mentor_style in ('soft', 'strict', 'friendly', 'olympiad')),
@@ -76,6 +87,19 @@ create unique index if not exists users_email_lower_unique_idx on public.users(l
 
 alter table public.users
   add column if not exists mentor_style text not null default 'friendly';
+
+alter table public.users
+  add column if not exists diagnostic_started_at timestamptz,
+  add column if not exists diagnostic_completed_at timestamptz,
+  add column if not exists diagnostic_version text,
+  add column if not exists diagnostic_assigned_level text,
+  add column if not exists diagnostic_attempts jsonb,
+  add column if not exists diagnostic_ai_recommendation text,
+  add column if not exists diagnostic_recommended_starting_lesson text,
+  add column if not exists diagnostic_strong_topics text[],
+  add column if not exists diagnostic_subject_levels jsonb,
+  add column if not exists diagnostic_subject_scores jsonb,
+  add column if not exists diagnostic_topic_scores jsonb;
 
 alter table public.users
   drop constraint if exists users_mentor_style_check;

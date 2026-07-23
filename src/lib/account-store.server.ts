@@ -1,8 +1,4 @@
-import {
-  deleteCookie,
-  getCookie,
-  setCookie,
-} from "@tanstack/start-server-core/request-response";
+import { deleteCookie, getCookie, setCookie } from "@tanstack/start-server-core/request-response";
 import {
   activateSubscription,
   createAccountWithParent,
@@ -19,6 +15,7 @@ import {
   verifyParentTelegram,
   wasReportSent,
 } from "./supabase-db.server";
+import type { DiagnosticAttemptSnapshot, DiagnosticLevel } from "./diagnostic-analysis";
 
 export type Account = {
   id: string;
@@ -43,7 +40,18 @@ export type Account = {
   subscriptionStartedAt?: string;
   subscriptionExpiresAt?: string;
   diagnosticCompleted: boolean;
+  diagnosticCompletedAt?: string;
+  diagnosticVersion?: string;
   diagnosticScore?: number;
+  diagnosticAssignedLevel?: DiagnosticLevel;
+  diagnosticAttempts?: DiagnosticAttemptSnapshot[];
+  diagnosticAiRecommendation?: string;
+  diagnosticRecommendedStartingLesson?: string;
+  diagnosticStartedAt?: string;
+  diagnosticStrongTopics?: string[];
+  diagnosticSubjectLevels?: Record<string, DiagnosticLevel>;
+  diagnosticSubjectScores?: Record<string, number>;
+  diagnosticTopicScores?: Record<string, number>;
   diagnosticWeakTopics?: string[];
   mentorStyle: MentorStyle;
 };
@@ -241,7 +249,18 @@ const demoAccount: StoredAccount = {
   subscriptionStartedAt: undefined,
   subscriptionExpiresAt: undefined,
   diagnosticCompleted: false,
+  diagnosticCompletedAt: undefined,
+  diagnosticVersion: undefined,
   diagnosticScore: undefined,
+  diagnosticAssignedLevel: undefined,
+  diagnosticAttempts: undefined,
+  diagnosticAiRecommendation: undefined,
+  diagnosticRecommendedStartingLesson: undefined,
+  diagnosticStartedAt: undefined,
+  diagnosticStrongTopics: undefined,
+  diagnosticSubjectLevels: undefined,
+  diagnosticSubjectScores: undefined,
+  diagnosticTopicScores: undefined,
   diagnosticWeakTopics: undefined,
   mentorStyle: "friendly",
   password: "demo123",
@@ -273,7 +292,18 @@ const ownerAdminAccount: StoredAccount = {
   subscriptionStartedAt: new Date("2026-01-01T00:00:00.000Z").toISOString(),
   subscriptionExpiresAt: new Date("2099-12-31T23:59:59.999Z").toISOString(),
   diagnosticCompleted: true,
+  diagnosticCompletedAt: new Date("2026-01-01T00:00:00.000Z").toISOString(),
+  diagnosticVersion: "admin-baseline",
   diagnosticScore: 100,
+  diagnosticAssignedLevel: "Жоғары",
+  diagnosticAttempts: [],
+  diagnosticAiRecommendation: "Админ аккаунты толық қол жеткізе алады.",
+  diagnosticRecommendedStartingLesson: "Оқу жолы",
+  diagnosticStartedAt: new Date("2026-01-01T00:00:00.000Z").toISOString(),
+  diagnosticStrongTopics: [],
+  diagnosticSubjectLevels: {},
+  diagnosticSubjectScores: {},
+  diagnosticTopicScores: {},
   diagnosticWeakTopics: [],
   mentorStyle: "friendly",
   password: ownerAdminPassword,
@@ -415,10 +445,14 @@ export async function getDashboardAccount(): Promise<DashboardAccount> {
   const activeAccount = await getActiveStoredAccount();
   const account = activeAccount ?? guestAccount;
   const examAttempts = account.examAttempts ?? [];
-  const completedLessons = account.diagnosticCompleted ? 1 : 0;
-  const averageAccuracy = account.diagnosticCompleted ? (account.diagnosticScore ?? 0) : 0;
+  const completedLessons = 0;
+  const averageAccuracy = examAttempts.length
+    ? Math.round(
+        examAttempts.reduce((sum, attempt) => sum + attempt.percent, 0) / examAttempts.length,
+      )
+    : 0;
   const weakTopics = account.diagnosticCompleted ? (account.diagnosticWeakTopics ?? []) : [];
-  const hasProgress = completedLessons > 0 || examAttempts.length > 0;
+  const hasProgress = examAttempts.length > 0;
 
   return {
     authenticated: Boolean(activeAccount),
@@ -435,7 +469,9 @@ export async function getDashboardAccount(): Promise<DashboardAccount> {
     },
     focus: {
       title: weakTopics[0] ?? "Диагностика",
-      description: hasProgress ? "Диагностика нәтижесі бойынша қайталау керек тақырып." : "Прогресс диагностикадан кейін пайда болады.",
+      description: hasProgress
+        ? "Диагностика нәтижесі бойынша қайталау керек тақырып."
+        : "Прогресс диагностикадан кейін пайда болады.",
       percent: hasProgress ? Math.max(0, Math.min(100, averageAccuracy)) : 0,
     },
     tasks: [
@@ -444,7 +480,7 @@ export async function getDashboardAccount(): Promise<DashboardAccount> {
         icon: "calculate",
         title: "НИШ: Количественные характеристики",
         subtitle: "Математический и логический анализ",
-        status: account.diagnosticCompleted ? "done" : "todo",
+        status: "todo",
       },
       {
         id: "reading",
@@ -497,10 +533,9 @@ export async function getDashboardAccount(): Promise<DashboardAccount> {
       level: "Medium" as const,
       accuracy: averageAccuracy,
     })),
-    parentRecommendation:
-      hasProgress
-        ? "Попросите ученика показать две самые сложные задачи недели и объяснить, как он исправил ошибки."
-        : "Ата-ана есебі алғашқы диагностика мен сабақ нәтижелерінен кейін толығады.",
+    parentRecommendation: hasProgress
+      ? "Попросите ученика показать две самые сложные задачи недели и объяснить, как он исправил ошибки."
+      : "Ата-ана есебі алғашқы диагностика мен сабақ нәтижелерінен кейін толығады.",
     recommendations: [
       hasProgress
         ? "Әлсіз тақырыптарға қысқа күнделікті қайталау жасаңыз."
@@ -607,7 +642,18 @@ export async function registerAccount(input: {
     subscriptionStartedAt: undefined,
     subscriptionExpiresAt: undefined,
     diagnosticCompleted: false,
+    diagnosticCompletedAt: undefined,
+    diagnosticVersion: undefined,
     diagnosticScore: undefined,
+    diagnosticAssignedLevel: undefined,
+    diagnosticAttempts: undefined,
+    diagnosticAiRecommendation: undefined,
+    diagnosticRecommendedStartingLesson: undefined,
+    diagnosticStartedAt: undefined,
+    diagnosticStrongTopics: undefined,
+    diagnosticSubjectLevels: undefined,
+    diagnosticSubjectScores: undefined,
+    diagnosticTopicScores: undefined,
     diagnosticWeakTopics: undefined,
     mentorStyle: "friendly",
     password: input.password,
@@ -855,7 +901,9 @@ export async function saveWeakTopicProgress(progress: WeakTopicProgress) {
   return progress;
 }
 
-export async function saveSolutionExplanationLog(log: Omit<SolutionExplanationLog, "id" | "createdAt">) {
+export async function saveSolutionExplanationLog(
+  log: Omit<SolutionExplanationLog, "id" | "createdAt">,
+) {
   const account = await getActiveStoredAccount();
 
   if (!account) {
@@ -867,12 +915,17 @@ export async function saveSolutionExplanationLog(log: Omit<SolutionExplanationLo
     id: `solution-${Date.now()}`,
     createdAt: new Date().toISOString(),
   };
-  account.solutionExplanationLogs = [saved, ...(account.solutionExplanationLogs ?? [])].slice(0, 30);
+  account.solutionExplanationLogs = [saved, ...(account.solutionExplanationLogs ?? [])].slice(
+    0,
+    30,
+  );
   accounts.set(account.email, account);
   return saved;
 }
 
-export async function saveAITutorMessages(messages: Array<Omit<AITutorMessage, "id" | "createdAt" | "userId">>) {
+export async function saveAITutorMessages(
+  messages: Array<Omit<AITutorMessage, "id" | "createdAt" | "userId">>,
+) {
   const account = await getActiveStoredAccount();
 
   if (!account) {
@@ -990,7 +1043,7 @@ export function canEnterPlatform(account: Account | StoredAccount | null) {
 
   return Boolean(
     account.telegramParentVerified ||
-      (account.parentTelegramConnected && account.parentPhoneVerified),
+    (account.parentTelegramConnected && account.parentPhoneVerified),
   );
 }
 
@@ -1027,6 +1080,22 @@ export type ContentType =
   | "weekly_challenge"
   | "monthly_test"
   | "shop";
+
+export type DiagnosticResultInput = {
+  aiRecommendation?: string;
+  assignedLevel?: DiagnosticLevel;
+  attempts?: DiagnosticAttemptSnapshot[];
+  completedAt?: string;
+  diagnosticVersion?: string;
+  recommendedStartingLesson?: string;
+  score: number;
+  startedAt?: string;
+  strongTopics?: string[];
+  subjectLevels?: Record<string, DiagnosticLevel>;
+  subjectScores?: Record<string, number>;
+  topicScores?: Record<string, number>;
+  weakTopics: string[];
+};
 
 export function canAccessContent(
   contentType: ContentType,
@@ -1075,11 +1144,15 @@ export async function getAccessError(contentType: ContentType) {
   return null;
 }
 
-export async function saveDiagnosticResult(input: { score: number; weakTopics: string[] }) {
+export async function saveDiagnosticResult(input: DiagnosticResultInput) {
   const account = await getActiveStoredAccount();
 
   if (!account) {
     throw new Error("AUTH_REQUIRED");
+  }
+
+  if (account.diagnosticCompleted) {
+    return toPublicAccount(account);
   }
 
   if (isSupabaseConfigured()) {
@@ -1087,14 +1160,29 @@ export async function saveDiagnosticResult(input: { score: number; weakTopics: s
     return toPublicAccount(updated);
   }
 
+  const completedAt = input.completedAt ?? new Date().toISOString();
   account.diagnosticCompleted = true;
+  account.diagnosticCompletedAt = completedAt;
+  account.diagnosticVersion = input.diagnosticVersion;
   account.diagnosticScore = input.score;
+  account.diagnosticAssignedLevel = input.assignedLevel;
+  account.diagnosticAttempts = input.attempts;
+  account.diagnosticAiRecommendation = input.aiRecommendation;
+  account.diagnosticRecommendedStartingLesson = input.recommendedStartingLesson;
+  account.diagnosticStartedAt = input.startedAt;
+  account.diagnosticStrongTopics = input.strongTopics;
+  account.diagnosticSubjectLevels = input.subjectLevels;
+  account.diagnosticSubjectScores = input.subjectScores;
+  account.diagnosticTopicScores = input.topicScores;
   account.diagnosticWeakTopics = input.weakTopics;
   accounts.set(account.email, account);
   return toPublicAccount(account);
 }
 
-export async function createPaymentRequest(input: { planKey: PlanKey; paymentMethod: PaymentMethod }) {
+export async function createPaymentRequest(input: {
+  planKey: PlanKey;
+  paymentMethod: PaymentMethod;
+}) {
   const account = await getActiveStoredAccount();
 
   if (!account) {
@@ -1160,7 +1248,8 @@ export async function updatePaymentRequest(input: {
   }
 
   request.adminNote = input.adminNote?.trim() || request.adminNote;
-  request.kaspiInvoiceReference = input.kaspiInvoiceReference?.trim() || request.kaspiInvoiceReference;
+  request.kaspiInvoiceReference =
+    input.kaspiInvoiceReference?.trim() || request.kaspiInvoiceReference;
   request.kaspiPaymentLink = input.kaspiPaymentLink?.trim() || request.kaspiPaymentLink;
 
   if (input.action === "invoice_sent") {

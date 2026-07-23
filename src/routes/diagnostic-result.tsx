@@ -11,10 +11,7 @@ import type { PaymentMethod, PricingPlan } from "@/lib/account-store.server";
 
 export const Route = createFileRoute("/diagnostic-result")({
   loader: async () => {
-    const [dashboard, plans] = await Promise.all([
-      getAccountDashboard(),
-      getPricingPlans(),
-    ]);
+    const [dashboard, plans] = await Promise.all([getAccountDashboard(), getPricingPlans()]);
 
     return { dashboard, plans };
   },
@@ -31,11 +28,20 @@ function DiagnosticResult() {
   const { dashboard, plans } = Route.useLoaderData();
   const navigate = useNavigate();
   const [pendingKey, setPendingKey] = useState("");
-  const score = dashboard.account.diagnosticScore ?? dashboard.averageAccuracy;
+  const account = dashboard.account;
+  const score = account.diagnosticScore ?? 0;
   const weakTopics = dashboard.account.diagnosticWeakTopics?.length
     ? dashboard.account.diagnosticWeakTopics
     : [];
+  const strongTopics = account.diagnosticStrongTopics?.length ? account.diagnosticStrongTopics : [];
+  const subjectScores = account.diagnosticSubjectScores ?? {};
   const firstWeakTopic = weakTopics[0] ?? "диагностикадағы қате сұрақтар";
+  const level = account.diagnosticAssignedLevel ?? "Бастапқы";
+  const recommendedStartingLesson =
+    account.diagnosticRecommendedStartingLesson ?? "Негізгі математика және логика";
+  const aiRecommendation =
+    account.diagnosticAiRecommendation ??
+    "AI-Sana кеңесі диагностикалық тест толық аяқталғаннан кейін сақталады.";
 
   const startPayment = async (planKey: PricingPlan["key"], paymentMethod: PaymentMethod) => {
     setPendingKey(`${planKey}:${paymentMethod}`);
@@ -52,34 +58,61 @@ function DiagnosticResult() {
           </p>
           <h1 className="mt-3 text-4xl font-black md:text-6xl">Диагностика аяқталды!</h1>
           <p className="mt-4 max-w-3xl text-lg font-semibold text-[#EDE9FE]">
-            Толық дайындықты бастау үшін тариф таңдаңыз. Диагностика нәтижесіне қарай
-            AI-Sana әлсіз тақырыптарды көрсетіп, оқу жолын ашады.
+            Бастапқы деңгейіңіз анықталды. Енді AI-Sana осы нәтижеге қарай оқу жолын ұсынады.
           </p>
         </GameCard>
 
         <GameCard className="bg-white/95">
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-4">
+            <Summary label="Тағайындалған деңгей" value={level} />
             <Summary label="Жалпы нәтиже" value={`${score}%`} />
             <Summary
               label="Әлсіз тақырыптар"
               value={weakTopics.length ? weakTopics.slice(0, 2).join(", ") : "Әлі анықталмады"}
             />
-            <Summary label="Келесі мақсат" value={`${Math.min(95, score + 10)}%`} />
+            <Summary label="Бастау сабағы" value={recommendedStartingLesson} />
           </div>
+
+          {Object.keys(subjectScores).length ? (
+            <div className="mt-5 grid gap-3 md:grid-cols-3">
+              {Object.entries(subjectScores).map(([subject, value]) => (
+                <div className="rounded-3xl border-2 border-[#DDD6FE] bg-white p-4" key={subject}>
+                  <p className="text-xs font-black uppercase tracking-[0.2em] text-[#8B5CF6]">
+                    {subject}
+                  </p>
+                  <p className="mt-2 text-3xl font-black text-[#6D28D9]">{value}%</p>
+                  <p className="mt-1 text-sm font-bold text-[#6B5E8F]">
+                    Деңгей: {account.diagnosticSubjectLevels?.[subject] ?? "Бастапқы"}
+                  </p>
+                </div>
+              ))}
+            </div>
+          ) : null}
+
+          <div className="mt-5 grid gap-4 md:grid-cols-2">
+            <TopicList title="Күшті жақтар" topics={strongTopics} empty="Әлі анықталмады" />
+            <TopicList title="Қайталау керек" topics={weakTopics} empty="Әлі анықталмады" />
+          </div>
+
           <div className="mt-6 rounded-3xl bg-[#F5F3FF] p-5">
             <p className="text-sm font-black uppercase tracking-[0.2em] text-[#8B5CF6]">
               AI-Sana кеңесі
             </p>
-            <p className="mt-2 text-lg font-bold text-[#1E1B4B]">
-              Алдымен {firstWeakTopic} тақырыбын қайталап, кейін қысқа жаттығу және mini
-              test орындаңыз. Толық тариф ашылғанда AI-Sana әр қатені қадамдап түсіндіреді.
-            </p>
-            <a
-              className="mt-4 inline-flex rounded-2xl bg-[#6D28D9] px-5 py-3 font-black text-white shadow-[0_6px_0_#4C1D95] transition hover:-translate-y-0.5"
-              href={`/explain-solution?mode=diagnostic&topic=${encodeURIComponent(firstWeakTopic)}&diagnosticResult=${encodeURIComponent(`${score}%`)}`}
-            >
-              AI-Sana-дан разбор сұрау
-            </a>
+            <p className="mt-2 text-lg font-bold text-[#1E1B4B]">{aiRecommendation}</p>
+            <div className="mt-4 flex flex-wrap gap-3">
+              <a
+                className="inline-flex rounded-2xl bg-[#6D28D9] px-5 py-3 font-black text-white shadow-[0_6px_0_#4C1D95] transition hover:-translate-y-0.5"
+                href={`/explain-solution?mode=diagnostic&topic=${encodeURIComponent(firstWeakTopic)}&diagnosticResult=${encodeURIComponent(`${score}%`)}`}
+              >
+                AI-Sana-дан разбор сұрау
+              </a>
+              <a
+                className="inline-flex rounded-2xl border-2 border-[#DDD6FE] bg-white px-5 py-3 font-black text-[#6D28D9] transition hover:bg-[#F5F3FF]"
+                href="/plan"
+              >
+                Оқу жоспарын көру
+              </a>
+            </div>
           </div>
         </GameCard>
 
@@ -89,9 +122,7 @@ function DiagnosticResult() {
               <p className="text-sm font-black uppercase tracking-[0.22em] text-[#8B5CF6]">
                 Тарифтер
               </p>
-              <h2 className="mt-1 text-3xl font-black text-[#1E1B4B]">
-                Толық дайындықты ашыңыз
-              </h2>
+              <h2 className="mt-1 text-3xl font-black text-[#1E1B4B]">Толық дайындықты ашыңыз</h2>
               <p className="mt-2 font-semibold text-[#6B5E8F]">
                 Kaspi Pay, Kaspi Red және Kaspi 0-0-12 қолжетімді.
               </p>
@@ -158,6 +189,25 @@ function Summary({ label, value }: { label: string; value: string }) {
     <div className="rounded-3xl border-2 border-[#DDD6FE] bg-[#F5F3FF] p-5">
       <p className="text-xs font-black uppercase tracking-[0.2em] text-[#8B5CF6]">{label}</p>
       <p className="mt-2 text-2xl font-black text-[#1E1B4B]">{value}</p>
+    </div>
+  );
+}
+
+function TopicList({ empty, title, topics }: { empty: string; title: string; topics: string[] }) {
+  return (
+    <div className="rounded-3xl border-2 border-[#DDD6FE] bg-[#F5F3FF] p-5">
+      <p className="text-xs font-black uppercase tracking-[0.2em] text-[#8B5CF6]">{title}</p>
+      <div className="mt-3 flex flex-wrap gap-2">
+        {topics.length ? (
+          topics.map((topic) => (
+            <span className="rounded-full bg-white px-4 py-2 font-black text-[#1E1B4B]" key={topic}>
+              {topic}
+            </span>
+          ))
+        ) : (
+          <span className="rounded-full bg-white px-4 py-2 font-black text-[#6B5E8F]">{empty}</span>
+        )}
+      </div>
     </div>
   );
 }

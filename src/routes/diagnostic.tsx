@@ -1,13 +1,19 @@
-﻿import { useMemo, useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+﻿import { useEffect, useMemo, useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { AIReviewPanel } from "@/components/ai-review-panel";
 import { GameCard, GameLayout, ProgressBar } from "@/components/gamified-platform";
 import { diagnosticQuestions } from "@/data/diagnostic-questions";
 import { nisDiagnosticQuestions } from "@/data/nis-diagnostic-questions";
 import { useLanguage } from "@/hooks/use-language";
-import { saveDiagnosticResult } from "@/lib/api/account.functions";
+import { getAccountDashboard, saveDiagnosticResult } from "@/lib/api/account.functions";
+import {
+  DIAGNOSTIC_VERSION,
+  analyzeDiagnosticAttempts,
+  buildDiagnosticAttemptSnapshot,
+} from "@/lib/diagnostic-analysis";
 
 export const Route = createFileRoute("/diagnostic")({
+  loader: async () => getAccountDashboard(),
   head: () => ({
     meta: [
       { title: "Find Your Level — AI-Sana" },
@@ -55,8 +61,8 @@ const copy = {
     choose: "Choose one answer",
     resultTitle: "Diagnostic result",
     correct: "correct",
-    retry: "Try again",
-    home: "Go to dashboard",
+    alreadyDone: "Diagnostic is already complete",
+    resultAction: "View diagnostic result",
     review: "Get full AI review",
     pricing: "View pricing plans",
     strong: "Good start. Now check the AI review to understand every mistake.",
@@ -78,9 +84,8 @@ const copy = {
       RFMS: "РФММ-ге керек тереңірек математика және логика.",
     },
     progress: "Диагностика прогресі",
-    introTitle: "Өз деңгейіңізді анықтаңыз",
-    introDesc:
-      "Бірнеше аралас сұраққа жауап беріңіз. Тесттен кейін AI қателеріңізді түсіндіріп, келесі не оқу керегін көрсетеді.",
+    introTitle: "Алдымен деңгейіңізді анықтайық",
+    introDesc: "Бұл бір реттік диагностика оқу жоспарын сіздің деңгейіңізге бейімдеу үшін қажет.",
     start: "Диагностикалық тестті бастау",
     time: "Шамамен 5 минут",
     question: "Сұрақ",
@@ -91,8 +96,8 @@ const copy = {
     choose: "Бір жауап таңдаңыз",
     resultTitle: "Диагностика нәтижесі",
     correct: "дұрыс",
-    retry: "Қайта өту",
-    home: "Дашбордқа өту",
+    alreadyDone: "Диагностика аяқталған",
+    resultAction: "Нәтижені көру",
     review: "Толық AI разбор алу",
     pricing: "Тариф таңдау",
     strong: "Жақсы бастама. Енді әр қатені түсіну үшін AI разборды қараңыз.",
@@ -127,8 +132,8 @@ const copy = {
     choose: "Выберите один ответ",
     resultTitle: "Результат диагностики",
     correct: "правильно",
-    retry: "Пройти снова",
-    home: "Перейти в дашборд",
+    alreadyDone: "Диагностика уже завершена",
+    resultAction: "Посмотреть результат",
     review: "Получить полный AI-разбор",
     pricing: "Выбрать тариф",
     strong: "Хорошее начало. Теперь посмотрите AI-разбор, чтобы понять каждую ошибку.",
@@ -164,12 +169,21 @@ const questionsCountByTrack = diagnosticTracks.reduce(
 );
 
 function Diagnostic() {
+  const dashboard = Route.useLoaderData();
+  const navigate = useNavigate();
   const { language } = useLanguage();
   const c = copy[language];
   const [status, setStatus] = useState<TestStatus>("intro");
   const [selectedTrack, setSelectedTrack] = useState<DiagnosticTrack>("NIS");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<AnswerMap>({});
+  const [startedAt, setStartedAt] = useState<string | undefined>();
+
+  useEffect(() => {
+    if (dashboard.account.diagnosticCompleted) {
+      void navigate({ to: "/diagnostic-result", replace: true });
+    }
+  }, [dashboard.account.diagnosticCompleted, navigate]);
 
   const questions = useMemo(
     () =>
@@ -191,38 +205,23 @@ function Diagnostic() {
   const result = useMemo(() => {
     const attempts = questions.map((question) => {
       const userAnswer = answers[question.id] ?? "";
-      const correctAnswer = question.correctAnswer[language];
-
-      return {
-        question: question.question[language],
-        userAnswer: userAnswer || "-",
-        correctAnswer,
-        isCorrect: userAnswer === correctAnswer,
-        topic: question.topic,
-        explanation: question.explanation[language],
-      };
+      return buildDiagnosticAttemptSnapshot(question, userAnswer, language);
     });
     const correctAnswers = attempts.filter((attempt) => attempt.isCorrect).length;
-    const weakTopics = Array.from(
-      new Set(
-        attempts
-          .filter((attempt) => !attempt.isCorrect)
-          .map((attempt) => attempt.topic)
-          .filter(Boolean),
-      ),
-    );
+    const analysis = analyzeDiagnosticAttempts(attempts);
 
     return {
+      ...analysis,
       attempts,
       correctAnswers,
       score: Math.round((correctAnswers / totalQuestions) * 100),
-      weakTopics,
     };
   }, [answers, language, questions, totalQuestions]);
 
   const startTest = () => {
     setAnswers({});
     setCurrentIndex(0);
+    setStartedAt(new Date().toISOString());
     setStatus("active");
   };
 
@@ -233,13 +232,25 @@ function Diagnostic() {
 
   const finishTest = async () => {
     if (answeredCount < totalQuestions) return;
+    const completedAt = new Date().toISOString();
     await saveDiagnosticResult({
       data: {
+        aiRecommendation: result.aiRecommendation,
+        assignedLevel: result.assignedLevel,
+        attempts: result.attempts,
+        completedAt,
+        diagnosticVersion: DIAGNOSTIC_VERSION,
+        recommendedStartingLesson: result.recommendedStartingLesson,
         score: result.score,
+        startedAt,
+        strongTopics: result.strongTopics,
+        subjectLevels: result.subjectLevels,
+        subjectScores: result.subjectScores,
+        topicScores: result.topicScores,
         weakTopics: result.weakTopics,
       },
     });
-    setStatus("finished");
+    await navigate({ to: "/diagnostic-result" });
   };
 
   return (
@@ -271,12 +282,8 @@ function Diagnostic() {
               <p className="text-sm font-black uppercase tracking-[0.25em] text-[#FACC15]">
                 {c.tracksLabel}
               </p>
-              <h1 className="mt-3 text-4xl font-black md:text-6xl">
-                {c.introTitle}
-              </h1>
-              <p className="mt-5 max-w-xl text-lg font-semibold text-[#EDE9FE]">
-                {c.introDesc}
-              </p>
+              <h1 className="mt-3 text-4xl font-black md:text-6xl">{c.introTitle}</h1>
+              <p className="mt-5 max-w-xl text-lg font-semibold text-[#EDE9FE]">{c.introDesc}</p>
               <div className="mt-7 rounded-[28px] border-2 border-white/25 bg-white/10 p-4">
                 <p className="text-sm font-black uppercase tracking-[0.2em] text-[#FACC15]">
                   {c.selectTrack}
@@ -439,9 +446,7 @@ function Diagnostic() {
                 {c.resultTitle}
               </p>
               <div className="flex items-end gap-3">
-                <span className="text-6xl font-black text-[#6D28D9]">
-                  {result.score}%
-                </span>
+                <span className="text-6xl font-black text-[#6D28D9]">{result.score}%</span>
                 <span className="pb-3 text-lg font-black text-[#6B5E8F]">
                   {result.correctAnswers}/{totalQuestions} {c.correct}
                 </span>
@@ -467,18 +472,11 @@ function Diagnostic() {
               )}
 
               <div className="mt-8 flex flex-col gap-3">
-                <button
-                  className="w-full rounded-2xl border-2 border-[#DDD6FE] px-6 py-3 font-black text-[#6D28D9] transition hover:bg-[#F5F3FF]"
-                  onClick={startTest}
-                  type="button"
-                >
-                  {c.retry}
-                </button>
                 <Link
                   className="w-full rounded-2xl bg-[#6D28D9] px-6 py-3 text-center font-black text-white shadow-[0_5px_0_#4C1D95]"
-                  to="/pricing"
+                  to="/diagnostic-result"
                 >
-                  {c.pricing}
+                  {c.resultAction}
                 </Link>
               </div>
             </GameCard>
@@ -504,5 +502,3 @@ function Diagnostic() {
     </GameLayout>
   );
 }
-
-

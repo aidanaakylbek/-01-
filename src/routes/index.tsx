@@ -25,8 +25,7 @@ const lessonNodes = [
   { title: "Логика", state: "locked", icon: "lock", href: "/plan" },
   { title: "Математика", state: "locked", icon: "lock", href: "/subjects#nis" },
   { title: "Оқу сауаттылығы", state: "locked", icon: "menu_book", href: "/subjects#bil" },
-  { title: "Mini Test", state: "locked", icon: "quiz", href: "/exam" },
-  { title: "Boss Test", state: "boss", icon: "workspace_premium", href: "/exam" },
+  { title: "Апталық тест", state: "locked", icon: "quiz", href: "/progress" },
 ];
 
 export function Dashboard() {
@@ -55,7 +54,6 @@ export function Dashboard() {
 
   const completedLessons = dashboard?.completedLessons ?? 0;
   const xpToday = completedLessons > 0 ? completedLessons * 40 : 0;
-  const bossUnlocked = completedLessons >= 10;
   const currentLessonHref = completedLessons > 0 ? "/plan" : "/diagnostic";
   const c =
     language === "RU"
@@ -64,10 +62,6 @@ export function Dashboard() {
           subtitle: "AI Tutor, личный план и ежедневные задания помогают двигаться к цели.",
           coach: "Сегодня пройди 3 урока. Еще 2 вопроса осталось!",
           start: "Начать текущий урок",
-          boss: "Boss Test открылся!",
-          bossLocked: "Boss Test",
-          bossLockedText: "Заверши 10 уроков, чтобы открыть.",
-          bossText: "Набери 80%, чтобы перейти на следующий уровень.",
           ready: "Ты готов к следующему уровню!",
         }
       : language === "EN"
@@ -76,10 +70,6 @@ export function Dashboard() {
             subtitle: "AI Tutor, a personal plan and daily tasks help you move toward your goal.",
             coach: "Complete 3 lessons today. Only 2 questions left!",
             start: "Start current lesson",
-            boss: "Boss Test unlocked!",
-            bossLocked: "Boss Test",
-            bossLockedText: "Complete 10 lessons to unlock.",
-            bossText: "Score 80% to move to the next level.",
             ready: "You are ready for the next level!",
           }
         : {
@@ -88,10 +78,6 @@ export function Dashboard() {
               "AI Tutor, жеке оқу жоспары және күнделікті тапсырмалар арқылы мақсатыңа жақында.",
             coach: "Бүгін 3 сабақ өт! Тағы 2 сұрақ қалды!",
             start: "Қазіргі сабақты бастау",
-            boss: "Boss Test ашылды!",
-            bossLocked: "Boss Test",
-            bossLockedText: "Ашу үшін 10 сабақты аяқта.",
-            bossText: "Келесі деңгейге өту үшін 80% жина.",
             ready: "Келесі деңгейге дайынсың!",
           };
 
@@ -119,27 +105,6 @@ export function Dashboard() {
                 >
                   {c.start}
                 </Link>
-                {bossUnlocked ? (
-                  <Link
-                    to="/exam"
-                    className="inline-flex justify-center rounded-2xl border-2 border-white/70 bg-white/10 px-6 py-4 text-center font-black text-white backdrop-blur transition hover:bg-white/20"
-                  >
-                    Boss Test
-                  </Link>
-                ) : (
-                  <div>
-                    <button
-                      className="inline-flex w-full cursor-not-allowed justify-center rounded-2xl border-2 border-white/45 bg-white/10 px-6 py-4 text-center font-black text-white/80 backdrop-blur sm:w-auto"
-                      disabled
-                      type="button"
-                    >
-                      🔒 {c.bossLocked}
-                    </button>
-                    <p className="mt-2 max-w-[260px] text-sm font-bold text-[#EDE9FE]">
-                      {c.bossLockedText}
-                    </p>
-                  </div>
-                )}
               </div>
             </div>
             <div className="relative min-h-[250px] overflow-visible sm:min-h-[290px] lg:self-center">
@@ -225,17 +190,6 @@ export function Dashboard() {
               </p>
               <ProgressBar value={0} />
             </GameCard>
-            <GameCard className="border-[#FACC15] bg-[#1E1B4B] text-white">
-              <p className="text-sm font-black uppercase tracking-widest text-[#FACC15]">Special</p>
-              <h3 className="mt-2 text-2xl font-black">{c.boss}</h3>
-              <p className="mt-2 text-[#DDD6FE]">{c.bossText}</p>
-              <Link
-                to="/exam"
-                className="mt-5 inline-flex rounded-2xl bg-[#FACC15] px-5 py-3 font-black text-[#1E1B4B] shadow-[0_5px_0_#CA8A04]"
-              >
-                Boss Test
-              </Link>
-            </GameCard>
           </div>
         </section>
       </div>
@@ -250,9 +204,7 @@ function LessonNode({ node, index }: { node: (typeof lessonNodes)[number]; index
       ? "bg-[#22C55E] text-white shadow-[0_8px_0_#15803D]"
       : node.state === "current"
         ? "bg-[#8B5CF6] text-white shadow-[0_8px_0_#5B21B6] animate-[reward-pop_0.8s_ease_both]"
-        : node.state === "boss"
-          ? "bg-[#1E1B4B] text-[#FACC15] shadow-[0_8px_0_#0F0B2E] ring-4 ring-[#FACC15]/40"
-          : "bg-[#EDE9FE] text-[#8B5CF6] shadow-[0_8px_0_#DDD6FE]";
+        : "bg-[#EDE9FE] text-[#8B5CF6] shadow-[0_8px_0_#DDD6FE]";
   return (
     <Link
       to={node.href as never}

@@ -24,7 +24,18 @@ type SupabaseUserRow = {
   subscription_started_at: string | null;
   subscription_expires_at: string | null;
   diagnostic_completed: boolean | null;
+  diagnostic_completed_at: string | null;
+  diagnostic_version: string | null;
   diagnostic_score: number | null;
+  diagnostic_assigned_level: string | null;
+  diagnostic_attempts: unknown[] | null;
+  diagnostic_ai_recommendation: string | null;
+  diagnostic_recommended_starting_lesson: string | null;
+  diagnostic_started_at: string | null;
+  diagnostic_strong_topics: string[] | null;
+  diagnostic_subject_levels: Record<string, string> | null;
+  diagnostic_subject_scores: Record<string, number> | null;
+  diagnostic_topic_scores: Record<string, number> | null;
   diagnostic_weak_topics: string[] | null;
   mentor_style: MentorStyle | null;
 };
@@ -87,7 +98,10 @@ export async function findAccountByInviteCode(inviteCode: string) {
 
   if (!parent) return null;
 
-  const user = await selectOne<SupabaseUserRow>("users", `id=eq.${encodeURIComponent(parent.student_id)}`);
+  const user = await selectOne<SupabaseUserRow>(
+    "users",
+    `id=eq.${encodeURIComponent(parent.student_id)}`,
+  );
   return user ? userToAccount(user, parent) : null;
 }
 
@@ -99,10 +113,7 @@ export async function findParentByNormalizedPhone(phoneNormalized: string) {
 }
 
 async function findParentByStudentId(studentId: string) {
-  return selectOne<SupabaseParentRow>(
-    "parents",
-    `student_id=eq.${encodeURIComponent(studentId)}`,
-  );
+  return selectOne<SupabaseParentRow>("parents", `student_id=eq.${encodeURIComponent(studentId)}`);
 }
 
 async function findParentByTelegramChatId(telegramChatId: string) {
@@ -173,7 +184,10 @@ export async function verifyParentTelegram(inviteCode: string, telegramChatId: s
   }
 
   if (existingParent?.id === parent.id && parent.telegram_connected && parent.phone_verified) {
-    const user = await selectOne<SupabaseUserRow>("users", `id=eq.${encodeURIComponent(parent.student_id)}`);
+    const user = await selectOne<SupabaseUserRow>(
+      "users",
+      `id=eq.${encodeURIComponent(parent.student_id)}`,
+    );
     return user
       ? { status: "already_verified" as const, account: userToAccount(user, parent) }
       : { status: "invalid" as const };
@@ -205,12 +219,36 @@ export async function verifyParentTelegram(inviteCode: string, telegramChatId: s
 
 export async function updateDiagnosticResult(
   userId: string,
-  input: { score: number; weakTopics: string[] },
+  input: import("./account-store.server").DiagnosticResultInput,
 ) {
-  const [user] = await updateRows<SupabaseUserRow>("users", `id=eq.${encodeURIComponent(userId)}`, {
+  const payload = {
     diagnostic_completed: true,
+    diagnostic_completed_at: input.completedAt ?? new Date().toISOString(),
+    diagnostic_version: input.diagnosticVersion,
     diagnostic_score: input.score,
+    diagnostic_assigned_level: input.assignedLevel,
+    diagnostic_attempts: input.attempts,
+    diagnostic_ai_recommendation: input.aiRecommendation,
+    diagnostic_recommended_starting_lesson: input.recommendedStartingLesson,
+    diagnostic_started_at: input.startedAt,
+    diagnostic_strong_topics: input.strongTopics,
+    diagnostic_subject_levels: input.subjectLevels,
+    diagnostic_subject_scores: input.subjectScores,
+    diagnostic_topic_scores: input.topicScores,
     diagnostic_weak_topics: input.weakTopics,
+  };
+
+  const [user] = await updateRows<SupabaseUserRow>(
+    "users",
+    `id=eq.${encodeURIComponent(userId)}`,
+    payload,
+  ).catch(async (error) => {
+    console.error("Diagnostic extended save failed, falling back to legacy fields", error);
+    return updateRows<SupabaseUserRow>("users", `id=eq.${encodeURIComponent(userId)}`, {
+      diagnostic_completed: true,
+      diagnostic_score: input.score,
+      diagnostic_weak_topics: input.weakTopics,
+    });
   });
   return userToAccount(user);
 }
@@ -289,11 +327,18 @@ export async function getVerifiedReportTargets() {
   const targets = [];
 
   for (const parent of parents) {
-    const user = await selectOne<SupabaseUserRow>("users", `id=eq.${encodeURIComponent(parent.student_id)}`);
+    const user = await selectOne<SupabaseUserRow>(
+      "users",
+      `id=eq.${encodeURIComponent(parent.student_id)}`,
+    );
     if (!user) continue;
 
     const account = userToAccount(user, parent);
-    if (account.subscriptionStatus === "active" && (!account.subscriptionExpiresAt || new Date(account.subscriptionExpiresAt).getTime() > Date.now())) {
+    if (
+      account.subscriptionStatus === "active" &&
+      (!account.subscriptionExpiresAt ||
+        new Date(account.subscriptionExpiresAt).getTime() > Date.now())
+    ) {
       targets.push({ account, telegramChatId: parent.telegram_chat_id as string });
     }
   }
@@ -347,7 +392,20 @@ function userToAccount(user: SupabaseUserRow, parent?: SupabaseParentRow | null)
     subscriptionStartedAt: user.subscription_started_at ?? undefined,
     subscriptionExpiresAt: user.subscription_expires_at ?? undefined,
     diagnosticCompleted: Boolean(user.diagnostic_completed),
+    diagnosticCompletedAt: user.diagnostic_completed_at ?? undefined,
+    diagnosticVersion: user.diagnostic_version ?? undefined,
     diagnosticScore: user.diagnostic_score ?? undefined,
+    diagnosticAssignedLevel:
+      user.diagnostic_assigned_level as StoredAccount["diagnosticAssignedLevel"],
+    diagnosticAttempts: user.diagnostic_attempts as StoredAccount["diagnosticAttempts"],
+    diagnosticAiRecommendation: user.diagnostic_ai_recommendation ?? undefined,
+    diagnosticRecommendedStartingLesson: user.diagnostic_recommended_starting_lesson ?? undefined,
+    diagnosticStartedAt: user.diagnostic_started_at ?? undefined,
+    diagnosticStrongTopics: user.diagnostic_strong_topics ?? undefined,
+    diagnosticSubjectLevels:
+      user.diagnostic_subject_levels as StoredAccount["diagnosticSubjectLevels"],
+    diagnosticSubjectScores: user.diagnostic_subject_scores ?? undefined,
+    diagnosticTopicScores: user.diagnostic_topic_scores ?? undefined,
     diagnosticWeakTopics: user.diagnostic_weak_topics ?? undefined,
     mentorStyle: user.mentor_style ?? "friendly",
     password: user.password_hash,
