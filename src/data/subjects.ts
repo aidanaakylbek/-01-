@@ -5,11 +5,6 @@ export type Topic = {
   title: Record<Lang, string>;
   description: Record<Lang, string>;
   difficulty: "basic" | "medium" | "advanced";
-  video?: {
-    src: string;
-    title: Record<Lang, string>;
-    duration?: Record<Lang, string>;
-  };
   lesson?: {
     intro: Record<Lang, string[]>;
     goals: Record<Lang, string[]>;
@@ -76,19 +71,6 @@ export const subjects: Subject[] = [
               RU: "Понять числа для счета, разряды и как находить натуральные числа в тестах.",
             },
             difficulty: "basic",
-            video: {
-              src: "/lessons/natural-numbers-place-values.mp4",
-              title: {
-                EN: "Video lesson: Natural numbers and place values",
-                KZ: "Видеосабақ: Натурал сандар және разрядтар",
-                RU: "Видеоурок: Натуральные числа и разряды",
-              },
-              duration: {
-                EN: "Watch before reading the lesson",
-                KZ: "Сабақты оқымас бұрын көріп шық",
-                RU: "Посмотри перед чтением урока",
-              },
-            },
             lesson: {
               intro: {
                 EN: [

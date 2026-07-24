@@ -44,7 +44,6 @@ function TopicLessonPage() {
           result: "Результат",
           correct: "правильно",
           askAi: "Спросить AI-Sana",
-          videoNote: "▶ После видеообъяснения пройди короткий конспект и тест ниже.",
         }
       : language === "EN"
         ? {
@@ -56,7 +55,6 @@ function TopicLessonPage() {
             result: "Result",
             correct: "correct",
             askAi: "Ask AI-Sana",
-            videoNote: "▶ After the video explanation, complete the short notes and test below.",
           }
         : {
             back: "Пәнге оралу",
@@ -67,7 +65,6 @@ function TopicLessonPage() {
             result: "Нәтиже",
             correct: "дұрыс",
             askAi: "AI-Sana-дан сұра",
-            videoNote: "▶ Видео түсіндірмеден кейін төмендегі қысқа конспект пен тестті орында.",
           };
 
   return (
@@ -91,38 +88,6 @@ function TopicLessonPage() {
           <ProgressBar value={48} />
         </GameCard>
         <MascotCoach text={c.coach} />
-        {topic.video ? (
-          <GameCard className="overflow-hidden border-[#C4B5FD] bg-white p-0">
-            <div className="grid gap-0 lg:grid-cols-[1fr_320px]">
-              <div className="bg-[#1E1B4B]">
-                <video
-                  className="aspect-video h-full w-full bg-black object-contain"
-                  controls
-                  preload="metadata"
-                  src={topic.video.src}
-                >
-                  {topic.video.title[language]}
-                </video>
-              </div>
-              <div className="flex flex-col justify-center p-6">
-                <p className="text-sm font-black uppercase tracking-[0.22em] text-[#8B5CF6]">
-                  AI-Sana video
-                </p>
-                <h2 className="mt-2 text-2xl font-black text-[#1E1B4B]">
-                  {topic.video.title[language]}
-                </h2>
-                {topic.video.duration ? (
-                  <p className="mt-3 text-base font-bold leading-7 text-[#6B5E8F]">
-                    {topic.video.duration[language]}
-                  </p>
-                ) : null}
-                <div className="mt-5 rounded-2xl bg-[#F5F3FF] p-4 text-sm font-black text-[#6D28D9]">
-                  {c.videoNote}
-                </div>
-              </div>
-            </div>
-          </GameCard>
-        ) : null}
 
         <section className="grid gap-5 lg:grid-cols-[1fr_360px] lg:items-start">
           <article className="space-y-5">
