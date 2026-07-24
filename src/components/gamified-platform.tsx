@@ -16,6 +16,7 @@ const labels = {
   KZ: {
     home: "Басты бет",
     path: "Оқу жолы",
+    subjects: "Пәндер",
     practice: "Жаттығу",
     progress: "Прогресс",
     profile: "Профиль",
@@ -34,6 +35,7 @@ const labels = {
   RU: {
     home: "Главная",
     path: "Путь",
+    subjects: "Предметы",
     practice: "Практика",
     progress: "Прогресс",
     profile: "Профиль",
@@ -52,6 +54,7 @@ const labels = {
   EN: {
     home: "Home",
     path: "Learning Path",
+    subjects: "Subjects",
     practice: "Practice",
     progress: "Progress",
     profile: "Profile",
@@ -449,6 +452,7 @@ function GameSidebar() {
   const c = labels[language];
   const items: NavItem[] = [
     { label: c.path, icon: "route", to: "/home" },
+    { label: c.subjects, icon: "school", to: "/subjects" },
     { label: c.practice, icon: "exercise", to: "/plan" },
     { label: c.vocabulary, icon: "auto_stories", to: "/vocabulary" },
     { label: c.progress, icon: "monitoring", to: "/progress" },
@@ -491,6 +495,7 @@ function MobileGameNav() {
   const location = useLocation();
   const c = labels[language];
   const items: NavItem[] = [
+    { label: c.subjects, icon: "school", to: "/subjects" },
     { label: c.practice, icon: "exercise", to: "/plan" },
     { label: c.vocabulary, icon: "auto_stories", to: "/vocabulary" },
     { label: c.progress, icon: "monitoring", to: "/progress" },
