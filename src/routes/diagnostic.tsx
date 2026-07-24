@@ -19,8 +19,7 @@ export const Route = createFileRoute("/diagnostic")({
       { title: "Find Your Level — AI-Sana" },
       {
         name: "description",
-        content:
-          "Take the AI-Sana diagnostic to find your level across NIS, BIL, and NSPM subjects.",
+        content: "Take the AI-Sana diagnostic to find your level across NIS and BIL subjects.",
       },
     ],
   }),
@@ -29,23 +28,21 @@ export const Route = createFileRoute("/diagnostic")({
 
 type TestStatus = "intro" | "active" | "finished";
 type AnswerMap = Record<string, string>;
-type DiagnosticTrack = "NIS" | "BIL" | "RFMS";
+type DiagnosticTrack = "NIS" | "BIL";
 
 const copy = {
   EN: {
     back: "Go back",
-    tracksLabel: "NIS • BIL • NSPM",
+    tracksLabel: "NIS • BIL",
     selectTrack: "Choose diagnostic type",
     trackHint: "Each test checks the skills needed for that entrance exam.",
     trackNames: {
       NIS: "NIS",
       BIL: "BIL",
-      RFMS: "RFMS",
     },
     trackDescriptions: {
       NIS: "Math, logic and reading skills for NIS preparation.",
       BIL: "Reading literacy, English and reasoning for BIL.",
-      RFMS: "Stronger math and logic for RFMS entrance preparation.",
     },
     progress: "Diagnostic Progress",
     introTitle: "Find Your Level",
@@ -70,18 +67,16 @@ const copy = {
   },
   KZ: {
     back: "Артқа оралу",
-    tracksLabel: "НЗМ • БИЛ • РФММ",
+    tracksLabel: "НЗМ • БИЛ",
     selectTrack: "Диагностика түрін таңдаңыз",
     trackHint: "Әр тест сол емтиханға керек негізгі дағдыларды тексереді.",
     trackNames: {
       NIS: "НЗМ",
       BIL: "БИЛ",
-      RFMS: "РФММ",
     },
     trackDescriptions: {
       NIS: "НЗМ-ге керек математика, логика және оқу дағдылары.",
       BIL: "БИЛ үшін оқу сауаттылығы, ағылшын және ойлау қабілеті.",
-      RFMS: "РФММ-ге керек тереңірек математика және логика.",
     },
     progress: "Диагностика прогресі",
     introTitle: "Алдымен деңгейіңізді анықтайық",
@@ -105,18 +100,16 @@ const copy = {
   },
   RU: {
     back: "Вернуться назад",
-    tracksLabel: "НИШ • БИЛ • РФМШ",
+    tracksLabel: "НИШ • БИЛ",
     selectTrack: "Выберите тип диагностики",
     trackHint: "Каждый тест проверяет навыки, нужные именно для этого экзамена.",
     trackNames: {
       NIS: "НИШ",
       BIL: "БИЛ",
-      RFMS: "РФМШ",
     },
     trackDescriptions: {
       NIS: "Математика, логика и чтение для подготовки к НИШ.",
       BIL: "Читательская грамотность, английский и логика для БИЛ.",
-      RFMS: "Более сильная математика и логика для РФМШ.",
     },
     progress: "Прогресс диагностики",
     introTitle: "Определите свой уровень",
@@ -141,7 +134,7 @@ const copy = {
   },
 };
 
-const diagnosticTracks: DiagnosticTrack[] = ["NIS", "BIL", "RFMS"];
+const diagnosticTracks: DiagnosticTrack[] = ["NIS", "BIL"];
 const diagnosticQuestionImages: Record<string, string> = {
   "nis-full-math-03": "/diagnostic-images/nis-coordinate-points.svg",
   "nis-full-math-06": "/diagnostic-images/nis-ring.svg",
@@ -486,7 +479,7 @@ function Diagnostic() {
               payload={{
                 taskTitle: c.resultTitle,
                 taskType: "diagnostic",
-                subject: "NIS/BIL/NSPM",
+                subject: "NIS/BIL",
                 exam: selectedTrack,
                 score: result.score,
                 totalQuestions,

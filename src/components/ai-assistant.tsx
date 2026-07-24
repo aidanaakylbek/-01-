@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import { AibiMark } from "@/components/aibi-mark";
 import { ReadableMathText } from "@/components/readable-math-text";
 import { useLanguage } from "@/hooks/use-language";
@@ -405,21 +405,21 @@ function getChatCopy(language: "EN" | "KZ" | "RU") {
   const copy = {
     KZ: {
       initial:
-        "Сәлем! Мен AI-Sana AI көмекшісімін. Математика, логика, оқу сауаттылығы, тілдер, оқу жоспары немесе НЗМ/БИЛ/РФММ дайындығы туралы сұрай аласың.",
+        "Сәлем! Мен AI-Sana AI көмекшісімін. Математика, логика, оқу сауаттылығы, тілдер, оқу жоспары немесе НЗМ/БИЛ дайындығы туралы сұрай аласың.",
       subtitle: "Емтихан мен оқу жоспарына мәтіндік көмек",
       thinking: "Ойланып жатыр...",
       placeholder: "Пайыз, логика, ағылшын немесе оқу жоспары туралы сұра...",
     },
     RU: {
       initial:
-        "Привет! Я AI-Sana, твой AI-помощник. Спрашивай про математику, логику, чтение, языки, учебный план или подготовку к НИШ/БИЛ/РФМШ.",
+        "Привет! Я AI-Sana, твой AI-помощник. Спрашивай про математику, логику, чтение, языки, учебный план или подготовку к НИШ/БИЛ.",
       subtitle: "Текстовая помощь для экзаменов и учебных планов",
       thinking: "Думаю...",
       placeholder: "Спроси про проценты, логику, английский или учебный план...",
     },
     EN: {
       initial:
-        "Hello! I'm your AI-Sana AI Tutor. Ask me about math, logic, reading, languages, study plans, or NIS/BIL/NSPM exam preparation.",
+        "Hello! I'm your AI-Sana AI Tutor. Ask me about math, logic, reading, languages, study plans, or NIS/BIL exam preparation.",
       subtitle: "Text help for exams and study plans",
       thinking: "Thinking...",
       placeholder: "Ask about percentages, logic, English, or study plans...",

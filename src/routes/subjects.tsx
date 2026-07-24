@@ -31,7 +31,6 @@ function SubjectsPage() {
           tracks: [
             ["NIS", "НИШ", "Логика, математика и грамотность"],
             ["BIL", "БИЛ", "Чтение, языки и аналитика"],
-            ["NSPM", "РФМШ", "Математика и сложные задачи"],
           ],
         }
       : language === "EN"
@@ -46,7 +45,6 @@ function SubjectsPage() {
             tracks: [
               ["NIS", "NIS", "Logic, math and literacy"],
               ["BIL", "BIL", "Reading, languages and analysis"],
-              ["NSPM", "NSPM", "Math and advanced problems"],
             ],
           }
         : {
@@ -60,7 +58,6 @@ function SubjectsPage() {
             tracks: [
               ["NIS", "НЗМ", "Логика, математика және сауаттылық"],
               ["BIL", "БИЛ", "Оқу, тілдер және талдау"],
-              ["NSPM", "РФММ", "Математика және күрделі есептер"],
             ],
           };
 

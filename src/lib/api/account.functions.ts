@@ -78,7 +78,7 @@ export const logoutAccount = createServerFn({ method: "POST" }).handler(async ()
 export const saveExamAttempt = createServerFn({ method: "POST" })
   .inputValidator(
     z.object({
-      examTrack: z.enum(["NIS", "BIL", "NSPM", "MIXED"]),
+      examTrack: z.enum(["NIS", "BIL", "MIXED"]),
       totalQuestions: z.number().int().positive(),
       correctAnswers: z.number().int().nonnegative(),
       percent: z.number().min(0).max(100),

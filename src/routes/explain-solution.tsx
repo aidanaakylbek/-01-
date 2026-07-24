@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+﻿import { createFileRoute } from "@tanstack/react-router";
 import { FormEvent, useEffect, useRef, useState } from "react";
 
 import aiSanaHero from "@/assets/ai-sana-hero.jpg";
@@ -44,7 +44,7 @@ function AITutorPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [tutorContext, setTutorContext] = useState<TutorContext>({
-    examType: "NIS / BIL / RFMS",
+    examType: "NIS / BIL",
     mode: "lesson",
     previousMistakes: [],
     topic: "",
@@ -52,37 +52,38 @@ function AITutorPage() {
   });
   const chatEndRef = useRef<HTMLDivElement | null>(null);
 
-  const copy = language === "RU"
-    ? {
-        title: "AI-Sana Tutor",
-        subtitle: "Напиши вопрос по уроку, тесту или ошибке.",
-        bubble: "Задай вопрос, я объясню по шагам.",
-        input: "Напиши вопрос по уроку...",
-        send: "Отправить",
-        thinking: "AI-Sana думает...",
-        empty: "Сначала напиши вопрос.",
-        currentTopic: "Текущая тема",
-        topicValue: "Проценты и логика",
-        weak: "Слабые темы",
-        practice: "Сегодня повтори 5 вопросов по процентам.",
-        goal: "Сегодняшняя цель: 3 урока",
-        clear: "Очистить чат",
-      }
-    : {
-        title: "AI-Sana Tutor",
-        subtitle: "Сабақ, тест немесе қате сұрағыңды жаз.",
-        bubble: "Сұрағыңды жаз, мен сабақ бойынша түсіндіремін.",
-        input: "Сабақ бойынша сұрағыңды жаз...",
-        send: "Жіберу",
-        thinking: "AI-Sana ойланып жатыр...",
-        empty: "Алдымен сұрағыңды жаз.",
-        currentTopic: "Қазіргі тақырып",
-        topicValue: "Пайыздар және логика",
-        weak: "Әлсіз тақырыптар",
-        practice: "Бүгін пайыздардан 5 сұрақ қайтала.",
-        goal: "Бүгінгі мақсат: 3 сабақ",
-        clear: "Чатты тазалау",
-      };
+  const copy =
+    language === "RU"
+      ? {
+          title: "AI-Sana Tutor",
+          subtitle: "Напиши вопрос по уроку, тесту или ошибке.",
+          bubble: "Задай вопрос, я объясню по шагам.",
+          input: "Напиши вопрос по уроку...",
+          send: "Отправить",
+          thinking: "AI-Sana думает...",
+          empty: "Сначала напиши вопрос.",
+          currentTopic: "Текущая тема",
+          topicValue: "Проценты и логика",
+          weak: "Слабые темы",
+          practice: "Сегодня повтори 5 вопросов по процентам.",
+          goal: "Сегодняшняя цель: 3 урока",
+          clear: "Очистить чат",
+        }
+      : {
+          title: "AI-Sana Tutor",
+          subtitle: "Сабақ, тест немесе қате сұрағыңды жаз.",
+          bubble: "Сұрағыңды жаз, мен сабақ бойынша түсіндіремін.",
+          input: "Сабақ бойынша сұрағыңды жаз...",
+          send: "Жіберу",
+          thinking: "AI-Sana ойланып жатыр...",
+          empty: "Алдымен сұрағыңды жаз.",
+          currentTopic: "Қазіргі тақырып",
+          topicValue: "Пайыздар және логика",
+          weak: "Әлсіз тақырыптар",
+          practice: "Бүгін пайыздардан 5 сұрақ қайтала.",
+          goal: "Бүгінгі мақсат: 3 сабақ",
+          clear: "Чатты тазалау",
+        };
 
   useEffect(() => {
     let mounted = true;
@@ -108,13 +109,11 @@ function AITutorPage() {
     void getAccountDashboard().then((dashboard) => {
       if (!mounted) return;
 
-      const history = dashboard.aiTutorMessages
-        .slice(-20)
-        .map((message: AITutorMessage) => ({
-          id: message.id,
-          role: message.role,
-          content: message.message,
-        }));
+      const history = dashboard.aiTutorMessages.slice(-20).map((message: AITutorMessage) => ({
+        id: message.id,
+        role: message.role,
+        content: message.message,
+      }));
 
       if (history.length > 0) {
         setMessages(history);
@@ -181,7 +180,10 @@ function AITutorPage() {
         },
       ]);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Қазір AI-Sana жауап бере алмады. Біраздан кейін қайта көріңіз.";
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Қазір AI-Sana жауап бере алмады. Біраздан кейін қайта көріңіз.";
       setError(message);
       setMessages((current) => [
         ...current,
@@ -202,19 +204,14 @@ function AITutorPage() {
   };
 
   return (
-      <GameLayout
-        right={
-          <TutorSidebar
-            copy={copy}
-            topic={tutorContext.topic}
-          />
-        }
-      >
+    <GameLayout right={<TutorSidebar copy={copy} topic={tutorContext.topic} />}>
       <div className="space-y-5">
         <section className="overflow-hidden rounded-[34px] border-2 border-[#DDD6FE] bg-gradient-to-br from-[#1E1B4B] via-[#6D28D9] to-[#8B5CF6] p-5 text-white shadow-[0_12px_0_rgba(30,27,75,0.22)] md:p-7">
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_260px] lg:items-center">
             <div>
-              <p className="text-sm font-black uppercase tracking-[0.28em] text-[#FACC15]">AI-Sana Tutor</p>
+              <p className="text-sm font-black uppercase tracking-[0.28em] text-[#FACC15]">
+                AI-Sana Tutor
+              </p>
               <h1 className="mt-3 text-4xl font-black leading-tight md:text-6xl">{copy.title}</h1>
               <p className="mt-3 max-w-2xl text-lg font-bold text-[#EDE9FE]">{copy.subtitle}</p>
               <div className="mt-5 inline-flex max-w-xl items-start gap-3 rounded-[24px] border-2 border-white/25 bg-white/15 px-4 py-3 font-bold text-white shadow-[0_6px_0_rgba(30,27,75,0.22)] backdrop-blur">
@@ -225,7 +222,11 @@ function AITutorPage() {
             <div className="relative mx-auto w-full max-w-[240px]">
               <div className="absolute inset-0 rounded-full bg-[#C084FC]/40 blur-2xl" />
               <div className="relative rounded-[34px] border-4 border-white/40 bg-white p-3 shadow-[0_10px_0_rgba(30,27,75,0.25)]">
-                <img className="h-56 w-full rounded-[26px] object-cover object-top" src={aiSanaHero} alt="AI-Sana tutor" />
+                <img
+                  className="h-56 w-full rounded-[26px] object-cover object-top"
+                  src={aiSanaHero}
+                  alt="AI-Sana tutor"
+                />
                 <div className="absolute -left-5 top-6 rounded-2xl bg-[#FACC15] px-3 py-2 text-sm font-black text-[#1E1B4B] shadow-[0_5px_0_#CA8A04]">
                   AI-Sana
                 </div>
@@ -242,7 +243,9 @@ function AITutorPage() {
                 <div>
                   <h2 className="text-xl font-black text-[#1E1B4B]">AI-Sana</h2>
                   <p className="text-sm font-bold text-[#6B5E8F]">
-                    {language === "RU" ? "Объясняет просто, по шагам и с примерами." : "Қарапайым тілмен, қадамдап және мысалмен түсіндіреді."}
+                    {language === "RU"
+                      ? "Объясняет просто, по шагам и с примерами."
+                      : "Қарапайым тілмен, қадамдап және мысалмен түсіндіреді."}
                   </p>
                 </div>
               </div>
@@ -287,7 +290,6 @@ function AITutorPage() {
               {error ? <p className="mt-3 text-sm font-bold text-[#EF4444]">{error}</p> : null}
             </div>
           </GameCard>
-
         </div>
       </div>
     </GameLayout>
@@ -312,21 +314,21 @@ function ChatBubble({ message }: { message: ChatMessage }) {
   );
 }
 
-function TutorSidebar({
-  copy,
-  topic,
-}: {
-  copy: Record<string, string>;
-  topic: string;
-}) {
+function TutorSidebar({ copy, topic }: { copy: Record<string, string>; topic: string }) {
   return (
     <div className="space-y-5">
       <GameCard className="bg-white/95">
-        <p className="text-sm font-black uppercase tracking-[0.22em] text-[#8B5CF6]">{copy.currentTopic}</p>
-        <h2 className="mt-2 text-2xl font-black text-[#1E1B4B]">{topic || "Сұрақ немесе тақырып таңда"}</h2>
+        <p className="text-sm font-black uppercase tracking-[0.22em] text-[#8B5CF6]">
+          {copy.currentTopic}
+        </p>
+        <h2 className="mt-2 text-2xl font-black text-[#1E1B4B]">
+          {topic || "Сұрақ немесе тақырып таңда"}
+        </h2>
         <div className="mt-4 rounded-3xl bg-[#F5F3FF] p-4">
           <p className="font-black text-[#6D28D9]">AI-Sana</p>
-          <p className="mt-1 font-semibold text-[#6B5E8F]">Қатеңді қадамдап түсіндіреді, формуланы көрсетеді және ұқсас сұрақ береді.</p>
+          <p className="mt-1 font-semibold text-[#6B5E8F]">
+            Қатеңді қадамдап түсіндіреді, формуланы көрсетеді және ұқсас сұрақ береді.
+          </p>
         </div>
       </GameCard>
 
@@ -338,11 +340,12 @@ function TutorSidebar({
       </GameCard>
 
       <GameCard className="bg-gradient-to-br from-[#1E1B4B] to-[#6D28D9] text-white">
-        <p className="text-sm font-black uppercase tracking-[0.22em] text-[#FACC15]">Suggested practice</p>
+        <p className="text-sm font-black uppercase tracking-[0.22em] text-[#FACC15]">
+          Suggested practice
+        </p>
         <h2 className="mt-2 text-2xl font-black">{copy.practice}</h2>
         <p className="mt-3 font-bold text-[#EDE9FE]">{copy.goal}</p>
       </GameCard>
-
     </div>
   );
 }

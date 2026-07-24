@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+﻿import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { GameCard, GameLayout, ProgressBar, RightWidgets } from "@/components/gamified-platform";
 import aiSanaPoster from "@/assets/ai-sana-hero.jpg";
@@ -17,7 +17,7 @@ export const Route = createFileRoute("/")({
       { title: "AI-Sana — Gamified Exam Preparation" },
       {
         name: "description",
-        content: "AI-Sana is a purple AI-powered learning game for NIS, BIL and RFMS exams.",
+        content: "AI-Sana is a purple AI-powered learning game for NIS and BIL exams.",
       },
     ],
   }),
@@ -59,7 +59,7 @@ export function Dashboard() {
   const c =
     language === "RU"
       ? {
-          titleLines: ["Платформа подготовки", "к НИШ, БИЛ и РФМШ"],
+          titleLines: ["Платформа подготовки", "к НИШ и БИЛ"],
           subtitle: "AI Tutor, личный план и ежедневные задания помогают двигаться к цели.",
           coach: "Сегодня пройди 3 урока. Еще 2 вопроса осталось!",
           start: "Начать текущий урок",
@@ -79,7 +79,7 @@ export function Dashboard() {
         }
       : language === "EN"
         ? {
-            titleLines: ["NIS, BIL and RFMS", "preparation platform"],
+            titleLines: ["NIS and BIL", "preparation platform"],
             subtitle: "AI Tutor, a personal plan and daily tasks help you move toward your goal.",
             coach: "Complete 3 lessons today. Only 2 questions left!",
             start: "Start current lesson",
@@ -98,7 +98,7 @@ export function Dashboard() {
             lessonsLabel: "lesson",
           }
         : {
-            titleLines: ["НЗМ, БИЛ және РФММ-ға", "дайындық платформасы"],
+            titleLines: ["НЗМ және БИЛ-ге", "дайындық платформасы"],
             subtitle:
               "AI Tutor, жеке оқу жоспары және күнделікті тапсырмалар арқылы мақсатыңа жақында.",
             coach: "Бүгін 3 сабақ өт! Тағы 2 сұрақ қалды!",

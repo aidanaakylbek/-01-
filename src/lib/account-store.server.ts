@@ -112,7 +112,7 @@ export type ExamAttemptQuestion = {
 export type ExamAttempt = {
   id: string;
   createdAt: string;
-  examTrack: "NIS" | "BIL" | "NSPM" | "MIXED";
+  examTrack: "NIS" | "BIL" | "MIXED";
   totalQuestions: number;
   correctAnswers: number;
   percent: number;
@@ -465,7 +465,7 @@ export async function getDashboardAccount(): Promise<DashboardAccount> {
     nextExam: {
       day: "Суббота",
       time: "10:00",
-      description: "Полноформатный тренировочный тест по НИШ/БИЛ/РФМШ.",
+      description: "Полноформатный тренировочный тест по НИШ/БИЛ.",
     },
     focus: {
       title: weakTopics[0] ?? "Диагностика",
@@ -492,7 +492,7 @@ export async function getDashboardAccount(): Promise<DashboardAccount> {
       {
         id: "functions",
         icon: "functions",
-        title: "РФМШ: Функции и графики",
+        title: "НЗМ: Функции и графики",
         subtitle: "Практика задач повышенной сложности",
         status: "todo",
       },

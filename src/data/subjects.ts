@@ -31,7 +31,7 @@ export type SubjectModule = {
 export type Subject = {
   id: string;
   icon: string;
-  exam: "NIS" | "BIL" | "NSPM" | "ALL";
+  exam: "NIS" | "BIL" | "ALL";
   title: Record<Lang, string>;
   description: Record<Lang, string>;
   modules: SubjectModule[];
@@ -363,7 +363,7 @@ export const subjects: Subject[] = [
   {
     id: "logic",
     icon: "extension",
-    exam: "NSPM",
+    exam: "ALL",
     title: { EN: "Logic", KZ: "Логика", RU: "Логика" },
     description: {
       EN: "Patterns, sequences, classification, and reasoning.",

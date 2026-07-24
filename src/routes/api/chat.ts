@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+﻿import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { buildMentorSystemPrompt } from "@/lib/ai-mentor";
 import { getAccessError } from "@/lib/account-store.server";
@@ -114,7 +114,12 @@ export const Route = createFileRoute("/api/chat")({
                 });
               }
 
-              if (statusCode !== 400 && statusCode !== 403 && statusCode !== 404 && statusCode !== 503) {
+              if (
+                statusCode !== 400 &&
+                statusCode !== 403 &&
+                statusCode !== 404 &&
+                statusCode !== 503
+              ) {
                 throw error;
               }
             }
@@ -156,7 +161,9 @@ type ReplyFixOptions = {
   reply: string;
 };
 
-function buildConversation(messages: Array<{ role: "user" | "assistant"; content: string; images?: string[] }>) {
+function buildConversation(
+  messages: Array<{ role: "user" | "assistant"; content: string; images?: string[] }>,
+) {
   return messages
     .map((message) => {
       const imageNote = message.images?.length
@@ -203,10 +210,7 @@ async function generateTutorReply(
   return reply;
 }
 
-async function fixReplyIfNeeded(
-  model: string,
-  options: ReplyFixOptions,
-) {
+async function fixReplyIfNeeded(model: string, options: ReplyFixOptions) {
   const trimmedReply = options.reply.trim();
 
   if (!trimmedReply) {
@@ -365,7 +369,7 @@ function getOpenAiModels(
 }
 
 function isHardStudyRequest(text: string) {
-  return /разбор|талдау|түсіндіріп бер|тусиндирип бер|толық|толык|тест|есеп|задача|реши|шығар|шыгар|дәлел|доказ|логика|олимпиада|nis|ниш|bil|бил|nspm|рфмш|rfmsh/i.test(
+  return /разбор|талдау|түсіндіріп бер|тусиндирип бер|толық|толык|тест|есеп|задача|реши|шығар|шыгар|дәлел|доказ|логика|олимпиада|nis|ниш|bil|бил/i.test(
     text,
   );
 }
@@ -376,7 +380,10 @@ function isEasyRequest(text: string) {
   );
 }
 
-function detectTextLanguage(text: string, defaultLanguage?: "EN" | "KZ" | "RU"): "EN" | "KZ" | "RU" {
+function detectTextLanguage(
+  text: string,
+  defaultLanguage?: "EN" | "KZ" | "RU",
+): "EN" | "KZ" | "RU" {
   const normalizedText = text.toLowerCase();
 
   if (/[әғқңөұүһі]/i.test(text)) {
@@ -416,7 +423,10 @@ function isUnhelpfulClarification(reply: string) {
   );
 }
 
-function getServiceMessage(language: "EN" | "KZ" | "RU", reason: "missing_key" | "quota" | "temporary") {
+function getServiceMessage(
+  language: "EN" | "KZ" | "RU",
+  reason: "missing_key" | "quota" | "temporary",
+) {
   if (reason === "missing_key") {
     if (language === "KZ") {
       return "AI-Sana қосылмаған: Vercel-де OPENAI_API_KEY жоқ. Environment Variables ішіне OpenAI key қосып, қайта deploy жасау керек.";

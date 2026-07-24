@@ -22,7 +22,7 @@ function Login() {
     language === "RU"
       ? {
           title: "Войти",
-          subtitle: "Продолжите подготовку к НИШ, БИЛ и РФМШ.",
+          subtitle: "Продолжите подготовку к НИШ и БИЛ.",
           email: "Электронная почта",
           password: "Пароль",
           remember: "Запомнить меня",
@@ -34,7 +34,7 @@ function Login() {
       : language === "KZ"
         ? {
             title: "Кіру",
-            subtitle: "НЗМ, БИЛ және РФММ дайындық жолын жалғастырыңыз.",
+            subtitle: "НЗМ және БИЛ дайындық жолын жалғастырыңыз.",
             email: "Электрондық пошта",
             password: "Құпия сөз",
             remember: "Мені есте сақтау",
@@ -45,7 +45,7 @@ function Login() {
           }
         : {
             title: "Sign In",
-            subtitle: "Continue your NIS, BIL, and NSPM preparation.",
+            subtitle: "Continue your NIS and BIL preparation.",
             email: "Email",
             password: "Password",
             remember: "Remember me",
@@ -145,4 +145,3 @@ function Login() {
     </GameLayout>
   );
 }
-

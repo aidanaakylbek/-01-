@@ -16,7 +16,6 @@ const translations: Record<Lang, Record<string, string>> = {
     nav_subjects: "Subjects",
     nav_nis: "NIS",
     nav_bil: "BIL",
-    nav_nspm: "NSPM",
     nav_practice: "Practice",
     nav_exam: "Exam",
     nav_challenge: "Hard Topic",
@@ -33,7 +32,7 @@ const translations: Record<Lang, Record<string, string>> = {
     hero_title_1: "Build Your Path to ",
     hero_title_2: " Success",
     hero_desc:
-      "Personalized AI preparation for every student preparing for NIS, BIL, and NSPM. Turn your potential into achievement with diagnostics, study plans, and step-by-step AI support.",
+      "Personalized AI preparation for every student preparing for NIS and BIL. Turn your potential into achievement with diagnostics, study plans, and step-by-step AI support.",
     hero_btn_diagnostic: "Start Your Free Diagnostic",
     hero_btn_video: "Watch How It Works",
     stats_transform_val: "32%",
@@ -61,7 +60,7 @@ const translations: Record<Lang, Record<string, string>> = {
     vision_title_1: "Prepare for the Schools of Tomorrow, ",
     vision_title_2: "Today",
     vision_desc:
-      "Join the next generation of leaders and innovators at NIS, BIL, and NSPM. AI-Sana connects each student's current level with the skills needed for selective school exams.",
+      "Join the next generation of leaders and innovators at NIS and BIL. AI-Sana connects each student's current level with the skills needed for selective school exams.",
     vision_btn_stories: "View Success Stories",
     cta_title: "Ready to Start Your Journey?",
     cta_desc:
@@ -76,7 +75,7 @@ const translations: Record<Lang, Record<string, string>> = {
     // Home Dashboard
     home_title: "Home — AI-Sana",
     home_meta_desc: "Your AI-Sana readiness, today's plan, and weak topic focus.",
-    home_readiness_title: "NIS/BIL/NSPM Readiness",
+    home_readiness_title: "NIS/BIL Readiness",
     home_readiness_desc: "You are on track. Keep it up!",
     home_readiness_val: "Ready",
     home_readiness_btn: "Practice Natural Science & Math",
@@ -86,7 +85,7 @@ const translations: Record<Lang, Record<string, string>> = {
     home_task1_sub: "Math & Logic Analysis",
     home_task2_title: "BIL: Reading Literacy",
     home_task2_sub: "Kazakh & Russian Comprehension",
-    home_task3_title: "NSPM: Math & Logic",
+    home_task3_title: "BIL: Math & Logic",
     home_task3_sub: "Specialized Practice",
     home_exam_title: "Next Mock Exam",
     home_exam_time: "Saturday, 10 AM",
@@ -107,9 +106,9 @@ const translations: Record<Lang, Record<string, string>> = {
     plan_mon_track: "Monday • NIS",
     plan_mon_title: "Natural Science",
     plan_mon_desc: "Review biology and physics fundamentals for the NIS entrance exam.",
-    plan_tue_track: "Tuesday • NSPM",
+    plan_tue_track: "Tuesday • BIL",
     plan_tue_title: "Math & Logic",
-    plan_tue_desc: "Advanced problem solving and logical sequences for NSPM specialization.",
+    plan_tue_desc: "Advanced problem solving and logical sequences for BIL specialization.",
     plan_wed_track: "Wednesday • BIL",
     plan_wed_title: "Reading Literacy",
     plan_wed_desc: "Critical analysis of texts and comprehension strategies for BIL exams.",
@@ -128,18 +127,16 @@ const translations: Record<Lang, Record<string, string>> = {
 
     // Progress Page
     prog_title: "My Progress — AI-Sana",
-    prog_meta_desc:
-      "Weekly accuracy, time spent, and subject status across NIS, BIL & NSPM tracks.",
+    prog_meta_desc: "Weekly accuracy, time spent, and subject status across NIS & BIL tracks.",
     prog_header: "My Progress",
     prog_subheader: "You're doing great! Keep up the good work.",
     prog_insight_title: "Insight",
     prog_insight_desc:
-      "Your English and Natural Science scores are excellent. Focusing on Logic and Quantitative Characteristics will help you excel in the NSPM and NIS tracks.",
+      "Your English and Natural Science scores are excellent. Focusing on Logic and Quantitative Characteristics will help you excel in the BIL and NIS tracks.",
     prog_lessons_title: "Weekly Lessons",
     prog_lessons_completed: "Completed",
     prog_lessons_btn: "Start Next Lesson",
     prog_nis_track: "NIS Track",
-    prog_nspm_track: "NSPM Track",
     prog_bil_track: "BIL Track",
     prog_improving: "Improving",
     prog_strong: "Strong",
@@ -160,15 +157,13 @@ const translations: Record<Lang, Record<string, string>> = {
 
     // Diagnostic Page
     diag_title: "Find Your Level — AI-Sana",
-    diag_meta_desc:
-      "Take the AI-Sana diagnostic to find your level across NIS, BIL, and NSPM subjects.",
+    diag_meta_desc: "Take the AI-Sana diagnostic to find your level across NIS and BIL subjects.",
     diag_back: "Go back",
     diag_header: "Find Your Level",
     diag_progress_lbl: "Diagnostic Progress",
     diag_insight_desc:
       "AI will analyze your answers to find your strong and weak topics. Don't worry if it gets hard!",
     diag_nis_subtitle: "Nazarbayev Intellectual Schools",
-    diag_nspm_subtitle: "Physics & Math Schools",
     diag_bil_subtitle: "Bilim-Innovation Lyceums",
     diag_sub_nat_sci: "Natural Science",
     diag_sub_languages: "Languages (EN, KZ, RU)",
@@ -186,7 +181,6 @@ const translations: Record<Lang, Record<string, string>> = {
     nav_subjects: "Пәндер",
     nav_nis: "НЗМ",
     nav_bil: "БИЛ",
-    nav_nspm: "РФММ",
     nav_practice: "Тәжірибе",
     nav_exam: "Емтихан",
     nav_challenge: "Қиын тақырып",
@@ -203,7 +197,7 @@ const translations: Record<Lang, Record<string, string>> = {
     hero_title_1: "Зияткерлік мектептер мен БИЛ-ге ",
     hero_title_2: " барар жолыңыз",
     hero_desc:
-      "НЗМ, БИЛ және РФММ-ға дайындалатын әр оқушыға арналған дербес AI дайындық. Диагностика, оқу жоспары және қадамдық AI көмек арқылы әлеуетіңізді нәтижеге айналдырыңыз.",
+      "НЗМ және БИЛ-ге дайындалатын әр оқушыға арналған дербес AI дайындық. Диагностика, оқу жоспары және қадамдық AI көмек арқылы әлеуетіңізді нәтижеге айналдырыңыз.",
     hero_btn_diagnostic: "Тегін диагностиканы бастау",
     hero_btn_video: "Қалай жұмыс істейтінін көру",
     stats_transform_val: "32%",
@@ -231,7 +225,7 @@ const translations: Record<Lang, Record<string, string>> = {
     vision_title_1: "Ертеңгі күннің мектептеріне ",
     vision_title_2: "бүгіннен дайындалыңыз",
     vision_desc:
-      "Зияткерлік мектептер, БИЛ және РФММ-дағы келесі буын көшбасшылары мен инноваторларына қосылыңыз. AI-Sana әр оқушының қазіргі деңгейін таңдаулы мектеп емтихандарына қажет дағдылармен байланыстырады.",
+      "Зияткерлік мектептер мен БИЛ-дегі келесі буын көшбасшыларына қосылыңыз. AI-Sana әр оқушының қазіргі деңгейін таңдаулы мектеп емтихандарына қажет дағдылармен байланыстырады.",
     vision_btn_stories: "Жетістік тарихын көру",
     cta_title: "Саяхатыңызды бастауға дайынсыз ба?",
     cta_desc:
@@ -247,7 +241,7 @@ const translations: Record<Lang, Record<string, string>> = {
     // Home Dashboard
     home_title: "Басты бет — AI-Sana",
     home_meta_desc: "Сіздің дайындығыңыз, бүгінгі жоспарыңыз және әлсіз тақырыптарға назар аудару.",
-    home_readiness_title: "НЗМ/БИЛ/РФММ-ға дайындық",
+    home_readiness_title: "НЗМ/БИЛ-ға дайындық",
     home_readiness_desc: "Сіз дұрыс жолдасыз. Осылай жалғастырыңыз!",
     home_readiness_val: "Дайын",
     home_readiness_btn: "Жаратылыстану және математиканы тәжірибелеу",
@@ -257,7 +251,7 @@ const translations: Record<Lang, Record<string, string>> = {
     home_task1_sub: "Математика және логикалық талдау",
     home_task2_title: "БИЛ: Оқу сауаттылығы",
     home_task2_sub: "Қазақ және орыс тілдерін түсіну",
-    home_task3_title: "РФММ: Математика және логика",
+    home_task3_title: "НЗМ: Математика және логика",
     home_task3_sub: "Мамандандырылған тәжірибе",
     home_exam_title: "Келесі байқау емтиханы",
     home_exam_time: "Сенбі, сағат 10:00",
@@ -279,9 +273,9 @@ const translations: Record<Lang, Record<string, string>> = {
     plan_mon_title: "Жаратылыстану",
     plan_mon_desc:
       "Зияткерлік мектептерге түсу емтиханы үшін биология мен физика негіздерін қайталау.",
-    plan_tue_track: "Сейсенбі • РФММ",
+    plan_tue_track: "Сейсенбі • НЗМ",
     plan_tue_title: "Математика және логика",
-    plan_tue_desc: "РФММ бағыты үшін күрделі есептер мен логикалық тізбектерді шешу.",
+    plan_tue_desc: "НЗМ бағыты үшін күрделі есептер мен логикалық тізбектерді шешу.",
     plan_wed_track: "Сәрсенбі • БИЛ",
     plan_wed_title: "Оқу сауаттылығы",
     plan_wed_desc: "БИЛ емтихандары үшін мәтіндерді сыни талдау және түсіну стратегиялары.",
@@ -302,17 +296,16 @@ const translations: Record<Lang, Record<string, string>> = {
     // Progress Page
     prog_title: "Менің прогресім — AI-Sana",
     prog_meta_desc:
-      "Апталық дәлдік, оқуға жұмсалған уақыт және НЗМ, БИЛ мен РФММ бағыттарындағы пән мәртебелері.",
+      "Апталық дәлдік, оқуға жұмсалған уақыт және НЗМ мен БИЛ бағыттарындағы пән мәртебелері.",
     prog_header: "Менің прогресім",
     prog_subheader: "Сіз керемет орындап жатырсыз! Осылай жалғастыра беріңіз.",
     prog_insight_title: "Кеңес",
     prog_insight_desc:
-      "Ағылшын тілі мен жаратылыстану ұпайларыңыз өте жақсы. Логика мен сандық сипаттамаларға назар аудару РФММ және Зияткерлік мектептер бағыттарында жоғары нәтижелерге жетуге көмектеседі.",
+      "Ағылшын тілі мен жаратылыстану ұпайларыңыз өте жақсы. Логика мен сандық сипаттамаларға назар аудару Зияткерлік мектептер мен БИЛ бағыттарында жоғары нәтижелерге жетуге көмектеседі.",
     prog_lessons_title: "Апталық сабақтар",
     prog_lessons_completed: "Аяқталды",
     prog_lessons_btn: "Келесі сабақты бастау",
     prog_nis_track: "НЗМ бағыты",
-    prog_nspm_track: "РФММ бағыты",
     prog_bil_track: "БИЛ бағыты",
     prog_improving: "Жақсаруда",
     prog_strong: "Күшті жағы",
@@ -334,14 +327,13 @@ const translations: Record<Lang, Record<string, string>> = {
     // Diagnostic Page
     diag_title: "Өз деңгейіңізді анықтаңыз — AI-Sana",
     diag_meta_desc:
-      "НЗМ, БИЛ және РФММ пәндері бойынша деңгейіңізді анықтау үшін AI-Sana диагностикасынан өтіңіз.",
+      "НЗМ және БИЛ пәндері бойынша деңгейіңізді анықтау үшін AI-Sana диагностикасынан өтіңіз.",
     diag_back: "Артқа оралу",
     diag_header: "Өз деңгейіңізді анықтаңыз",
     diag_progress_lbl: "Диагностика прогресі",
     diag_insight_desc:
       "AI сіздің күшті және әлсіз тақырыптарыңызды табу үшін жауаптарыңызды талдайды. Қиын болса, уайымдамаңыз!",
     diag_nis_subtitle: "Назарбаев Зияткерлік мектептері",
-    diag_nspm_subtitle: "Физика-математика бағытындағы мектептер",
     diag_bil_subtitle: "Білім-Инновация Лицейлері",
     diag_sub_nat_sci: "Жаратылыстану",
     diag_sub_languages: "Тілдер (EN, KZ, RU)",
@@ -359,7 +351,6 @@ const translations: Record<Lang, Record<string, string>> = {
     nav_subjects: "Предметы",
     nav_nis: "НИШ",
     nav_bil: "БИЛ",
-    nav_nspm: "РФМШ",
     nav_practice: "Практика",
     nav_exam: "Экзамен",
     nav_challenge: "Сложная тема",
@@ -376,7 +367,7 @@ const translations: Record<Lang, Record<string, string>> = {
     hero_title_1: "Постройте свой мост к успеху в ",
     hero_title_2: " НИШ и БИЛ",
     hero_desc:
-      "Персонализированная AI-подготовка для каждого ученика, который готовится к НИШ, БИЛ и РФМШ. Превратите свой потенциал в результат с диагностикой, учебным планом и пошаговой AI-помощью.",
+      "Персонализированная AI-подготовка для каждого ученика, который готовится к НИШ и БИЛ. Превратите свой потенциал в результат с диагностикой, учебным планом и пошаговой AI-помощью.",
     hero_btn_diagnostic: "Начать бесплатную диагностику",
     hero_btn_video: "Посмотреть, как это работает",
     stats_transform_val: "32%",
@@ -404,7 +395,7 @@ const translations: Record<Lang, Record<string, string>> = {
     vision_title_1: "Готовьтесь к школам будущего уже ",
     vision_title_2: "сегодня",
     vision_desc:
-      "Присоединяйтесь к следующему поколению лидеров и новаторов в НИШ, БИЛ и РФМШ. AI-Sana соединяет текущий уровень ученика с навыками, нужными для поступления.",
+      "Присоединяйтесь к следующему поколению лидеров и новаторов в НИШ и БИЛ. AI-Sana соединяет текущий уровень ученика с навыками, нужными для поступления.",
     vision_btn_stories: "Посмотреть истории успеха",
     cta_title: "Готовы начать свой путь?",
     cta_desc:
@@ -420,7 +411,7 @@ const translations: Record<Lang, Record<string, string>> = {
     // Home Dashboard
     home_title: "Главная — AI-Sana",
     home_meta_desc: "Ваша готовность, сегодняшний план и фокус на слабых темах.",
-    home_readiness_title: "Готовность к НИШ/БИЛ/РФМШ",
+    home_readiness_title: "Готовность к НИШ/БИЛ",
     home_readiness_desc: "Вы на правильном пути. Так держать!",
     home_readiness_val: "Готово",
     home_readiness_btn: "Практика Естествознания и Математики",
@@ -430,7 +421,7 @@ const translations: Record<Lang, Record<string, string>> = {
     home_task1_sub: "Математический и логический анализ",
     home_task2_title: "БИЛ: Читательская грамотность",
     home_task2_sub: "Понимание казахского и русского языков",
-    home_task3_title: "РФМШ: Математика и логика",
+    home_task3_title: "НИШ: Математика и логика",
     home_task3_sub: "Специализированная практика",
     home_exam_title: "Следующий пробный экзамен",
     home_exam_time: "Суббота, 10:00",
@@ -451,9 +442,9 @@ const translations: Record<Lang, Record<string, string>> = {
     plan_mon_track: "Понедельник • НИШ",
     plan_mon_title: "Естествознание",
     plan_mon_desc: "Повторение основ биологии и физики для вступительного экзамена в НИШ.",
-    plan_tue_track: "Вторник • РФМШ",
+    plan_tue_track: "Вторник • НИШ",
     plan_tue_title: "Математика и логика",
-    plan_tue_desc: "Решение сложных задач и логических последовательностей для специализации РФМШ.",
+    plan_tue_desc: "Решение сложных задач и логических последовательностей для специализации НИШ.",
     plan_wed_track: "Среда • БИЛ",
     plan_wed_title: "Читательская грамотность",
     plan_wed_desc: "Критический анализ текстов и стратегии понимания для экзаменов БИЛ.",
@@ -473,17 +464,16 @@ const translations: Record<Lang, Record<string, string>> = {
     // Progress Page
     prog_title: "Мой прогресс — AI-Sana",
     prog_meta_desc:
-      "Еженедельная точность, затраченное время и статус предметов по направлениям НИШ, БИЛ и РФМШ.",
+      "Еженедельная точность, затраченное время и статус предметов по направлениям НИШ и БИЛ.",
     prog_header: "Мой прогресс",
     prog_subheader: "У вас отличные результаты! Продолжайте в том же духе.",
     prog_insight_title: "Рекомендация",
     prog_insight_desc:
-      "Ваши баллы по английскому и естествознанию отличные. Фокус на логике и количественных характеристиках поможет вам преуспеть в направлениях РФМШ и НИШ.",
+      "Ваши баллы по английскому и естествознанию отличные. Фокус на логике и количественных характеристиках поможет вам преуспеть в направлениях НИШ и БИЛ.",
     prog_lessons_title: "Еженедельные уроки",
     prog_lessons_completed: "Завершено",
     prog_lessons_btn: "Начать следующий урок",
     prog_nis_track: "Направление НИШ",
-    prog_nspm_track: "Направление РФМШ",
     prog_bil_track: "Направление БИЛ",
     prog_improving: "Улучшается",
     prog_strong: "Сильная сторона",
@@ -505,14 +495,13 @@ const translations: Record<Lang, Record<string, string>> = {
     // Diagnostic Page
     diag_title: "Определите свой уровень — AI-Sana",
     diag_meta_desc:
-      "Пройдите диагностику AI-Sana, чтобы определить свой уровень по предметам НИШ, БИЛ и РФМШ.",
+      "Пройдите диагностику AI-Sana, чтобы определить свой уровень по предметам НИШ и БИЛ.",
     diag_back: "Вернуться назад",
     diag_header: "Определите свой уровень",
     diag_progress_lbl: "Прогресс диагностики",
     diag_insight_desc:
       "Искусственный интеллект проанализирует ваши ответы, чтобы найти ваши сильные и слабые темы. Не волнуйтесь, если будет сложно!",
     diag_nis_subtitle: "Назарбаев Интеллектуальные Школы",
-    diag_nspm_subtitle: "Физико-математические школы",
     diag_bil_subtitle: "Билим-Инновация Лицеи",
     diag_sub_nat_sci: "Естествознание",
     diag_sub_languages: "Языки (EN, KZ, RU)",

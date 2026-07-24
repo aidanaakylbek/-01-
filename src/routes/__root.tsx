@@ -81,25 +81,25 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "AI-Sana — NIS, BIL & NSPM Exam Preparation" },
+      { title: "AI-Sana — NIS & BIL Exam Preparation" },
       {
         name: "description",
         content:
-          "Personalized AI preparation for students preparing for NIS, BIL, and NSPM entrance exams.",
+          "Personalized AI preparation for students preparing for NIS and BIL entrance exams.",
       },
-      { property: "og:title", content: "AI-Sana — NIS, BIL & NSPM Exam Preparation" },
+      { property: "og:title", content: "AI-Sana — NIS & BIL Exam Preparation" },
       {
         property: "og:description",
         content:
-          "Personalized AI preparation for students preparing for NIS, BIL, and NSPM entrance exams.",
+          "Personalized AI preparation for students preparing for NIS and BIL entrance exams.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "AI-Sana — NIS, BIL & NSPM Exam Preparation" },
+      { name: "twitter:title", content: "AI-Sana — NIS & BIL Exam Preparation" },
       {
         name: "twitter:description",
         content:
-          "Personalized AI preparation for students preparing for NIS, BIL, and NSPM entrance exams.",
+          "Personalized AI preparation for students preparing for NIS and BIL entrance exams.",
       },
       {
         property: "og:image",

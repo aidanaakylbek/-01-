@@ -2,7 +2,7 @@ import type { Lang } from "@/hooks/use-language";
 
 export type DiagnosticQuestion = {
   id: string;
-  exam: "NIS" | "BIL" | "RFMS";
+  exam: "NIS" | "BIL";
   subject: string;
   topic: string;
   question: Record<Lang, string>;
@@ -40,7 +40,7 @@ export const diagnosticQuestions: DiagnosticQuestion[] = [
   },
   {
     id: "logic-double-sequence",
-    exam: "RFMS",
+    exam: "NIS",
     subject: "Logic",
     topic: "Logic patterns",
     question: {
@@ -133,7 +133,7 @@ export const diagnosticQuestions: DiagnosticQuestion[] = [
   },
   {
     id: "logic-odd-one-out",
-    exam: "RFMS",
+    exam: "NIS",
     subject: "Logic",
     topic: "Classification",
     question: {
@@ -236,8 +236,8 @@ export const diagnosticQuestions: DiagnosticQuestion[] = [
     },
   },
   {
-    id: "rfms-equation",
-    exam: "RFMS",
+    id: "nis-equation",
+    exam: "NIS",
     subject: "Mathematics",
     topic: "Equations",
     question: {

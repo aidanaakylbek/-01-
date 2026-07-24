@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+﻿import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 
 import { GameCard, GameLayout, ProgressBar } from "@/components/gamified-platform";
@@ -13,14 +13,7 @@ export const Route = createFileRoute("/plan")({
   component: PracticePage,
 });
 
-type PracticeKey =
-  | "topic"
-  | "weak"
-  | "mixed"
-  | "mistakes"
-  | "quick"
-  | "ai"
-  | "daily";
+type PracticeKey = "topic" | "weak" | "mixed" | "mistakes" | "quick" | "ai" | "daily";
 
 type Difficulty = "easy" | "medium" | "hard";
 
@@ -81,7 +74,7 @@ function PracticePage() {
         duration: "время",
         rules: "Как работает",
         rulesText:
-          "Слабые темы берутся из диагностики, тестов и ошибок. Смешанная практика помогает готовиться к реальному формату НИШ/БИЛ/РФММ.",
+          "Слабые темы берутся из диагностики, тестов и ошибок. Смешанная практика помогает готовиться к реальному формату НИШ/БИЛ/НЗМ.",
         cards: {
           topic: {
             title: "По теме",
@@ -141,7 +134,7 @@ function PracticePage() {
       duration: "уақыты",
       rules: "Қалай жұмыс істейді",
       rulesText:
-        "Әлсіз тақырыптар диагностика, тесттер және бұрынғы қателер бойынша анықталады. Аралас жаттығу НЗМ/БИЛ/РФММ нақты тест форматына дайындайды.",
+        "Әлсіз тақырыптар диагностика, тесттер және бұрынғы қателер бойынша анықталады. Аралас жаттығу НЗМ/БИЛ нақты тест форматына дайындайды.",
       cards: {
         topic: {
           title: "Тақырып бойынша",
@@ -272,9 +265,7 @@ function PracticePage() {
       right={
         <div className="space-y-4">
           <GameCard className="bg-gradient-to-br from-[#6D28D9] to-[#8B5CF6] text-white">
-            <p className="text-xs font-black uppercase tracking-[0.22em] text-[#FACC15]">
-              AI-Sana
-            </p>
+            <p className="text-xs font-black uppercase tracking-[0.22em] text-[#FACC15]">AI-Sana</p>
             <h3 className="mt-2 text-2xl font-black">{c.today}</h3>
             <p className="mt-3 text-sm font-semibold text-[#EDE9FE]">{c.recommended}</p>
           </GameCard>
@@ -384,7 +375,9 @@ function PracticePage() {
               </p>
               <h2 className="mt-2 text-3xl font-black">{activeCard.title}</h2>
               <p className="mt-2 max-w-3xl font-semibold text-[#6B5E8F]">
-                {active === "topic" ? `${topic}: ${activeCard.description}` : activeCard.description}
+                {active === "topic"
+                  ? `${topic}: ${activeCard.description}`
+                  : activeCard.description}
               </p>
               <div className="mt-4 flex flex-wrap gap-2">
                 <MiniMeta icon="quiz" text={`${activeCard.questions} ${c.questions}`} />
@@ -463,7 +456,9 @@ function PracticeModeCard({
       <div className="flex items-start justify-between gap-4">
         <span
           className={`material-symbols-outlined grid h-14 w-14 place-items-center rounded-2xl text-3xl text-white shadow-[0_5px_0_#4C1D95] ${
-            card.highlight ? "bg-[#FACC15] !text-[#1E1B4B] shadow-[0_5px_0_#CA8A04]" : "bg-[#6D28D9]"
+            card.highlight
+              ? "bg-[#FACC15] !text-[#1E1B4B] shadow-[0_5px_0_#CA8A04]"
+              : "bg-[#6D28D9]"
           }`}
         >
           {card.icon}

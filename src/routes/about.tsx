@@ -21,7 +21,7 @@ function About() {
     language === "KZ"
       ? {
           title: "Біз туралы",
-          body: "AI-Sana НЗМ, БИЛ және РФММ-ға дайындалатын әр оқушыға көмектеседі: диагностика, жеке оқу жоспары және ата-аналарға түсінікті есептер арқылы.",
+          body: "AI-Sana НЗМ және БИЛ-ге дайындалатын әр оқушыға көмектеседі: диагностика, жеке оқу жоспары және ата-аналарға түсінікті есептер арқылы.",
           cards: [
             ["psychology", "Диагностика", "Оқушының күшті жақтары мен білім олқылықтарын табамыз."],
             [
@@ -36,7 +36,7 @@ function About() {
       : language === "RU"
         ? {
             title: "О нас",
-            body: "AI-Sana помогает каждому ученику готовиться к НИШ, БИЛ и РФМШ через диагностику, персональный учебный план и понятные отчеты для родителей.",
+            body: "AI-Sana помогает каждому ученику готовиться к НИШ и БИЛ через диагностику, персональный учебный план и понятные отчеты для родителей.",
             cards: [
               ["psychology", "Диагностика", "Находим сильные стороны и пробелы ученика."],
               ["route", "План", "Показываем, что учить сегодня и как двигаться дальше."],
@@ -46,7 +46,7 @@ function About() {
           }
         : {
             title: "About",
-            body: "AI-Sana helps every student prepare for NIS, BIL, and NSPM through diagnostics, a personalized study plan, and clear parent reports.",
+            body: "AI-Sana helps every student prepare for NIS and BIL through diagnostics, a personalized study plan, and clear parent reports.",
             cards: [
               ["psychology", "Diagnostics", "We find each student's strengths and knowledge gaps."],
               ["route", "Plan", "We show what to study today and how to move forward."],
@@ -89,4 +89,3 @@ function About() {
     </GameLayout>
   );
 }
-

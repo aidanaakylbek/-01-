@@ -1,4 +1,4 @@
-export type ExamTrack = "NIS" | "BIL" | "NSPM" | "MIXED";
+export type ExamTrack = "NIS" | "BIL" | "MIXED";
 export type Lang = "EN" | "KZ" | "RU";
 
 export type ExamQuestion = {
@@ -73,7 +73,11 @@ export const examSections: ExamSection[] = [
         id: "logic-sequence-1",
         sectionId: "logic",
         topic: { EN: "Sequences", KZ: "Тізбек", RU: "Последовательности" },
-        question: { EN: "Continue: 3, 6, 12, 24, ?", KZ: "Жалғастыр: 3, 6, 12, 24, ?", RU: "Продолжите: 3, 6, 12, 24, ?" },
+        question: {
+          EN: "Continue: 3, 6, 12, 24, ?",
+          KZ: "Жалғастыр: 3, 6, 12, 24, ?",
+          RU: "Продолжите: 3, 6, 12, 24, ?",
+        },
         options: {
           EN: ["30", "36", "42", "48"],
           KZ: ["30", "36", "42", "48"],
@@ -90,7 +94,11 @@ export const examSections: ExamSection[] = [
         id: "logic-compare-1",
         sectionId: "logic",
         topic: { EN: "Comparison", KZ: "Салыстыру", RU: "Сравнение" },
-        question: { EN: "Which is greater: 3/4 or 2/3?", KZ: "Қайсысы үлкен: 3/4 әлде 2/3?", RU: "Что больше: 3/4 или 2/3?" },
+        question: {
+          EN: "Which is greater: 3/4 or 2/3?",
+          KZ: "Қайсысы үлкен: 3/4 әлде 2/3?",
+          RU: "Что больше: 3/4 или 2/3?",
+        },
         options: {
           EN: ["3/4", "2/3", "Equal", "Cannot tell"],
           KZ: ["3/4", "2/3", "Тең", "Анықтау мүмкін емес"],
@@ -120,8 +128,18 @@ export const examSections: ExamSection[] = [
           RU: "Ученик занимается каждый день и постепенно улучшается. Какова главная мысль?",
         },
         options: {
-          EN: ["Luck matters most", "Small daily effort helps", "Tests are impossible", "Reading is boring"],
-          KZ: ["Сәттілік маңызды", "Күнделікті аз еңбек көмектеседі", "Тест қиын емес", "Оқу қызық емес"],
+          EN: [
+            "Luck matters most",
+            "Small daily effort helps",
+            "Tests are impossible",
+            "Reading is boring",
+          ],
+          KZ: [
+            "Сәттілік маңызды",
+            "Күнделікті аз еңбек көмектеседі",
+            "Тест қиын емес",
+            "Оқу қызық емес",
+          ],
           RU: ["Главное удача", "Ежедневные усилия помогают", "Тесты невозможны", "Читать скучно"],
         },
         answerIndex: 1,
@@ -142,11 +160,30 @@ export const examSections: ExamSection[] = [
         id: "english-grammar-1",
         sectionId: "english",
         topic: { EN: "Grammar", KZ: "Грамматика", RU: "Грамматика" },
-        question: { EN: "Choose the correct sentence.", KZ: "Дұрыс сөйлемді таңда.", RU: "Выберите правильное предложение." },
+        question: {
+          EN: "Choose the correct sentence.",
+          KZ: "Дұрыс сөйлемді таңда.",
+          RU: "Выберите правильное предложение.",
+        },
         options: {
-          EN: ["She go to school.", "She goes to school.", "She going school.", "She to school goes."],
-          KZ: ["She go to school.", "She goes to school.", "She going school.", "She to school goes."],
-          RU: ["She go to school.", "She goes to school.", "She going school.", "She to school goes."],
+          EN: [
+            "She go to school.",
+            "She goes to school.",
+            "She going school.",
+            "She to school goes.",
+          ],
+          KZ: [
+            "She go to school.",
+            "She goes to school.",
+            "She going school.",
+            "She to school goes.",
+          ],
+          RU: [
+            "She go to school.",
+            "She goes to school.",
+            "She going school.",
+            "She to school goes.",
+          ],
         },
         answerIndex: 1,
         explanation: {

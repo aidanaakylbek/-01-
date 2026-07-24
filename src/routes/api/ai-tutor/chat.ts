@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+﻿import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 
 import { buildMentorSystemPrompt } from "@/lib/ai-mentor";
@@ -47,14 +47,14 @@ const UNRELATED_REPLY =
   "Мен AI-Sana оқу көмекшісімін. Сабақ, тест немесе қате сұрақтарың бойынша көмектесе аламын.";
 
 const AI_TUTOR_BASE_PROMPT = [
-  "You are AI-Sana, a friendly educational AI tutor for school students preparing for NIS, BIL, and RFMS exams.",
+  "You are AI-Sana, a friendly educational AI tutor for school students preparing for NIS and BIL exams.",
   "Explain study-related questions clearly and step by step. Help the student understand the method, not just the final answer.",
   "Keep answers short, friendly, motivating, and understandable for pupils aged 10-14.",
   "Write formulas in a textbook-friendly way, not as raw code. Never show raw LaTeX commands like \\frac, \\text, \\left, \\right, \\[, \\], or Markdown math blocks.",
   "For fractions, write a clear spoken phrase and a simple expression, for example: '5-ті 20-ға бөлеміз, кейін 100%-ға көбейтеміз' and '5 ÷ 20 × 100% = 25%'. Avoid slash-style fractions such as 5/20 in final explanations.",
   "Use math symbols that pupils can read: ×, ÷, =, %, +, −. Explain every formula in words before using it.",
   "Use Kazakh by default. If the student writes in Russian, answer in Russian. If the student writes in English, answer in English.",
-  "Answer only study-related questions: NIS, BIL, RFMS, mathematics, logic, reading literacy, English/Russian/Kazakh learning, diagnostic mistakes, current lesson questions, practice questions, similar questions, formulas, exam strategy, weak topic practice.",
+  "Answer only study-related questions: NIS, BIL, BIL, mathematics, logic, reading literacy, English/Russian/Kazakh learning, diagnostic mistakes, current lesson questions, practice questions, similar questions, formulas, exam strategy, weak topic practice.",
   "Short commands such as 'Көмек бер', 'Формуланы көрсет', 'Hint', 'Қайта түсіндір', 'Ұқсас сұрақ бер', 'Тағы мысал', and 'Неге қате?' are study-related when a current topic, lesson, question, or diagnostic context is provided. Use that context and answer directly.",
   "If the student asks for a formula, hint, example, or explanation without details, use the current learning context and give one useful answer instead of a generic helper message.",
   `If the message is unrelated, reply exactly: "${UNRELATED_REPLY}"`,
@@ -77,20 +77,29 @@ export const Route = createFileRoute("/api/ai-tutor/chat")({
         try {
           body = await request.json();
         } catch {
-          return Response.json({ error: "INVALID_JSON", message: "Invalid JSON body." }, { status: 400 });
+          return Response.json(
+            { error: "INVALID_JSON", message: "Invalid JSON body." },
+            { status: 400 },
+          );
         }
 
         const parsed = chatRequestSchema.safeParse(body);
 
         if (!parsed.success) {
-          return Response.json({ error: "INVALID_INPUT", message: "Алдымен сұрағыңды жаз." }, { status: 400 });
+          return Response.json(
+            { error: "INVALID_INPUT", message: "Алдымен сұрағыңды жаз." },
+            { status: 400 },
+          );
         }
 
         const dashboard = await getDashboardAccount();
         const account = dashboard.authenticated ? dashboard.account : null;
 
         if (!account) {
-          return Response.json({ error: "AUTH_REQUIRED", message: "Алдымен аккаунтқа кіріңіз." }, { status: 403 });
+          return Response.json(
+            { error: "AUTH_REQUIRED", message: "Алдымен аккаунтқа кіріңіз." },
+            { status: 403 },
+          );
         }
 
         if (!canEnterPlatform(account)) {
@@ -103,7 +112,8 @@ export const Route = createFileRoute("/api/ai-tutor/chat")({
           );
         }
 
-        const diagnosticOnly = parsed.data.context?.mode === "diagnostic" || Boolean(parsed.data.diagnosticResultId);
+        const diagnosticOnly =
+          parsed.data.context?.mode === "diagnostic" || Boolean(parsed.data.diagnosticResultId);
 
         if (!diagnosticOnly && !canAccessContent("ai_tutor", account)) {
           return Response.json(
@@ -112,9 +122,17 @@ export const Route = createFileRoute("/api/ai-tutor/chat")({
           );
         }
 
-        if (diagnosticOnly && !hasActiveSubscription(account) && parsed.data.messages && parsed.data.messages.length > 6) {
+        if (
+          diagnosticOnly &&
+          !hasActiveSubscription(account) &&
+          parsed.data.messages &&
+          parsed.data.messages.length > 6
+        ) {
           return Response.json(
-            { error: "SUBSCRIPTION_REQUIRED", message: "AI Tutor толық қолдану үшін жазылым қажет." },
+            {
+              error: "SUBSCRIPTION_REQUIRED",
+              message: "AI Tutor толық қолдану үшін жазылым қажет.",
+            },
             { status: 403 },
           );
         }
@@ -131,7 +149,8 @@ export const Route = createFileRoute("/api/ai-tutor/chat")({
         if (!process.env.OPENAI_API_KEY) {
           return Response.json({
             error: "OPENAI_API_KEY_MISSING",
-            message: "AI-Sana әзірге OpenAI API-ға қосылмаған. OPENAI_API_KEY қосылғаннан кейін нақты жауап береді.",
+            message:
+              "AI-Sana әзірге OpenAI API-ға қосылмаған. OPENAI_API_KEY қосылғаннан кейін нақты жауап береді.",
           });
         }
 
@@ -159,7 +178,10 @@ export const Route = createFileRoute("/api/ai-tutor/chat")({
         } catch (error) {
           console.error("AI Tutor chat failed", error);
           return Response.json(
-            { error: "AI_TUTOR_FAILED", message: "Қазір AI-Sana жауап бере алмады. Біраздан кейін қайта көріңіз." },
+            {
+              error: "AI_TUTOR_FAILED",
+              message: "Қазір AI-Sana жауап бере алмады. Біраздан кейін қайта көріңіз.",
+            },
             { status: 500 },
           );
         }
@@ -193,7 +215,9 @@ function buildTutorPrompt({
         context.correctAnswer ? `Correct answer: ${context.correctAnswer}` : "",
         context.explanation ? `Existing explanation: ${context.explanation}` : "",
         context.diagnosticResult ? `Diagnostic result: ${context.diagnosticResult}` : "",
-        context.previousMistakes?.length ? `Previous mistakes: ${context.previousMistakes.join("; ")}` : "",
+        context.previousMistakes?.length
+          ? `Previous mistakes: ${context.previousMistakes.join("; ")}`
+          : "",
       ]
         .filter(Boolean)
         .join("\n")
@@ -278,7 +302,11 @@ async function generateAiTutorReply(prompt: string, language: "KZ" | "RU" | "EN"
 
 function detectLanguage(text: string): "KZ" | "RU" | "EN" {
   if (/[әғқңөұүһі]/i.test(text)) return "KZ";
-  if (/\b(қалай|калай|маған|маган|түсіндір|тусиндир|есеп|сұрақ|сурак|жауап|қате|кате|ұқсас|уксас|пайыз|ниш|бил|рфмш)\b/i.test(text)) {
+  if (
+    /\b(қалай|калай|маған|маган|түсіндір|тусиндир|есеп|сұрақ|сурак|жауап|қате|кате|ұқсас|уксас|пайыз|ниш|бил)\b/i.test(
+      text,
+    )
+  ) {
     return "KZ";
   }
   if (/\b(почему|объясни|реши|задача|ошибка|пример|формула|процент|русский)\b/i.test(text)) {

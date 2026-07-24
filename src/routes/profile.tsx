@@ -1,4 +1,4 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
+﻿import { Link, createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { AibiMark } from "@/components/aibi-mark";
 import { GameCard, GameLayout } from "@/components/gamified-platform";
@@ -185,7 +185,7 @@ function PersonalInfoCard({
     [c.studentName, account.name],
     [c.email, account.email],
     [c.grade, account.grade || c.notSet],
-    [c.targetSchool, "НЗМ / БИЛ / РФММ"],
+    [c.targetSchool, "НЗМ / БИЛ / НЗМ"],
     [c.registrationDate, c.notAvailable],
     [c.language, language === "RU" ? c.russian : c.kazakh],
     [c.telegram, telegramConnected ? c.connected : c.notConnected],
