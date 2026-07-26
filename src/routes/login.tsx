@@ -1,8 +1,8 @@
-﻿import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { FormEvent } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { FormEvent, useEffect, useState } from "react";
 import { GameCard, GameLayout } from "@/components/gamified-platform";
+import { getAccountDashboard, loginAccount } from "@/lib/api/account.functions";
 import { useLanguage } from "@/hooks/use-language";
-import { loginAccount } from "@/lib/api/account.functions";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -15,8 +15,9 @@ export const Route = createFileRoute("/login")({
 });
 
 function Login() {
-  const navigate = useNavigate();
   const { language } = useLanguage();
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const copy =
     language === "RU"
@@ -30,6 +31,7 @@ function Login() {
           submit: "Войти",
           noAccount: "Нет аккаунта?",
           register: "Регистрация",
+          invalid: "Email или пароль неверный.",
         }
       : language === "KZ"
         ? {
@@ -42,6 +44,7 @@ function Login() {
             submit: "Кіру",
             noAccount: "Аккаунтыңыз жоқ па?",
             register: "Тіркелу",
+            invalid: "Email немесе құпия сөз дұрыс емес.",
           }
         : {
             title: "Sign In",
@@ -53,20 +56,48 @@ function Login() {
             submit: "Sign In",
             noAccount: "No account yet?",
             register: "Register",
+            invalid: "Email or password is incorrect.",
           };
 
+  useEffect(() => {
+    let active = true;
+
+    void getAccountDashboard()
+      .then((dashboard) => {
+        if (!active || !dashboard.authenticated) {
+          return;
+        }
+
+        window.location.replace(getClientPostLoginRedirect(dashboard.account));
+      })
+      .catch(() => {
+        // The form below still handles login even if this optional pre-check fails.
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const submitLogin = async (form: HTMLFormElement) => {
+    setError("");
+    setIsSubmitting(true);
     const formData = new FormData(form);
 
-    const result = await loginAccount({
-      data: {
-        email: String(formData.get("email") ?? ""),
-        password: String(formData.get("password") ?? ""),
-        remember: formData.get("remember") === "on",
-      },
-    });
+    try {
+      const result = await loginAccount({
+        data: {
+          email: String(formData.get("email") ?? "").trim().toLowerCase(),
+          password: String(formData.get("password") ?? ""),
+          remember: formData.get("remember") === "on",
+        },
+      });
 
-    void navigate({ to: result.redirectTo as never });
+      window.location.assign(result.redirectTo);
+    } catch {
+      setError(copy.invalid);
+      setIsSubmitting(false);
+    }
   };
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -111,7 +142,7 @@ function Login() {
 
             <div className="flex items-center justify-between gap-4 text-sm">
               <label className="flex items-center gap-2 font-semibold text-[#6B5E8F]">
-                <input className="w-4 h-4 accent-secondary" name="remember" type="checkbox" />
+                <input className="h-4 w-4 accent-secondary" name="remember" type="checkbox" />
                 {copy.remember}
               </label>
               <button className="font-black text-[#6D28D9] hover:underline" type="button">
@@ -119,8 +150,15 @@ function Login() {
               </button>
             </div>
 
+            {error ? (
+              <p className="rounded-2xl border-2 border-[#FCA5A5] bg-[#FEF2F2] px-4 py-3 text-sm font-black text-[#EF4444]">
+                {error}
+              </p>
+            ) : null}
+
             <button
-              className="mt-2 h-13 rounded-2xl bg-[#6D28D9] font-black text-white shadow-[0_6px_0_#4C1D95] transition hover:-translate-y-0.5"
+              className="mt-2 h-13 rounded-2xl bg-[#6D28D9] font-black text-white shadow-[0_6px_0_#4C1D95] transition hover:-translate-y-0.5 disabled:cursor-wait disabled:opacity-70"
+              disabled={isSubmitting}
               type="button"
               onClick={(event) => {
                 const form = event.currentTarget.form;
@@ -130,7 +168,7 @@ function Login() {
                 }
               }}
             >
-              {copy.submit}
+              {isSubmitting ? "..." : copy.submit}
             </button>
           </form>
 
@@ -144,4 +182,49 @@ function Login() {
       </div>
     </GameLayout>
   );
+}
+
+type LoginRedirectAccount = {
+  diagnosticCompleted: boolean;
+  parentPhoneVerified: boolean;
+  parentTelegramConnected: boolean;
+  role: "student" | "admin";
+  subscriptionExpiresAt?: string;
+  subscriptionStatus: "inactive" | "active" | "expired" | "cancelled";
+  telegramParentVerified: boolean;
+};
+
+function getClientPostLoginRedirect(account: LoginRedirectAccount) {
+  if (account.role === "admin") {
+    return "/home";
+  }
+
+  if (
+    !account.telegramParentVerified &&
+    !(account.parentTelegramConnected && account.parentPhoneVerified)
+  ) {
+    return "/verify-parent-telegram";
+  }
+
+  if (!account.diagnosticCompleted) {
+    return "/diagnostic";
+  }
+
+  if (!hasClientActiveSubscription(account)) {
+    return "/pricing";
+  }
+
+  return "/home";
+}
+
+function hasClientActiveSubscription(account: LoginRedirectAccount) {
+  if (account.subscriptionStatus !== "active") {
+    return false;
+  }
+
+  if (!account.subscriptionExpiresAt) {
+    return true;
+  }
+
+  return new Date(account.subscriptionExpiresAt).getTime() > Date.now();
 }
