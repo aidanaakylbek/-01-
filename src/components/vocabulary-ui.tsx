@@ -183,6 +183,7 @@ export function DailyWordCard({
 }) {
   const c = vocabularyCopy[language];
   if (!word) return <VocabularyEmptyState text={c.noTopics} icon="auto_stories" />;
+  const examples = getVocabularyUsageExamples(word);
 
   return (
     <GameCard className="bg-white/95">
@@ -201,8 +202,8 @@ export function DailyWordCard({
           <p className="font-bold text-[#6B5E8F]">{word.translation_ru}</p>
         </div>
         <div className="rounded-3xl bg-[#FFFBEB] p-4">
-          <p className="font-black text-[#1E1B4B]">{word.example_en}</p>
-          <p className="mt-1 text-sm font-semibold text-[#6B5E8F]">{word.example_kk}</p>
+          <p className="font-black text-[#1E1B4B]">{examples.en}</p>
+          <p className="mt-1 text-sm font-semibold text-[#6B5E8F]">{examples.kk}</p>
         </div>
       </div>
       <div className="mt-5 flex flex-wrap gap-3">
@@ -491,6 +492,7 @@ export function VocabularyFlashcard({
   const [flipped, setFlipped] = useState(false);
   const status = word.progress.status;
   const flipCard = () => setFlipped((value) => !value);
+  const examples = getVocabularyUsageExamples(word);
 
   return (
     <div className="space-y-4">
@@ -556,9 +558,9 @@ export function VocabularyFlashcard({
                 <VocabularyAudioButton word={word.word_en} audioUrl={word.audio_url} compact />
               </div>
               <div className="grid gap-4 md:grid-cols-3">
-                <ExampleBlock text={word.example_en} />
-                <ExampleBlock text={word.example_kk} />
-                <ExampleBlock text={word.example_ru} />
+                <ExampleBlock text={examples.en} />
+                <ExampleBlock text={examples.kk} />
+                <ExampleBlock text={examples.ru} />
               </div>
             </div>
           </div>
@@ -594,6 +596,55 @@ function ExampleBlock({ text }: { text?: string }) {
       <p className="font-bold text-[#1E1B4B]">{text || "—"}</p>
     </div>
   );
+}
+
+function getVocabularyUsageExamples(word: VocabularyWordWithState) {
+  const fallback = buildVocabularyUsageExamples(word);
+
+  return {
+    en: normalizeVocabularyExample(word.example_en, fallback.en),
+    kk: normalizeVocabularyExample(word.example_kk, fallback.kk),
+    ru: normalizeVocabularyExample(word.example_ru, fallback.ru),
+  };
+}
+
+function normalizeVocabularyExample(value: string | undefined, fallback: string) {
+  const text = value?.trim();
+  if (!text) return fallback;
+
+  const lower = text.toLowerCase();
+  const isOldTemplate =
+    lower.includes("learn how to use the action word") ||
+    lower.includes("helps me describe something") ||
+    lower.includes("learn the word") ||
+    lower.includes("бұл сөздің мағынасы") ||
+    lower.includes("значение этого слова");
+
+  return isOldTemplate ? fallback : text;
+}
+
+function buildVocabularyUsageExamples(word: VocabularyWordWithState) {
+  if (word.part_of_speech === "verb") {
+    return {
+      en: `I can ${word.word_en} in class today.`,
+      kk: `Мысал: мен бүгін ${word.translation_kk} әрекетін жасаймын.`,
+      ru: `Пример: сегодня я выполняю действие "${word.translation_ru}".`,
+    };
+  }
+
+  if (word.part_of_speech === "adjective") {
+    return {
+      en: `My friend is ${word.word_en}.`,
+      kk: `Мысал: менің досым ${word.translation_kk}.`,
+      ru: `Пример: мой друг ${word.translation_ru}.`,
+    };
+  }
+
+  return {
+    en: `This is my ${word.word_en}.`,
+    kk: `Мысал: бұл менің ${word.translation_kk}.`,
+    ru: `Пример: это мой ${word.translation_ru}.`,
+  };
 }
 
 export function VocabularyWordList({

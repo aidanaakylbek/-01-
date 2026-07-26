@@ -1515,8 +1515,8 @@ function seedA1Words(topicSlug: string, part: VocabularyPartOfSpeech, data: A1Vo
       pronunciation: undefined,
       phonetic_ipa: undefined,
       example_en: buildA1Example(item.en, part),
-      example_kk: buildA1KazakhExample(item.kk),
-      example_ru: buildA1RussianExample(item.ru),
+      example_kk: buildA1KazakhExample(item.kk, part),
+      example_ru: buildA1RussianExample(item.ru, part),
       difficulty: "A1",
       order_index: index + 1,
       is_active: true,
@@ -1528,15 +1528,19 @@ function seedA1Words(topicSlug: string, part: VocabularyPartOfSpeech, data: A1Vo
 }
 
 function buildA1Example(word: string, part: VocabularyPartOfSpeech) {
-  if (part === "verb") return `I learn how to use the action word "${word}" today.`;
-  if (part === "adjective") return `The word "${word}" helps me describe something.`;
-  return `I learn the word "${word}" in my English lesson.`;
+  if (part === "verb") return `I can ${word} in class today.`;
+  if (part === "adjective") return `My friend is ${word}.`;
+  return `This is my ${word}.`;
 }
 
-function buildA1KazakhExample(translation: string) {
-  return `Бұл сөздің мағынасы: ${translation}.`;
+function buildA1KazakhExample(translation: string, part: VocabularyPartOfSpeech) {
+  if (part === "verb") return `Мысал: мен бүгін ${translation} әрекетін жасаймын.`;
+  if (part === "adjective") return `Мысал: менің досым ${translation}.`;
+  return `Мысал: бұл менің ${translation}.`;
 }
 
-function buildA1RussianExample(translation: string) {
-  return `Значение этого слова: ${translation}.`;
+function buildA1RussianExample(translation: string, part: VocabularyPartOfSpeech) {
+  if (part === "verb") return `Пример: сегодня я выполняю действие "${translation}".`;
+  if (part === "adjective") return `Пример: мой друг ${translation}.`;
+  return `Пример: это мой ${translation}.`;
 }
