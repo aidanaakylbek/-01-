@@ -556,32 +556,10 @@ export function VocabularyFlashcard({
                 <VocabularyAudioButton word={word.word_en} audioUrl={word.audio_url} compact />
               </div>
               <div className="grid gap-4 md:grid-cols-3">
-                <ExampleBlock title="EN" text={word.example_en} />
-                <ExampleBlock title="KZ" text={word.example_kk} />
-                <ExampleBlock title="RU" text={word.example_ru} />
+                <ExampleBlock text={word.example_en} />
+                <ExampleBlock text={word.example_kk} />
+                <ExampleBlock text={word.example_ru} />
               </div>
-              <div className="grid gap-3 md:grid-cols-2">
-                <div className="rounded-3xl border-2 border-[#DDD6FE] bg-white p-4">
-                  <p className="text-xs font-black uppercase tracking-widest text-[#8B5CF6]">Synonym</p>
-                  <p className="mt-2 font-black text-[#1E1B4B]">AI-Sana арқылы сұра</p>
-                </div>
-                <div className="rounded-3xl border-2 border-[#DDD6FE] bg-white p-4">
-                  <p className="text-xs font-black uppercase tracking-widest text-[#8B5CF6]">Antonym</p>
-                  <p className="mt-2 font-black text-[#1E1B4B]">AI-Sana арқылы сұра</p>
-                </div>
-              </div>
-              {onAskAI ? (
-                <button
-                  type="button"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    onAskAI();
-                  }}
-                  className="w-fit rounded-2xl bg-[#6D28D9] px-5 py-3 font-black text-white shadow-[0_5px_0_#4C1D95]"
-                >
-                  Ask AI-Sana
-                </button>
-              ) : null}
             </div>
           </div>
         </div>
@@ -610,11 +588,10 @@ export function VocabularyFlashcard({
   );
 }
 
-function ExampleBlock({ title, text }: { title: string; text?: string }) {
+function ExampleBlock({ text }: { text?: string }) {
   return (
     <div className="rounded-3xl bg-white p-4">
-      <p className="text-xs font-black uppercase tracking-widest text-[#8B5CF6]">{title}</p>
-      <p className="mt-2 font-bold text-[#1E1B4B]">{text || "—"}</p>
+      <p className="font-bold text-[#1E1B4B]">{text || "—"}</p>
     </div>
   );
 }
