@@ -1,5 +1,6 @@
 import { getDashboardAccount } from "./account-store.server";
 import { a1VocabularyTopics, type A1VocabularyWordSeed } from "./a1-vocabulary-content";
+import { buildVocabularyUsageExamples } from "./vocabulary-examples";
 
 export type VocabularyLanguage = "KZ" | "RU" | "EN";
 export type VocabularyDifficulty = "beginner" | "intermediate" | "mixed";
@@ -1505,6 +1506,12 @@ function seedA1Words(topicSlug: string, part: VocabularyPartOfSpeech, data: A1Vo
 
   data.forEach((item, index) => {
     const wordId = `a1-${topic.slug}-${part}-${index + 1}`;
+    const examples = buildVocabularyUsageExamples({
+      word_en: item.en,
+      translation_kk: item.kk,
+      translation_ru: item.ru,
+      part_of_speech: part,
+    });
     const word: VocabularyWord = {
       id: wordId,
       topic_id: topic.id,
@@ -1514,9 +1521,9 @@ function seedA1Words(topicSlug: string, part: VocabularyPartOfSpeech, data: A1Vo
       part_of_speech: part,
       pronunciation: undefined,
       phonetic_ipa: undefined,
-      example_en: buildA1Example(item.en, part),
-      example_kk: buildA1KazakhExample(item.kk, part),
-      example_ru: buildA1RussianExample(item.ru, part),
+      example_en: examples.en,
+      example_kk: examples.kk,
+      example_ru: examples.ru,
       difficulty: "A1",
       order_index: index + 1,
       is_active: true,
@@ -1525,22 +1532,4 @@ function seedA1Words(topicSlug: string, part: VocabularyPartOfSpeech, data: A1Vo
     };
     words.set(word.id, word);
   });
-}
-
-function buildA1Example(word: string, part: VocabularyPartOfSpeech) {
-  if (part === "verb") return `I can ${word} in class today.`;
-  if (part === "adjective") return `My friend is ${word}.`;
-  return `This is my ${word}.`;
-}
-
-function buildA1KazakhExample(translation: string, part: VocabularyPartOfSpeech) {
-  if (part === "verb") return `Мысал: мен бүгін ${translation} әрекетін жасаймын.`;
-  if (part === "adjective") return `Мысал: менің досым ${translation}.`;
-  return `Мысал: бұл менің ${translation}.`;
-}
-
-function buildA1RussianExample(translation: string, part: VocabularyPartOfSpeech) {
-  if (part === "verb") return `Пример: сегодня я выполняю действие "${translation}".`;
-  if (part === "adjective") return `Пример: мой друг ${translation}.`;
-  return `Пример: это мой ${translation}.`;
 }

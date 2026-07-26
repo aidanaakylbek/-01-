@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { useMemo, useState, type MouseEvent } from "react";
 
 import { GameCard, ProgressBar } from "@/components/gamified-platform";
+import { buildVocabularyUsageExamples, normalizeVocabularyExample } from "@/lib/vocabulary-examples";
 import type {
   VocabularyAIResponse,
   VocabularyAnswerFeedback,
@@ -605,45 +606,6 @@ function getVocabularyUsageExamples(word: VocabularyWordWithState) {
     en: normalizeVocabularyExample(word.example_en, fallback.en),
     kk: normalizeVocabularyExample(word.example_kk, fallback.kk),
     ru: normalizeVocabularyExample(word.example_ru, fallback.ru),
-  };
-}
-
-function normalizeVocabularyExample(value: string | undefined, fallback: string) {
-  const text = value?.trim();
-  if (!text) return fallback;
-
-  const lower = text.toLowerCase();
-  const isOldTemplate =
-    lower.includes("learn how to use the action word") ||
-    lower.includes("helps me describe something") ||
-    lower.includes("learn the word") ||
-    lower.includes("бұл сөздің мағынасы") ||
-    lower.includes("значение этого слова");
-
-  return isOldTemplate ? fallback : text;
-}
-
-function buildVocabularyUsageExamples(word: VocabularyWordWithState) {
-  if (word.part_of_speech === "verb") {
-    return {
-      en: `I can ${word.word_en} in class today.`,
-      kk: `Мысал: мен бүгін ${word.translation_kk} әрекетін жасаймын.`,
-      ru: `Пример: сегодня я выполняю действие "${word.translation_ru}".`,
-    };
-  }
-
-  if (word.part_of_speech === "adjective") {
-    return {
-      en: `My friend is ${word.word_en}.`,
-      kk: `Мысал: менің досым ${word.translation_kk}.`,
-      ru: `Пример: мой друг ${word.translation_ru}.`,
-    };
-  }
-
-  return {
-    en: `This is my ${word.word_en}.`,
-    kk: `Мысал: бұл менің ${word.translation_kk}.`,
-    ru: `Пример: это мой ${word.translation_ru}.`,
   };
 }
 
