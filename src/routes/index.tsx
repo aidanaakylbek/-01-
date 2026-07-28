@@ -1,8 +1,7 @@
 ﻿import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { GameCard, GameLayout, ProgressBar, RightWidgets } from "@/components/gamified-platform";
-import aiSanaPoster from "@/assets/ai-sana-hero.jpg";
-import aiSanaAnimated from "@/assets/ai-sana-animated.mp4";
+import aiSanaBotAvatarImage from "@/assets/ai-sana-bot-avatar.png";
 import { useLanguage } from "@/hooks/use-language";
 import { getAccountDashboard } from "@/lib/api/account.functions";
 import type { DashboardAccount } from "@/lib/account-store.server";
@@ -163,28 +162,12 @@ export function Dashboard() {
                     Сәлем!
                   </div>
                   <div className="relative h-52 w-52 overflow-hidden rounded-full border-4 border-white bg-white shadow-[0_16px_0_rgba(30,27,75,0.18)] md:h-64 md:w-64">
-                    <video
-                      aria-label="Animated AI-Sana tutor"
-                      autoPlay
-                      className="h-full w-full scale-[1.42] object-cover object-[center_62%]"
-                      height={288}
-                      loop
-                      muted
-                      playsInline
-                      poster={aiSanaPoster}
-                      preload="auto"
-                      src={aiSanaAnimated}
-                      style={{
-                        display: "block",
-                        height: "100%",
-                        maxHeight: 288,
-                        maxWidth: 288,
-                        objectFit: "cover",
-                        width: "100%",
-                      }}
-                      width={288}
+                    <img
+                      alt="AI-Sana"
+                      className="h-full w-full scale-[1.18] object-cover object-top"
+                      draggable={false}
+                      src={aiSanaBotAvatarImage}
                     />
-                    <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-white via-white/70 to-transparent" />
                     <span className="sana-wave-line sana-wave-line-1" />
                     <span className="sana-wave-line sana-wave-line-2" />
                     <span className="sana-wave-line sana-wave-line-3" />
