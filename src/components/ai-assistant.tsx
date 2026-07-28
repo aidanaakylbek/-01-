@@ -252,8 +252,13 @@ export function AIAssistant() {
               {messages.map((msg, idx) => (
                 <div
                   key={`${msg.role}-${idx}`}
-                  className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                  className={`flex items-start gap-2 ${
+                    msg.role === "user" ? "justify-end" : "justify-start"
+                  }`}
                 >
+                  {msg.role === "assistant" ? (
+                    <BotAvatar className="mt-1 h-9 w-9 sm:h-10 sm:w-10" />
+                  ) : null}
                   <div
                     className={`max-w-[min(86vw,760px)] sm:max-w-[min(88vw,760px)] rounded-2xl px-4 py-3 font-body-md text-body-md ${
                       msg.role === "user"
@@ -290,7 +295,8 @@ export function AIAssistant() {
                 </div>
               ))}
               {isLoading && (
-                <div className="flex justify-start">
+                <div className="flex items-start justify-start gap-2">
+                  <BotAvatar className="mt-1 h-9 w-9 sm:h-10 sm:w-10" />
                   <div className="bg-surface-container-high text-on-surface rounded-2xl px-4 py-3 border border-outline-variant">
                     <div className="flex gap-2 items-center" aria-live="polite">
                       <span className="text-sm text-on-surface-variant mr-1">
