@@ -1,4 +1,4 @@
-import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useRouterState } from "@tanstack/react-router";
 
 import { GameCard, GameLayout, ProgressBar } from "@/components/gamified-platform";
 import {
@@ -93,22 +93,6 @@ function VocabularyPage() {
           </div>
         </GameCard>
 
-        <div className="flex flex-wrap gap-3">
-          <Link to="/vocabulary/review/personalized" className="rounded-2xl border-2 border-[#DDD6FE] bg-white px-5 py-3 font-black text-[#6D28D9]">
-            {c.reviewSession}
-          </Link>
-          <Link
-            to="/vocabulary/games"
-            search={{ topic: currentTopic?.slug ?? "greetings-polite-words" }}
-            className="rounded-2xl border-2 border-[#DDD6FE] bg-white px-5 py-3 font-black text-[#6D28D9]"
-          >
-            {c.games}
-          </Link>
-          <Link to="/vocabulary/weak-words" className="rounded-2xl border-2 border-[#DDD6FE] bg-white px-5 py-3 font-black text-[#6D28D9]">
-            {c.weakWords}
-          </Link>
-        </div>
-
         {overview.topics.length ? (
           <VocabularyLearningPath language={lang} topics={overview.topics} />
         ) : (
@@ -140,11 +124,19 @@ function getTopicTitle(topic: VocabularyTopicSummary, language: VocabularyLangua
 }
 
 function getCurrentStage(topic: VocabularyTopicSummary, language: VocabularyLanguage) {
+  if (topic.progress.totalKnown >= 45 && !topic.progress.tests.mixedPassed) {
+    return {
+      part: "noun" as const,
+      label: language === "RU" ? "Тест на знание слов" : language === "EN" ? "Vocabulary check test" : "Сөзді тексеру тесті",
+      known: 45,
+      passed: false,
+    };
+  }
   const stages: Array<{ part: VocabularyPartOfSpeech; label: string; known: number; passed: boolean }> = [
     { part: "verb", label: language === "RU" ? "Глаголы" : language === "EN" ? "Verbs" : "Етістіктер", known: topic.progress.knownVerbs, passed: topic.progress.tests.verbsPassed },
     { part: "adjective", label: language === "RU" ? "Прилагательные" : language === "EN" ? "Adjectives" : "Сын есімдер", known: topic.progress.knownAdjectives, passed: topic.progress.tests.adjectivesPassed },
     { part: "noun", label: language === "RU" ? "Существительные" : language === "EN" ? "Nouns" : "Зат есімдер", known: topic.progress.knownNouns, passed: topic.progress.tests.nounsPassed },
   ];
   return stages.find((stage) => stage.known < 15 || !stage.passed)
-    ?? { part: "noun" as const, label: language === "RU" ? "Итоговый тест" : language === "EN" ? "Mixed test" : "Қорытынды тест", known: 15, passed: topic.progress.tests.mixedPassed };
+    ?? { part: "noun" as const, label: language === "RU" ? "Тест на знание слов" : language === "EN" ? "Vocabulary check test" : "Сөзді тексеру тесті", known: 15, passed: topic.progress.tests.mixedPassed };
 }

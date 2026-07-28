@@ -514,6 +514,8 @@ export async function startVocabularyMixedTest(topicSlug: string) {
   if (!topic || !topic.is_published) throw new Error("TOPIC_NOT_FOUND");
   assertTopicUnlocked(topic, userId);
   const topicWords = getTopicWords(topic.id);
+  const learnedAllWords = topicWords.every((word) => getUserProgressMap(userId).get(word.id)?.status === "known");
+  if (!learnedAllWords) throw new Error("VOCABULARY_WORDS_REQUIRED");
   validateSectionPool(topic.id, topicWords.filter((word) => word.is_active && word.part_of_speech === "verb"), "verb");
   validateSectionPool(topic.id, topicWords.filter((word) => word.is_active && word.part_of_speech === "adjective"), "adjective");
   validateSectionPool(topic.id, topicWords.filter((word) => word.is_active && word.part_of_speech === "noun"), "noun");
@@ -1022,11 +1024,7 @@ function isTopicCompleted(topicId: string, userId: string) {
   const attempts = [...testAttempts.values()].filter((attempt) => attempt.userId === userId && attempt.topicId === topicId);
   const wordsLearned = getTopicWords(topicId).every((word) => getUserProgressMap(userId).get(word.id)?.status === "known");
   const passedMixed = attempts.some((attempt) => attempt.testType === "mixed_topic" && attempt.status === "completed" && attempt.percentage >= 80);
-  const parts: VocabularyPartOfSpeech[] = ["verb", "adjective", "noun"];
-  const passedParts = parts.every((part) =>
-    attempts.some((attempt) => attempt.partOfSpeech === part && attempt.status === "completed" && attempt.percentage >= 80),
-  );
-  return wordsLearned && passedMixed && passedParts;
+  return wordsLearned && passedMixed;
 }
 
 function isTopicMastered(topicId: string, userId: string) {
@@ -1246,13 +1244,8 @@ function calculateTopicProgress(topicId: string, userId: string): VocabularyTopi
   const knownNouns = knownWords.filter((word) => word.part_of_speech === "noun").length;
   const totalKnown = knownWords.length;
   const tests = getTopicTestStatus(topicId, userId);
-  const passedCount = [
-    tests.verbsPassed,
-    tests.adjectivesPassed,
-    tests.nounsPassed,
-    tests.mixedPassed,
-  ].filter(Boolean).length;
-  const completionPercentage = Math.round(((totalKnown + passedCount) / 49) * 100);
+  const wordsProgress = Math.round((totalKnown / 45) * 80);
+  const completionPercentage = wordsProgress + (tests.mixedPassed ? 20 : 0);
   const unlocked = isTopicUnlocked(topicId, userId);
   const completed = isTopicCompleted(topicId, userId);
   const mastered = isTopicMastered(topicId, userId);
@@ -1278,7 +1271,7 @@ function calculateTopicProgress(topicId: string, userId: string): VocabularyTopi
               ? "in_progress"
               : "available",
     unlocked,
-    lockedReason: unlocked ? undefined : "Master the previous topic with at least 80% to unlock this one.",
+    lockedReason: unlocked ? undefined : "Previous topic test must be passed with at least 80%.",
     tests,
     rewards: completed || mastered ? { xp: 40, coins: 20, badge: "Topic Completed" } : undefined,
   };

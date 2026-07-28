@@ -49,6 +49,9 @@ export const vocabularyCopy = {
     games: "Ойындар",
     weakWords: "Қиын сөздер",
     reviewSession: "Жеке қайталау",
+    memorizationTest: "Сөзді тексеру тесті",
+    memorizationTestHint: "Келесі бөлімге өту үшін 80% немесе одан жоғары жина.",
+    learnAllWordsFirst: "Алдымен 45 сөзді толық оқы.",
     locked: "Жабық",
     available: "Бастау",
     inProgress: "Жалғастыру",
@@ -87,6 +90,9 @@ export const vocabularyCopy = {
     games: "Игры",
     weakWords: "Сложные слова",
     reviewSession: "Личное повторение",
+    memorizationTest: "Тест на знание слов",
+    memorizationTestHint: "Чтобы перейти дальше, набери 80% или выше.",
+    learnAllWordsFirst: "Сначала изучите все 45 слов.",
     locked: "Закрыто",
     available: "Начать",
     inProgress: "Продолжить",
@@ -125,6 +131,9 @@ export const vocabularyCopy = {
     games: "Games",
     weakWords: "Weak Words",
     reviewSession: "Personalized Review",
+    memorizationTest: "Vocabulary check test",
+    memorizationTestHint: "Score 80% or higher to unlock the next topic.",
+    learnAllWordsFirst: "Learn all 45 words first.",
     locked: "Locked",
     available: "Start",
     inProgress: "Continue",
@@ -296,7 +305,7 @@ export function VocabularyTopicCard({ language, topic }: { language: VocabularyL
           <span>{c.verbs}: {topic.progress.knownVerbs} / 15 {topic.progress.tests.verbsPassed ? "✅" : ""}</span>
           <span>{c.adjectives}: {topic.progress.knownAdjectives} / 15 {topic.progress.tests.adjectivesPassed ? "✅" : ""}</span>
           <span>{c.nouns}: {topic.progress.knownNouns} / 15 {topic.progress.tests.nounsPassed ? "✅" : ""}</span>
-          <span>Mixed Test: {topic.progress.tests.mixedPassed ? "✅" : "80%+"}</span>
+          <span>{c.memorizationTest}: {topic.progress.tests.mixedPassed ? "✅" : "80%+"}</span>
         </div>
       </div>
       {locked ? (
@@ -408,16 +417,22 @@ function VocabularyPathNode({
         </div>
         <ProgressBar value={topic.progress.completionPercentage} danger={locked} />
         <div className="mt-4 flex flex-wrap gap-2 text-xs font-black">
-          <Requirement done={topic.progress.totalKnown >= 45} label="45 words" />
-          <Requirement done={topic.progress.tests.verbsPassed} label="Verbs" />
-          <Requirement done={topic.progress.tests.adjectivesPassed} label="Adjectives" />
-          <Requirement done={topic.progress.tests.nounsPassed} label="Nouns" />
-          <Requirement done={topic.progress.tests.mixedPassed} label="Mixed test 80%+" />
+          <Requirement done={topic.progress.totalKnown >= 45} label={language === "RU" ? "45 слов изучено" : language === "EN" ? "45 words learned" : "45 сөз оқылды"} />
+          <Requirement done={topic.progress.tests.mixedPassed} label={c.memorizationTest} />
         </div>
         {locked ? (
           <button type="button" disabled className="mt-4 rounded-2xl bg-[#DDD6FE] px-5 py-3 font-black text-[#6B5E8F]">
             {button}
           </button>
+        ) : topic.progress.totalKnown >= 45 ? (
+          <a
+            href={`/vocabulary/${topic.slug}/final-test`}
+            className={`mt-4 inline-flex rounded-2xl px-5 py-3 font-black shadow-[0_5px_0_#4C1D95] ${
+              topic.progress.tests.mixedPassed ? "bg-[#22C55E] text-white" : "bg-[#FACC15] text-[#1E1B4B] shadow-[0_5px_0_#D97706]"
+            }`}
+          >
+            {c.memorizationTest}
+          </a>
         ) : (
           <a
             href={`/vocabulary/${topic.slug}`}
@@ -426,6 +441,7 @@ function VocabularyPathNode({
             {button}
           </a>
         )}
+        {!locked ? <p className="mt-3 text-sm font-black text-[#6B5E8F]">{topic.progress.totalKnown >= 45 ? c.memorizationTestHint : c.learnAllWordsFirst}</p> : null}
       </div>
     </div>
   );

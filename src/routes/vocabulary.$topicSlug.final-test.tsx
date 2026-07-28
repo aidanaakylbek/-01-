@@ -13,7 +13,7 @@ import type { VocabularyLanguage, VocabularyQuestion, VocabularyTestAttempt, Voc
 
 export const Route = createFileRoute("/vocabulary/$topicSlug/final-test")({
   loader: async ({ params }) => startVocabularyMixedTestFn({ data: { topicSlug: params.topicSlug } }),
-  head: () => ({ meta: [{ title: "Mixed Vocabulary Test — AI-Sana" }] }),
+  head: () => ({ meta: [{ title: "Vocabulary Check Test — AI-Sana" }] }),
   component: VocabularyFinalTestPage,
 });
 
@@ -54,8 +54,10 @@ function VocabularyFinalTestPage() {
           <Link to="/vocabulary/$topicSlug" params={{ topicSlug: attempt.topicSlug }} className="font-black text-[#FACC15]">
             ← Тақырыпқа қайту
           </Link>
-          <h1 className="mt-4 text-5xl font-black">Mixed Topic Test</h1>
-          <p className="mt-2 font-bold text-[#EDE9FE]">15 сұрақ: 5 verb, 5 adjective, 5 noun.</p>
+          <h1 className="mt-4 text-5xl font-black">{lang === "RU" ? "Тест на знание слов" : "Сөзді тексеру тесті"}</h1>
+          <p className="mt-2 font-bold text-[#EDE9FE]">
+            {lang === "RU" ? "15 вопросов. Для перехода дальше нужно 80%+." : "15 сұрақ. Келесі бөлімге өту үшін 80%+ керек."}
+          </p>
         </GameCard>
         {result ? (
           <VocabularyTestResultCard language={lang} result={result} />

@@ -60,12 +60,6 @@ function VocabularyTopicPage() {
     adjective: topic.progress.knownAdjectives,
     noun: topic.progress.knownNouns,
   };
-  const sectionPassed = {
-    verb: topic.progress.tests.verbsPassed,
-    adjective: topic.progress.tests.adjectivesPassed,
-    noun: topic.progress.tests.nounsPassed,
-  };
-
   if (pathname !== `/vocabulary/${topic.slug}`) {
     return <Outlet />;
   }
@@ -170,19 +164,25 @@ function VocabularyTopicPage() {
             <SectionStatus label={partLabel("adjective", lang)} known={topic.progress.knownAdjectives} passed={topic.progress.tests.adjectivesPassed} active={activePart === "adjective"} />
             <SectionStatus label={partLabel("noun", lang)} known={topic.progress.knownNouns} passed={topic.progress.tests.nounsPassed} active={activePart === "noun"} />
             <div className={`rounded-3xl border-2 p-4 ${topic.progress.tests.mixedPassed ? "border-[#FACC15] bg-[#FFFBEB]" : "border-[#DDD6FE] bg-[#F5F3FF]"}`}>
-              <p className="font-black text-[#1E1B4B]">Mixed Topic Test</p>
-              <p className="mt-1 text-sm font-black text-[#6B5E8F]">{topic.progress.tests.mixedPassed ? "✓ 80%+" : "80%+"}</p>
+              <p className="font-black text-[#1E1B4B]">{lang === "RU" ? "Тест на знание слов" : "Сөзді тексеру тесті"}</p>
+              <p className="mt-1 text-sm font-black text-[#6B5E8F]">
+                {topic.progress.tests.mixedPassed ? "✓ 80%+" : lang === "RU" ? "Для перехода нужно 80%+" : "Келесі бөлім үшін 80%+"}
+              </p>
             </div>
           </div>
-          {sectionPassed.verb && sectionPassed.adjective && sectionPassed.noun ? (
+          {topic.progress.totalKnown >= 45 ? (
             <Link
               to="/vocabulary/$topicSlug/final-test"
               params={{ topicSlug: topic.slug }}
               className="mt-5 inline-flex rounded-2xl bg-[#6D28D9] px-5 py-3 font-black text-white shadow-[0_5px_0_#4C1D95]"
             >
-              Mixed Topic Test
+              {lang === "RU" ? "Пройти тест на знание слов" : "Сөзді жаттауды тексеру"}
             </Link>
-          ) : null}
+          ) : (
+            <p className="mt-5 rounded-2xl bg-[#F5F3FF] px-5 py-3 font-black text-[#6B5E8F]">
+              {lang === "RU" ? "Тест откроется после изучения всех 45 слов." : "Тест барлық 45 сөз оқылғаннан кейін ашылады."}
+            </p>
+          )}
         </GameCard>
 
         <VocabularyTabs active={activePart} counts={counts} language={lang} onChange={setActivePart} />
@@ -207,21 +207,37 @@ function VocabularyTopicPage() {
         </div>
 
         <GameCard className="bg-white/95">
-          <div className="flex flex-wrap gap-3">
-            <Link
-              to="/vocabulary/$topicSlug/test/$partOfSpeech"
-              params={{ topicSlug: topic.slug, partOfSpeech: activePart }}
-              className="rounded-2xl bg-[#6D28D9] px-5 py-3 font-black text-white shadow-[0_5px_0_#4C1D95]"
-            >
-              {partLabel(activePart, lang)} тесті
-            </Link>
-            <Link
-              to="/vocabulary/games"
-              search={{ topic: topic.slug }}
-              className="rounded-2xl border-2 border-[#DDD6FE] px-5 py-3 font-black text-[#6D28D9]"
-            >
-              Ойындар
-            </Link>
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.22em] text-[#8B5CF6]">
+                {lang === "RU" ? "Проверка темы" : "Тақырыпты тексеру"}
+              </p>
+              <h2 className="mt-1 text-2xl font-black text-[#1E1B4B]">
+                {lang === "RU" ? "Тест на запоминание слов" : "Сөзді жаттауды тексеру"}
+              </h2>
+              <p className="mt-1 font-bold text-[#6B5E8F]">
+                {lang === "RU"
+                  ? "Чтобы открыть следующий раздел, изучите 45 слов и наберите 80% или выше."
+                  : "Келесі бөлімді ашу үшін 45 сөзді оқып, тесттен 80% немесе одан жоғары нәтиже жина."}
+              </p>
+            </div>
+            {topic.progress.totalKnown >= 45 ? (
+              <Link
+                to="/vocabulary/$topicSlug/final-test"
+                params={{ topicSlug: topic.slug }}
+                className="rounded-2xl bg-[#6D28D9] px-5 py-3 text-center font-black text-white shadow-[0_5px_0_#4C1D95]"
+              >
+                {lang === "RU" ? "Начать тест" : "Тестті бастау"}
+              </Link>
+            ) : (
+              <button
+                type="button"
+                disabled
+                className="rounded-2xl bg-[#DDD6FE] px-5 py-3 font-black text-[#6B5E8F]"
+              >
+                {topic.progress.totalKnown} / 45
+              </button>
+            )}
           </div>
         </GameCard>
 
