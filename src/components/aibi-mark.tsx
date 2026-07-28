@@ -1,7 +1,7 @@
 ﻿import type { HTMLAttributes } from "react";
 
 import { cn } from "@/lib/utils";
-import aiSanaHero from "@/assets/ai-sana-hero.jpg";
+import aiSanaLogo from "@/assets/ai-sana-logo.png";
 
 type AibiMarkProps = HTMLAttributes<HTMLDivElement> & {
   className?: string;
@@ -59,11 +59,11 @@ export function AibiMark({
       <img
         alt=""
         aria-hidden="true"
-        className="h-full w-full object-cover"
+        className="h-full w-full object-contain"
         draggable={false}
         height={pixelSize}
-        src={aiSanaHero}
-        style={{ display: "block", height: "100%", objectFit: "cover", width: "100%" }}
+        src={aiSanaLogo}
+        style={{ display: "block", height: "100%", objectFit: "contain", width: "100%" }}
         width={pixelSize}
       />
     </div>
