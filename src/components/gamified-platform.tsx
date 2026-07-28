@@ -1,6 +1,7 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
 import { AibiMark } from "@/components/aibi-mark";
+import { AiSanaAvatar } from "@/components/ai-sana-avatar";
 import { SiteFooter } from "@/components/site-footer";
 import { Lang, useLanguage } from "@/hooks/use-language";
 import { getAccountDashboard, logoutAccount } from "@/lib/api/account.functions";
@@ -416,9 +417,10 @@ export function GameTopBar({ compact = false }: { compact?: boolean }) {
             <>
               <Link
                 to="/profile"
-                className="grid h-11 w-11 place-items-center rounded-full bg-[#8B5CF6] font-black text-white shadow-[0_5px_0_#5B21B6] transition hover:-translate-y-0.5"
+                className="grid h-11 w-11 place-items-center overflow-hidden rounded-full bg-white shadow-[0_5px_0_#5B21B6] transition hover:-translate-y-0.5"
+                aria-label="Профиль"
               >
-                AA
+                <AiSanaAvatar size="md" className="h-full w-full border-0 shadow-none" />
               </Link>
               <button
                 className="rounded-2xl border-2 border-[#DDD6FE] bg-white px-3 py-2 text-sm font-black text-[#6D28D9] shadow-[0_4px_0_rgba(109,40,217,0.12)] transition hover:-translate-y-0.5"
@@ -617,7 +619,7 @@ export function ProgressBar({ value, danger = false }: { value: number; danger?:
 export function MascotCoach({ text }: { text: string }) {
   return (
     <div className="flex items-center gap-4 rounded-[28px] border-2 border-[#DDD6FE] bg-white p-4 shadow-[0_8px_0_rgba(109,40,217,0.12)]">
-      <AibiMark size="lg" className="motion-float bg-[#F5F3FF]" />
+      <AiSanaAvatar size="lg" className="motion-float bg-[#F5F3FF]" />
       <div>
         <p className="text-xs font-black uppercase tracking-widest text-[#8B5CF6]">AI-Sana</p>
         <p className="font-black text-[#1E1B4B]">{text}</p>

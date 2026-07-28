@@ -1,8 +1,8 @@
 ﻿import { createFileRoute } from "@tanstack/react-router";
 import { FormEvent, useEffect, useRef, useState } from "react";
 
-import aiSanaHero from "@/assets/ai-sana-hero.jpg";
-import { AibiMark } from "@/components/aibi-mark";
+import aiSanaAvatarImage from "@/assets/ai-sana-avatar.png";
+import { AiSanaAvatar } from "@/components/ai-sana-avatar";
 import { GameCard, GameLayout, ProgressBar } from "@/components/gamified-platform";
 import { ReadableMathText } from "@/components/readable-math-text";
 import { useLanguage } from "@/hooks/use-language";
@@ -224,7 +224,7 @@ function AITutorPage() {
               <div className="relative rounded-[34px] border-4 border-white/40 bg-white p-3 shadow-[0_10px_0_rgba(30,27,75,0.25)]">
                 <img
                   className="h-56 w-full rounded-[26px] object-cover object-top"
-                  src={aiSanaHero}
+                  src={aiSanaAvatarImage}
                   alt="AI-Sana tutor"
                 />
                 <div className="absolute -left-5 top-6 rounded-2xl bg-[#FACC15] px-3 py-2 text-sm font-black text-[#1E1B4B] shadow-[0_5px_0_#CA8A04]">
@@ -239,7 +239,7 @@ function AITutorPage() {
           <GameCard className="flex min-h-[620px] flex-col bg-white/95 p-0">
             <div className="flex items-center justify-between border-b-2 border-[#DDD6FE] p-4">
               <div className="flex items-center gap-3">
-                <AibiMark size="md" />
+                <AiSanaAvatar size="md" />
                 <div>
                   <h2 className="text-xl font-black text-[#1E1B4B]">AI-Sana</h2>
                   <p className="text-sm font-bold text-[#6B5E8F]">

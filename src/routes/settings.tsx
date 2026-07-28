@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { GameCard, GameLayout, ProgressBar } from "@/components/gamified-platform";
-import { AibiMark } from "@/components/aibi-mark";
+import { AiSanaAvatar } from "@/components/ai-sana-avatar";
 import { getAccountDashboard } from "@/lib/api/account.functions";
 import { useLanguage } from "@/hooks/use-language";
 
@@ -27,7 +27,7 @@ export function ProfileContent({ dashboard }: { dashboard: DashboardData }) {
         <GameCard className="bg-gradient-to-br from-[#6D28D9] to-[#8B5CF6] text-white">
           <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
             <div className="flex items-center gap-5">
-              <AibiMark size="lg" className="h-24 w-24 bg-white" />
+              <AiSanaAvatar size="lg" className="h-24 w-24 bg-white" />
               <div>
                 <p className="text-sm font-black uppercase tracking-[0.25em] text-[#FACC15]">
                   Level 1 · Purple League

@@ -1,8 +1,8 @@
 ﻿import { useEffect, useRef, useState } from "react";
-import { AibiMark } from "@/components/aibi-mark";
+import { AiSanaAvatar } from "@/components/ai-sana-avatar";
 import { ReadableMathText } from "@/components/readable-math-text";
 import { useLanguage } from "@/hooks/use-language";
-import aiSanaHero from "@/assets/ai-sana-hero.jpg";
+import aiSanaAvatarImage from "@/assets/ai-sana-avatar.png";
 
 type ChatMessage = {
   role: "user" | "assistant";
@@ -212,7 +212,7 @@ export function AIAssistant() {
           aria-hidden="true"
           className="h-full w-full object-cover"
           draggable={false}
-          src={aiSanaHero}
+          src={aiSanaAvatarImage}
         />
       </button>
 
@@ -229,7 +229,7 @@ export function AIAssistant() {
             <div className="mx-auto mt-3 h-1.5 w-[92px] rounded-full bg-muted shrink-0" />
             <header className="shrink-0 border-b border-outline-variant px-4 py-3 sm:py-4">
               <div className="flex items-center gap-3">
-                <AibiMark shape="circle" size="md" />
+                <AiSanaAvatar size="md" />
                 <div className="min-w-0 flex-1">
                   <h2 className="font-headline-md text-title-lg sm:text-headline-md">
                     AI-Sana AI Tutor

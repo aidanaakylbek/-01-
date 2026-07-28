@@ -1,7 +1,7 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 
-import { AibiMark } from "@/components/aibi-mark";
+import { AiSanaAvatar } from "@/components/ai-sana-avatar";
 import { GameCard, GameLayout, ProgressBar } from "@/components/gamified-platform";
 import { useLanguage } from "@/hooks/use-language";
 import { getAccountDashboard } from "@/lib/api/account.functions";
@@ -108,7 +108,7 @@ function CompactAdvice({ c, dashboard }: { c: ProgressCopy; dashboard: Dashboard
 
   return (
     <div className="flex min-h-20 items-center gap-3 rounded-[24px] border-2 border-[#DDD6FE] bg-white px-4 py-3 shadow-[0_7px_0_rgba(109,40,217,0.10)] sm:px-5">
-      <AibiMark size="md" shape="circle" className="bg-[#F5F3FF]" />
+      <AiSanaAvatar size="md" className="bg-[#F5F3FF]" />
       <div className="min-w-0 flex-1">
         <p className="text-xs font-black uppercase tracking-widest text-[#8B5CF6]">
           {c.adviceLabel}

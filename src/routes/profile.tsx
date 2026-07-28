@@ -1,6 +1,6 @@
 ﻿import { Link, createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { AibiMark } from "@/components/aibi-mark";
+import { AiSanaAvatar } from "@/components/ai-sana-avatar";
 import { GameCard, GameLayout } from "@/components/gamified-platform";
 import { useLanguage } from "@/hooks/use-language";
 import { getAccountDashboard } from "@/lib/api/account.functions";
@@ -96,7 +96,7 @@ function ProfileContent({
         <section className="rounded-[28px] border-2 border-[#C4B5FD] bg-gradient-to-br from-[#6D28D9] via-[#7C3AED] to-[#8B5CF6] p-5 text-white shadow-[0_8px_0_#DDD6FE] md:p-6">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="flex items-center gap-4">
-              <AibiMark
+              <AiSanaAvatar
                 size="lg"
                 className="h-20 w-20 border-4 border-white bg-white md:h-24 md:w-24"
               />
@@ -121,7 +121,7 @@ function ProfileContent({
         {recommendation ? (
           <section className="rounded-[24px] border-2 border-[#DDD6FE] bg-white px-5 py-4 shadow-[0_6px_0_#EDE9FE]">
             <div className="flex items-start gap-3">
-              <AibiMark size="sm" className="h-12 w-12 bg-[#F5F3FF]" />
+              <AiSanaAvatar size="sm" className="h-12 w-12 bg-[#F5F3FF]" />
               <div>
                 <p className="text-sm font-black uppercase tracking-[0.18em] text-[#7C3AED]">
                   {c.aiAdvice}
@@ -195,7 +195,7 @@ function PersonalInfoCard({
   return (
     <GameCard className="p-5 md:p-6">
       <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
-        <AibiMark size="lg" className="h-20 w-20 shrink-0 bg-[#F5F3FF]" />
+        <AiSanaAvatar size="lg" className="h-20 w-20 shrink-0 bg-[#F5F3FF]" />
         <div className="min-w-0 flex-1">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
