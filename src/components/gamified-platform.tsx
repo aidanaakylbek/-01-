@@ -378,7 +378,7 @@ export function GameTopBar({ compact = false }: { compact?: boolean }) {
     <header className="sticky top-0 z-50 border-b-2 border-[#DDD6FE] bg-white/92 shadow-[0_6px_0_rgba(109,40,217,0.06)] backdrop-blur-xl">
       <div className="mx-auto flex min-h-16 max-w-[1440px] items-center gap-3 px-3 md:px-5">
         <Link to="/" className="flex shrink-0 items-center gap-2 md:w-[220px]">
-          <AibiMark size="md" className="shadow-[0_5px_0_rgba(109,40,217,0.18)]" />
+          <AibiMark size="md" />
           <span className="hidden text-2xl font-black tracking-tight text-[#6D28D9] sm:inline">
             AI-Sana
           </span>
@@ -465,7 +465,7 @@ function GameSidebar() {
     <aside className="hidden max-h-[calc(100vh-5rem)] overflow-y-auto overscroll-contain pr-1 md:sticky md:top-20 md:block">
       <div className="rounded-[28px] border-2 border-[#DDD6FE] bg-white p-3 shadow-[0_10px_0_rgba(109,40,217,0.10)]">
         <div className="mb-3 flex items-center gap-3 px-2 py-1">
-          <AibiMark size="md" className="bg-white" />
+          <AibiMark size="md" />
           <span className="text-lg font-black text-[#6D28D9]">AI-Sana</span>
         </div>
         <nav className="space-y-1.5">

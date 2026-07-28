@@ -40,7 +40,7 @@ export function AibiMark({
     <div
       aria-label={label}
       className={cn(
-        "relative shrink-0 bg-surface-container-lowest border border-secondary flex items-center justify-center overflow-hidden shadow-sm",
+        "relative shrink-0 flex items-center justify-center overflow-hidden",
         shape === "circle" ? "rounded-full" : "rounded-[8px]",
         sizeClasses[size],
         className,
