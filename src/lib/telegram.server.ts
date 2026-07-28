@@ -1,3 +1,5 @@
+import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
+
 export type TelegramSendResult =
   | { ok: true; messageId?: number }
   | { ok: false; code: string; detail: string };
@@ -28,7 +30,55 @@ export function buildParentTelegramInviteLink(inviteCode: string) {
     return "";
   }
 
-  return `https://telegram.me/${username}?start=parent_${encodeURIComponent(inviteCode)}`;
+  return `https://t.me/${username}?start=${encodeURIComponent(inviteCode)}`;
+}
+
+export function createTelegramStartToken() {
+  return randomBytes(32).toString("base64url");
+}
+
+export function hashTelegramStartToken(token: string) {
+  const secret = process.env.TELEGRAM_TOKEN_SECRET || process.env.TELEGRAM_BOT_TOKEN || "ai-sana-dev";
+  return createHash("sha256").update(`${secret}:${token}`).digest("hex");
+}
+
+export function normalizeTelegramPhone(phone: string) {
+  const digits = phone.replace(/\D/g, "");
+
+  if (!digits) {
+    return "";
+  }
+
+  if (digits.length === 11 && digits.startsWith("8")) {
+    return `+7${digits.slice(1)}`;
+  }
+
+  if (digits.length === 11 && digits.startsWith("7")) {
+    return `+${digits}`;
+  }
+
+  if (digits.length === 10) {
+    return `+7${digits}`;
+  }
+
+  return `+${digits}`;
+}
+
+export function isValidTelegramWebhookSecret(request: Request) {
+  const expected = process.env.TELEGRAM_WEBHOOK_SECRET?.trim();
+
+  if (!expected) {
+    return true;
+  }
+
+  const received = request.headers.get("x-telegram-bot-api-secret-token") ?? "";
+  const expectedBuffer = Buffer.from(expected);
+  const receivedBuffer = Buffer.from(received);
+
+  return (
+    expectedBuffer.length === receivedBuffer.length &&
+    timingSafeEqual(expectedBuffer, receivedBuffer)
+  );
 }
 
 export function getAppUrl(request?: Request) {
@@ -58,6 +108,7 @@ export function buildTelegramWebhookUrl(request?: Request) {
 export async function sendTelegramMessage(
   chatIdOrInput: string | { chatId: string; text: string },
   maybeText?: string,
+  options?: { replyMarkup?: unknown },
 ): Promise<TelegramSendResult> {
   const chatId = typeof chatIdOrInput === "string" ? chatIdOrInput : chatIdOrInput.chatId;
   const text = typeof chatIdOrInput === "string" ? (maybeText ?? "") : chatIdOrInput.text;
@@ -80,6 +131,7 @@ export async function sendTelegramMessage(
       body: JSON.stringify({
         chat_id: chatId,
         disable_web_page_preview: true,
+        ...(options?.replyMarkup ? { reply_markup: options.replyMarkup } : {}),
         text,
       }),
     });
@@ -106,6 +158,25 @@ export async function sendTelegramMessage(
       detail: error instanceof Error ? error.message : "Could not reach Telegram API.",
     };
   }
+}
+
+export function getPhoneRequestKeyboard() {
+  return {
+    keyboard: [
+      [
+        {
+          request_contact: true,
+          text: "Телефон нөмірімді растау",
+        },
+      ],
+    ],
+    one_time_keyboard: true,
+    resize_keyboard: true,
+  };
+}
+
+export function getRemoveKeyboard() {
+  return { remove_keyboard: true };
 }
 
 export async function setTelegramWebhook(webhookUrl: string): Promise<TelegramWebhookResult> {
@@ -136,6 +207,9 @@ export async function setTelegramWebhook(webhookUrl: string): Promise<TelegramWe
       body: JSON.stringify({
         allowed_updates: ["message"],
         drop_pending_updates: false,
+        ...(process.env.TELEGRAM_WEBHOOK_SECRET
+          ? { secret_token: process.env.TELEGRAM_WEBHOOK_SECRET }
+          : {}),
         url: webhookUrl,
       }),
     });

@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { createOrReturnParentInvite, getDashboardAccount } from "@/lib/account-store.server";
+import { createTelegramVerificationInvite, getDashboardAccount } from "@/lib/account-store.server";
 import {
   buildParentTelegramInviteLink,
   buildTelegramWebhookUrl,
@@ -23,12 +23,12 @@ export const Route = createFileRoute("/api/parent/create-invite")({
 
 async function createParentInviteResponse(request: Request) {
   const dashboard = await getDashboardAccount();
-  const invite = await createOrReturnParentInvite();
-  const telegramLink = buildParentTelegramInviteLink(invite.inviteCode);
+  const invite = await createTelegramVerificationInvite("student_verification");
+  const telegramLink = buildParentTelegramInviteLink(invite.token);
   const webhookStatus = await ensureTelegramWebhook(request);
 
   return {
-    inviteCode: invite.inviteCode,
+    expiresAt: invite.expiresAt,
     parentName: invite.parentName,
     status: getParentStatus(dashboard.account),
     telegramConfigured: Boolean(telegramLink),

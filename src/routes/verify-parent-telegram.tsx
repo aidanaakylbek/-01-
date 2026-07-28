@@ -16,7 +16,7 @@ export const Route = createFileRoute("/verify-parent-telegram")({
 });
 
 type InviteResponse = {
-  inviteCode: string;
+  expiresAt: string;
   parentName: string;
   telegramConfigured: boolean;
   telegramLink: string;
@@ -74,11 +74,15 @@ function VerifyParentTelegram() {
               label="Telegram status"
               value={verified ? "Ата-ана расталды ✅" : "Ата-ана расталмаған"}
             />
-            <Info label="Invite code" value={invite?.inviteCode ?? "..."} />
+            <Info
+              label="Қауіпсіз сілтеме"
+              value={invite?.expiresAt ? "10 минутқа жарамды" : "Дайындалуда..."}
+            />
           </div>
 
           <p className="mt-5 rounded-3xl bg-[#F5F3FF] p-4 font-semibold text-[#6B5E8F]">
             Растау аяқталғаннан кейін сайтқа кіру ашылады.
+            Telegram ботта “Телефон нөмірімді растау” батырмасын басу керек.
           </p>
 
           <div className="mt-6 flex flex-wrap gap-3">

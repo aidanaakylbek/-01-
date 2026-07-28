@@ -9,6 +9,10 @@ create table if not exists public.users (
   initials text,
   role text not null default 'student',
   telegram_parent_verified boolean not null default false,
+  telegram_user_id text,
+  telegram_chat_id text,
+  phone_e164 text,
+  telegram_verified_at timestamptz,
   subscription_status text not null default 'inactive'
     check (subscription_status in ('inactive', 'active', 'expired', 'cancelled')),
   subscription_plan text check (subscription_plan in ('monthly', 'three_months', 'yearly')),
@@ -42,9 +46,13 @@ create table if not exists public.parents (
   phone_normalized text not null,
   phone_verified boolean not null default false,
   telegram_chat_id text,
+  telegram_user_id text,
+  phone_e164 text,
   telegram_connected boolean not null default false,
   telegram_verified_at timestamptz,
   invite_code text not null unique,
+  parent_report_enabled boolean not null default false,
+  parent_consent_at timestamptz,
   last_report_sent_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -79,14 +87,44 @@ create table if not exists public.weekly_report_deliveries (
   unique (student_id, week_key)
 );
 
+create table if not exists public.telegram_verification_tokens (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references public.users(id) on delete cascade,
+  purpose text not null check (purpose in ('student_verification', 'parent_link')),
+  token_hash text not null unique,
+  telegram_chat_id text,
+  telegram_user_id text,
+  expires_at timestamptz not null,
+  used_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 create index if not exists parents_student_id_idx on public.parents(student_id);
 create index if not exists parents_invite_code_idx on public.parents(invite_code);
 create index if not exists payment_requests_user_id_idx on public.payment_requests(user_id);
 create unique index if not exists users_email_unique_idx on public.users(email);
 create unique index if not exists users_email_lower_unique_idx on public.users(lower(email));
+create unique index if not exists users_telegram_user_id_unique_idx
+  on public.users(telegram_user_id)
+  where telegram_user_id is not null;
+create unique index if not exists users_phone_e164_unique_idx
+  on public.users(phone_e164)
+  where phone_e164 is not null;
+create index if not exists telegram_verification_tokens_user_id_idx
+  on public.telegram_verification_tokens(user_id);
+create index if not exists telegram_verification_tokens_pending_idx
+  on public.telegram_verification_tokens(telegram_chat_id, telegram_user_id, expires_at)
+  where used_at is null;
 
 alter table public.users
   add column if not exists mentor_style text not null default 'friendly';
+
+alter table public.users
+  add column if not exists telegram_user_id text,
+  add column if not exists telegram_chat_id text,
+  add column if not exists phone_e164 text,
+  add column if not exists telegram_verified_at timestamptz;
 
 alter table public.users
   add column if not exists diagnostic_started_at timestamptz,
@@ -110,6 +148,12 @@ alter table public.users
 
 alter table public.parents add column if not exists phone_normalized text;
 
+alter table public.parents
+  add column if not exists telegram_user_id text,
+  add column if not exists phone_e164 text,
+  add column if not exists parent_report_enabled boolean not null default false,
+  add column if not exists parent_consent_at timestamptz;
+
 update public.parents
 set phone_normalized =
   case
@@ -131,6 +175,9 @@ create unique index if not exists parents_phone_normalized_unique_idx on public.
 create unique index if not exists parents_telegram_chat_id_unique_idx
   on public.parents(telegram_chat_id)
   where telegram_chat_id is not null;
+create unique index if not exists parents_telegram_user_id_unique_idx
+  on public.parents(telegram_user_id)
+  where telegram_user_id is not null;
 create unique index if not exists parents_invite_code_unique_idx on public.parents(invite_code);
 
 create table if not exists public.english_vocabulary_topics (

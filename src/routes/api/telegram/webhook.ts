@@ -1,11 +1,26 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { verifyParentTelegramInvite } from "@/lib/account-store.server";
-import { sendTelegramMessage } from "@/lib/telegram.server";
+import {
+  completeTelegramVerificationFromContact,
+  startTelegramVerificationSession,
+} from "@/lib/account-store.server";
+import {
+  getPhoneRequestKeyboard,
+  getRemoveKeyboard,
+  isValidTelegramWebhookSecret,
+  sendTelegramMessage,
+} from "@/lib/telegram.server";
 
 type TelegramUpdate = {
   message?: {
     chat?: {
+      id?: number | string;
+    };
+    contact?: {
+      phone_number?: string;
+      user_id?: number | string;
+    };
+    from?: {
       id?: number | string;
     };
     text?: string;
@@ -22,47 +37,58 @@ export const Route = createFileRoute("/api/telegram/webhook")({
         }),
       POST: async ({ request }) => {
         try {
+          if (!isValidTelegramWebhookSecret(request)) {
+            console.warn("[telegram:webhook] rejected update with invalid secret token");
+            return Response.json({ ok: true, rejected: true });
+          }
+
           const update = (await request.json().catch(() => null)) as TelegramUpdate | null;
           const chatId = update?.message?.chat?.id;
-          const text = update?.message?.text?.trim() ?? "";
+          const fromId = update?.message?.from?.id;
 
           console.log("[telegram:webhook] incoming update", {
             chatId: chatId ? String(chatId) : "",
+            hasContact: Boolean(update?.message?.contact),
             hasMessage: Boolean(update?.message),
-            text,
+            hasText: Boolean(update?.message?.text),
           });
 
-          if (!chatId || !text) {
+          if (!chatId || !fromId) {
             return Response.json({ ok: true, ignored: true });
           }
 
           const chatIdText = String(chatId);
+          const fromIdText = String(fromId);
+          const contact = update?.message?.contact;
+
+          if (contact) {
+            await handleContact({
+              chatId: chatIdText,
+              contactTelegramUserId: String(contact.user_id ?? ""),
+              fromTelegramUserId: fromIdText,
+              phoneNumber: contact.phone_number ?? "",
+            });
+            return Response.json({ ok: true, handled: "contact" });
+          }
+
+          const text = update?.message?.text?.trim() ?? "";
           const startPayload = getStartPayload(text);
 
           if (startPayload !== null) {
-            const startInviteCode = extractParentInviteCodeFromPayload(startPayload);
-
-            if (startInviteCode) {
-              await verifyParentOrSendInvalidMessage(chatIdText, startInviteCode);
-              return Response.json({ ok: true, handled: "parent_start" });
+            if (startPayload) {
+              await handleStartToken({
+                chatId: chatIdText,
+                telegramUserId: fromIdText,
+                token: startPayload,
+              });
+              return Response.json({ ok: true, handled: "start_token" });
             }
 
             await sendTelegramMessage(chatIdText, getPlainStartMessage());
             return Response.json({ ok: true, handled: "plain_start" });
           }
 
-          const manualInviteCode = extractManualInviteCode(text);
-
-          if (manualInviteCode) {
-            await verifyParentOrSendInvalidMessage(chatIdText, manualInviteCode);
-            return Response.json({ ok: true, handled: "manual_code" });
-          }
-
-          await sendTelegramMessage(
-            chatIdText,
-            "Мен AI-Sana ата-ана есебін жіберетін ботпын. Қосылу үшін сайттағы Telegram батырмасын басыңыз.",
-          );
-
+          await sendTelegramMessage(chatIdText, getUnknownMessage());
           return Response.json({ ok: true, handled: "unknown_message" });
         } catch (error) {
           console.error("[telegram:webhook] failed to handle update", error);
@@ -73,47 +99,79 @@ export const Route = createFileRoute("/api/telegram/webhook")({
   },
 });
 
-async function verifyParentOrSendInvalidMessage(chatId: string, inviteCode: string) {
-  const result = await verifyParentTelegramInvite(inviteCode, chatId);
-
-  if (result.status === "telegram_already_connected") {
-    await sendTelegramMessage(
-      chatId,
-      "Бұл Telegram аккаунт басқа AI-Sana профиліне қосылған. Бір Telegram аккаунт тек бір оқушыға ғана қолданылады.",
-    );
-    return null;
-  }
-
-  if (result.status === "already_verified") {
-    await sendTelegramMessage(chatId, "Сіз AI-Sana ата-ана есебіне бұрын қосылғансыз ✅");
-    return result.account;
-  }
+async function handleStartToken(input: { chatId: string; telegramUserId: string; token: string }) {
+  const result = await startTelegramVerificationSession(input);
 
   if (result.status === "invalid") {
     await sendTelegramMessage(
-      chatId,
+      input.chatId,
       "Сілтеме жарамсыз немесе мерзімі өткен. AI-Sana сайтынан қайта қосылып көріңіз.",
     );
-    return null;
+    return;
   }
 
   await sendTelegramMessage(
-    chatId,
+    input.chatId,
     [
-      "Сіз AI-Sana ата-ана есебіне қосылдыңыз ✅",
-      "Енді балаңыз AI-Sana платформасын қолдана алады және апталық есептер Telegram арқылы келеді.",
+      "AI-Sana растауын аяқтау үшін төмендегі батырманы басып, өз Telegram нөміріңізді жіберіңіз.",
+      "Қауіпсіздік үшін тек өз нөміріңіз қабылданады.",
     ].join("\n"),
+    { replyMarkup: getPhoneRequestKeyboard() },
   );
-
-  return result.account;
 }
 
-function extractParentInviteCodeFromPayload(payload: string) {
-  if (!payload.toLowerCase().startsWith("parent_")) {
-    return "";
+async function handleContact(input: {
+  chatId: string;
+  contactTelegramUserId: string;
+  fromTelegramUserId: string;
+  phoneNumber: string;
+}) {
+  const result = await completeTelegramVerificationFromContact(input);
+
+  if (result.status === "forged_contact") {
+    await sendTelegramMessage(
+      input.chatId,
+      "Өз Telegram нөміріңізді ғана растауға болады. Батырманы қайта басып көріңіз.",
+      { replyMarkup: getPhoneRequestKeyboard() },
+    );
+    return;
   }
 
-  return normalizeInviteCode(payload.replace(/^parent_/i, ""));
+  if (result.status === "telegram_already_connected") {
+    await sendTelegramMessage(
+      input.chatId,
+      "Бұл Telegram аккаунт басқа AI-Sana профиліне қосылған.",
+      { replyMarkup: getRemoveKeyboard() },
+    );
+    return;
+  }
+
+  if (result.status === "phone_already_used") {
+    await sendTelegramMessage(
+      input.chatId,
+      "Бұл телефон нөмірі басқа AI-Sana аккаунтында қолданылған.",
+      { replyMarkup: getRemoveKeyboard() },
+    );
+    return;
+  }
+
+  if (result.status === "invalid" || result.status === "invalid_phone") {
+    await sendTelegramMessage(
+      input.chatId,
+      "Сілтеме жарамсыз немесе мерзімі өткен. AI-Sana сайтынан қайта қосылып көріңіз.",
+      { replyMarkup: getRemoveKeyboard() },
+    );
+    return;
+  }
+
+  await sendTelegramMessage(
+    input.chatId,
+    [
+      "Telegram нөміріңіз сәтті расталды ✅",
+      "AI-Sana сайтына қайта оралыңыз. Диагностикалық тест енді ашылады.",
+    ].join("\n"),
+    { replyMarkup: getRemoveKeyboard() },
+  );
 }
 
 function getStartPayload(text: string) {
@@ -126,25 +184,13 @@ function getStartPayload(text: string) {
   return match[1]?.trim() ?? "";
 }
 
-function extractManualInviteCode(text: string) {
-  return normalizeInviteCode(text);
-}
-
-function normalizeInviteCode(value: string) {
-  const code = value.trim().toUpperCase();
-
-  if (!/^[A-Z0-9]{6,10}$/.test(code)) {
-    return "";
-  }
-
-  return code;
-}
-
 function getPlainStartMessage() {
   return [
     "Сәлеметсіз бе! Бұл AI-Sana боты 🤖",
     "Ата-ана есебін қосу үшін AI-Sana сайтындағы арнайы Telegram сілтемесі арқылы кіріңіз.",
-    "",
-    "Егер сізде invite code болса, оны осы чатқа бөлек жібере аласыз.",
   ].join("\n");
+}
+
+function getUnknownMessage() {
+  return "Мен AI-Sana ата-ана есебін жіберетін ботпын. Қосылу үшін сайттағы Telegram батырмасын басыңыз.";
 }

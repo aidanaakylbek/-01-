@@ -1,7 +1,10 @@
 import { deleteCookie, getCookie, setCookie } from "@tanstack/start-server-core/request-response";
 import {
   activateSubscription,
+  beginTelegramVerificationToken,
   createAccountWithParent,
+  createTelegramVerificationToken,
+  completeTelegramContactVerification,
   createPaymentRequestRow,
   findAccountByEmail,
   findParentByNormalizedPhone,
@@ -16,6 +19,11 @@ import {
   wasReportSent,
 } from "./supabase-db.server";
 import type { DiagnosticAttemptSnapshot, DiagnosticLevel } from "./diagnostic-analysis";
+import {
+  createTelegramStartToken,
+  hashTelegramStartToken,
+  normalizeTelegramPhone,
+} from "./telegram.server";
 
 export type Account = {
   id: string;
@@ -35,6 +43,10 @@ export type Account = {
   parentWhatsApp: string;
   parentWhatsAppVerified: boolean;
   telegramParentVerified: boolean;
+  telegramUserId?: string;
+  telegramChatId?: string;
+  phoneE164?: string;
+  telegramVerifiedAt?: string;
   subscriptionStatus: SubscriptionStatus;
   subscriptionPlan?: PlanKey;
   subscriptionStartedAt?: string;
@@ -223,6 +235,19 @@ type ParentWhatsAppVerification = {
   expiresAt: number;
 };
 
+type TelegramVerificationPurpose = "student_verification" | "parent_link";
+
+type LocalTelegramVerificationToken = {
+  accountEmail: string;
+  chatId?: string;
+  createdAt: string;
+  expiresAt: string;
+  purpose: TelegramVerificationPurpose;
+  telegramUserId?: string;
+  tokenHash: string;
+  usedAt?: string;
+};
+
 const SESSION_COOKIE = "ai_sana_email";
 const sentWeeklyReportKeys = new Set<string>();
 
@@ -315,6 +340,7 @@ const accounts = new Map<string, StoredAccount>([
 ]);
 const paymentRequests = new Map<string, PaymentRequest>();
 const parentWhatsAppVerifications = new Map<string, ParentWhatsAppVerification>();
+const telegramVerificationTokens = new Map<string, LocalTelegramVerificationToken>();
 let activeEmail: string | null = null;
 
 const guestAccount: StoredAccount = {
@@ -744,6 +770,159 @@ export async function createOrReturnParentInvite() {
   };
 }
 
+export async function createTelegramVerificationInvite(
+  purpose: TelegramVerificationPurpose = "student_verification",
+) {
+  const account = await getActiveStoredAccount();
+
+  if (!account) {
+    throw new Error("AUTH_REQUIRED");
+  }
+
+  const rawToken = createTelegramStartToken();
+  const tokenHash = hashTelegramStartToken(rawToken);
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+
+  if (isSupabaseConfigured()) {
+    await createTelegramVerificationToken({
+      userId: account.id,
+      purpose,
+      tokenHash,
+      expiresAt,
+    });
+  } else {
+    telegramVerificationTokens.set(tokenHash, {
+      accountEmail: account.email,
+      createdAt: new Date().toISOString(),
+      expiresAt,
+      purpose,
+      tokenHash,
+    });
+  }
+
+  return {
+    expiresAt,
+    parentName: account.parentName,
+    verified: isTelegramVerified(account),
+    token: rawToken,
+  };
+}
+
+export async function startTelegramVerificationSession(input: {
+  chatId: string;
+  telegramUserId: string;
+  token: string;
+}) {
+  const tokenHash = hashTelegramStartToken(input.token);
+
+  if (isSupabaseConfigured()) {
+    return beginTelegramVerificationToken({
+      chatId: input.chatId,
+      telegramUserId: input.telegramUserId,
+      tokenHash,
+    });
+  }
+
+  const token = telegramVerificationTokens.get(tokenHash);
+
+  if (!token || token.usedAt || new Date(token.expiresAt).getTime() <= Date.now()) {
+    return { status: "invalid" as const };
+  }
+
+  token.chatId = input.chatId;
+  token.telegramUserId = input.telegramUserId;
+  telegramVerificationTokens.set(tokenHash, token);
+  return { status: "contact_required" as const, purpose: token.purpose };
+}
+
+export async function completeTelegramVerificationFromContact(input: {
+  chatId: string;
+  contactTelegramUserId: string;
+  fromTelegramUserId: string;
+  phoneNumber: string;
+}) {
+  if (input.contactTelegramUserId !== input.fromTelegramUserId) {
+    return { status: "forged_contact" as const };
+  }
+
+  const phoneE164 = normalizeTelegramPhone(input.phoneNumber);
+
+  if (!phoneE164) {
+    return { status: "invalid_phone" as const };
+  }
+
+  if (isSupabaseConfigured()) {
+    const result = await completeTelegramContactVerification({
+      chatId: input.chatId,
+      telegramUserId: input.fromTelegramUserId,
+      phoneE164,
+    });
+
+    if ("account" in result && result.account) {
+      return { ...result, account: toPublicAccount(result.account) };
+    }
+
+    return result;
+  }
+
+  const pendingToken = [...telegramVerificationTokens.values()]
+    .filter(
+      (token) =>
+        token.chatId === input.chatId &&
+        token.telegramUserId === input.fromTelegramUserId &&
+        !token.usedAt &&
+        new Date(token.expiresAt).getTime() > Date.now(),
+    )
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
+
+  if (!pendingToken) {
+    return { status: "invalid" as const };
+  }
+
+  const existingTelegramOwner = [...accounts.values()].find(
+    (account) => account.telegramUserId === input.fromTelegramUserId,
+  );
+  if (existingTelegramOwner && existingTelegramOwner.email !== pendingToken.accountEmail) {
+    return { status: "telegram_already_connected" as const };
+  }
+
+  const existingPhoneOwner = [...accounts.values()].find(
+    (account) => account.phoneE164 === phoneE164,
+  );
+  if (existingPhoneOwner && existingPhoneOwner.email !== pendingToken.accountEmail) {
+    return { status: "phone_already_used" as const };
+  }
+
+  const account = accounts.get(pendingToken.accountEmail);
+  if (!account) {
+    return { status: "invalid" as const };
+  }
+
+  const now = new Date().toISOString();
+  account.telegramParentVerified = true;
+  account.parentTelegramConnected = true;
+  account.parentPhoneVerified = true;
+  account.parentTelegramChatId = input.chatId;
+  account.parentTelegramVerifiedAt = now;
+  account.telegramUserId = input.fromTelegramUserId;
+  account.telegramChatId = input.chatId;
+  account.phoneE164 = phoneE164;
+  account.telegramVerifiedAt = now;
+  pendingToken.usedAt = now;
+  accounts.set(account.email, account);
+  telegramVerificationTokens.set(pendingToken.tokenHash, pendingToken);
+
+  return { status: "verified" as const, account: toPublicAccount(account) };
+}
+
+function isTelegramVerified(account: Account | StoredAccount) {
+  return Boolean(
+    account.telegramParentVerified ||
+      account.telegramVerifiedAt ||
+      (account.parentTelegramConnected && account.parentPhoneVerified),
+  );
+}
+
 export async function verifyParentTelegramInvite(inviteCode: string, telegramChatId: string) {
   if (isSupabaseConfigured()) {
     const result = await verifyParentTelegram(inviteCode, telegramChatId);
@@ -1042,6 +1221,8 @@ export function canEnterPlatform(account: Account | StoredAccount | null) {
   }
 
   return Boolean(
+    account.telegramVerifiedAt ||
+    account.telegramUserId ||
     account.telegramParentVerified ||
     (account.parentTelegramConnected && account.parentPhoneVerified),
   );

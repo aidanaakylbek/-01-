@@ -38,6 +38,10 @@ type SupabaseUserRow = {
   diagnostic_topic_scores: Record<string, number> | null;
   diagnostic_weak_topics: string[] | null;
   mentor_style: MentorStyle | null;
+  telegram_user_id?: string | null;
+  telegram_chat_id?: string | null;
+  phone_e164?: string | null;
+  telegram_verified_at?: string | null;
 };
 
 type SupabaseParentRow = {
@@ -52,6 +56,22 @@ type SupabaseParentRow = {
   telegram_verified_at: string | null;
   invite_code: string;
   last_report_sent_at: string | null;
+  telegram_user_id?: string | null;
+  phone_e164?: string | null;
+  parent_report_enabled?: boolean | null;
+  parent_consent_at?: string | null;
+};
+
+type SupabaseTelegramVerificationTokenRow = {
+  id: string;
+  user_id: string;
+  purpose: "student_verification" | "parent_link";
+  token_hash: string;
+  telegram_chat_id: string | null;
+  telegram_user_id: string | null;
+  expires_at: string;
+  used_at: string | null;
+  created_at: string;
 };
 
 type SupabasePaymentRequestRow = {
@@ -121,6 +141,17 @@ async function findParentByTelegramChatId(telegramChatId: string) {
     "parents",
     `telegram_chat_id=eq.${encodeURIComponent(telegramChatId)}`,
   );
+}
+
+async function findUserByTelegramUserId(telegramUserId: string) {
+  return selectOne<SupabaseUserRow>(
+    "users",
+    `telegram_user_id=eq.${encodeURIComponent(telegramUserId)}`,
+  );
+}
+
+async function findUserByPhoneE164(phoneE164: string) {
+  return selectOne<SupabaseUserRow>("users", `phone_e164=eq.${encodeURIComponent(phoneE164)}`);
 }
 
 export async function createAccountWithParent(input: {
@@ -215,6 +246,121 @@ export async function verifyParentTelegram(inviteCode: string, telegramChatId: s
   );
 
   return { status: "verified" as const, account: userToAccount(user, updatedParent) };
+}
+
+export async function createTelegramVerificationToken(input: {
+  userId: string;
+  purpose: "student_verification" | "parent_link";
+  tokenHash: string;
+  expiresAt: string;
+}) {
+  const [row] = await insertRows<SupabaseTelegramVerificationTokenRow>(
+    "telegram_verification_tokens",
+    [
+      {
+        user_id: input.userId,
+        purpose: input.purpose,
+        token_hash: input.tokenHash,
+        expires_at: input.expiresAt,
+      },
+    ],
+  );
+
+  return row;
+}
+
+export async function beginTelegramVerificationToken(input: {
+  chatId: string;
+  telegramUserId: string;
+  tokenHash: string;
+}) {
+  const token = await selectOne<SupabaseTelegramVerificationTokenRow>(
+    "telegram_verification_tokens",
+    `token_hash=eq.${encodeURIComponent(input.tokenHash)}&used_at=is.null`,
+  );
+
+  if (!token || new Date(token.expires_at).getTime() <= Date.now()) {
+    return { status: "invalid" as const };
+  }
+
+  await updateRows<SupabaseTelegramVerificationTokenRow>(
+    "telegram_verification_tokens",
+    `id=eq.${encodeURIComponent(token.id)}`,
+    {
+      telegram_chat_id: input.chatId,
+      telegram_user_id: input.telegramUserId,
+    },
+  );
+
+  return { status: "contact_required" as const, purpose: token.purpose };
+}
+
+export async function completeTelegramContactVerification(input: {
+  chatId: string;
+  telegramUserId: string;
+  phoneE164: string;
+}) {
+  const tokens = await selectMany<SupabaseTelegramVerificationTokenRow>(
+    "telegram_verification_tokens",
+    [
+      "select=*",
+      `telegram_chat_id=eq.${encodeURIComponent(input.chatId)}`,
+      `telegram_user_id=eq.${encodeURIComponent(input.telegramUserId)}`,
+      "used_at=is.null",
+      `expires_at=gt.${encodeURIComponent(new Date().toISOString())}`,
+      "order=created_at.desc",
+      "limit=1",
+    ].join("&"),
+  );
+  const token = tokens[0];
+
+  if (!token) {
+    return { status: "invalid" as const };
+  }
+
+  const existingTelegramUser = await findUserByTelegramUserId(input.telegramUserId);
+  if (existingTelegramUser && existingTelegramUser.id !== token.user_id) {
+    return { status: "telegram_already_connected" as const };
+  }
+
+  const existingPhoneUser = await findUserByPhoneE164(input.phoneE164);
+  if (existingPhoneUser && existingPhoneUser.id !== token.user_id) {
+    return { status: "phone_already_used" as const };
+  }
+
+  const now = new Date().toISOString();
+
+  const [user] = await updateRows<SupabaseUserRow>(
+    "users",
+    `id=eq.${encodeURIComponent(token.user_id)}`,
+    {
+      phone_e164: input.phoneE164,
+      telegram_chat_id: input.chatId,
+      telegram_parent_verified: true,
+      telegram_user_id: input.telegramUserId,
+      telegram_verified_at: now,
+    },
+  );
+
+  const [parent] = await updateRows<SupabaseParentRow>(
+    "parents",
+    `student_id=eq.${encodeURIComponent(token.user_id)}`,
+    {
+      phone_verified: true,
+      telegram_chat_id: input.chatId,
+      telegram_connected: true,
+      telegram_user_id: input.telegramUserId,
+      telegram_verified_at: now,
+    },
+  ).catch(() => [null as unknown as SupabaseParentRow]);
+
+  await updateRows<SupabaseTelegramVerificationTokenRow>(
+    "telegram_verification_tokens",
+    `id=eq.${encodeURIComponent(token.id)}`,
+    { used_at: now },
+  );
+
+  return { status: "verified" as const, account: userToAccount(user, parent) };
 }
 
 export async function updateDiagnosticResult(
@@ -322,7 +468,14 @@ export async function activateSubscription(
 export async function getVerifiedReportTargets() {
   const parents = await selectMany<SupabaseParentRow>(
     "parents",
-    "select=*&telegram_connected=eq.true&phone_verified=eq.true&telegram_chat_id=not.is.null",
+    [
+      "select=*",
+      "telegram_connected=eq.true",
+      "phone_verified=eq.true",
+      "telegram_chat_id=not.is.null",
+      "parent_report_enabled=eq.true",
+      "parent_consent_at=not.is.null",
+    ].join("&"),
   );
   const targets = [];
 
@@ -387,6 +540,10 @@ function userToAccount(user: SupabaseUserRow, parent?: SupabaseParentRow | null)
     parentWhatsApp: parent?.phone ?? "",
     parentWhatsAppVerified: false,
     telegramParentVerified: Boolean(user.telegram_parent_verified),
+    telegramUserId: user.telegram_user_id ?? undefined,
+    telegramChatId: user.telegram_chat_id ?? undefined,
+    phoneE164: user.phone_e164 ?? undefined,
+    telegramVerifiedAt: user.telegram_verified_at ?? undefined,
     subscriptionStatus: user.subscription_status ?? "inactive",
     subscriptionPlan: user.subscription_plan ?? undefined,
     subscriptionStartedAt: user.subscription_started_at ?? undefined,
