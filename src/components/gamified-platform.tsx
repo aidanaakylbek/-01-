@@ -78,6 +78,7 @@ export function GameLayout({ children, right }: { children: ReactNode; right?: R
   const access = useAccessGate();
   const simpleShell = isSimpleShellRoute(location.pathname);
   const useSimpleShell = simpleShell && !access.fullGameShell;
+  const hasRightRail = right != null;
 
   if (access.redirecting) {
     return (
@@ -105,15 +106,23 @@ export function GameLayout({ children, right }: { children: ReactNode; right?: R
   return (
     <div className="flex min-h-screen flex-col bg-[#F5F3FF] text-[#1E1B4B]">
       <GameTopBar />
-      <div className="mx-auto grid w-full max-w-[1440px] flex-1 items-start gap-5 px-3 pb-24 pt-4 md:grid-cols-[216px_minmax(0,1fr)] md:px-5 lg:grid-cols-[220px_minmax(0,1fr)_300px] xl:grid-cols-[232px_minmax(0,1fr)_316px]">
+      <div
+        className={`mx-auto grid w-full max-w-[1440px] flex-1 items-start gap-5 px-3 pb-24 pt-4 md:grid-cols-[216px_minmax(0,1fr)] md:px-5 ${
+          hasRightRail
+            ? "lg:grid-cols-[220px_minmax(0,1fr)_300px] xl:grid-cols-[232px_minmax(0,1fr)_316px]"
+            : "lg:grid-cols-[220px_minmax(0,1fr)] xl:grid-cols-[232px_minmax(0,1fr)]"
+        }`}
+      >
         <GameSidebar />
         <main className="min-w-0 space-y-5">
           {access.paywalled ? <PaywallCard /> : null}
           {children}
         </main>
-        <aside className="hidden max-h-[calc(100vh-5rem)] overflow-y-auto overscroll-contain pr-1 lg:sticky lg:top-20 lg:block">
-          {right ?? <RightWidgets />}
-        </aside>
+        {hasRightRail ? (
+          <aside className="hidden max-h-[calc(100vh-5rem)] overflow-y-auto overscroll-contain pr-1 lg:sticky lg:top-20 lg:block">
+            {right}
+          </aside>
+        ) : null}
       </div>
       <SiteFooter />
       <MobileGameNav />

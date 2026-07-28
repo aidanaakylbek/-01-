@@ -1,6 +1,6 @@
 ﻿import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { GameCard, GameLayout, ProgressBar, RightWidgets } from "@/components/gamified-platform";
+import { GameCard, GameLayout, ProgressBar } from "@/components/gamified-platform";
 import aiSanaBotAvatarImage from "@/assets/ai-sana-bot-avatar.png";
 import { useLanguage } from "@/hooks/use-language";
 import { getAccountDashboard } from "@/lib/api/account.functions";
@@ -118,7 +118,7 @@ export function Dashboard() {
           };
 
   return (
-    <GameLayout right={<RightWidgets />}>
+    <GameLayout>
       <div className="space-y-5">
         <section className="relative overflow-hidden rounded-[34px] bg-gradient-to-br from-[#1E1B4B] via-[#6D28D9] to-[#8B5CF6] p-5 text-white shadow-[0_12px_0_rgba(30,27,75,0.25)] md:p-8">
           <div className="absolute right-[-60px] top-[-70px] h-48 w-48 rounded-full bg-[#C084FC]/25 blur-3xl" />
@@ -178,7 +178,7 @@ export function Dashboard() {
           </div>
         </section>
 
-        <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_300px]">
+        <section>
           <GameCard className="relative overflow-hidden">
             <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
               <div>
@@ -203,17 +203,6 @@ export function Dashboard() {
               </div>
             </div>
           </GameCard>
-
-          <div className="space-y-5">
-            <GameCard className="bg-[#FFF7CC]">
-              <div className="text-5xl">🎁</div>
-              <h3 className="mt-3 text-2xl font-black">{c.ready}</h3>
-              <p className="mt-2 font-semibold text-[#6B5E8F]">
-                Алғашқы сабақтан кейін прогресс басталады.
-              </p>
-              <ProgressBar value={0} />
-            </GameCard>
-          </div>
         </section>
       </div>
     </GameLayout>
