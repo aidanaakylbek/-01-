@@ -117,6 +117,47 @@ export function Dashboard() {
             lessonsLabel: "сабақ",
           };
 
+  if (dashboard?.authenticated && !dashboard.account.diagnosticCompleted) {
+    return (
+      <GameLayout>
+        <DiagnosticOnlyHome
+          copy={{
+            eyebrow:
+              language === "RU"
+                ? "Первый шаг"
+                : language === "EN"
+                  ? "First step"
+                  : "Бірінші қадам",
+            title:
+              language === "RU"
+                ? "Сначала пройдите диагностику"
+                : language === "EN"
+                  ? "Start with the diagnostic test"
+                  : "Алдымен диагностикадан өтіңіз",
+            subtitle:
+              language === "RU"
+                ? "AI-Sana определит ваш уровень и только после этого построит личный учебный путь."
+                : language === "EN"
+                  ? "AI-Sana will find your level first, then build your personal learning path."
+                  : "AI-Sana алдымен деңгейіңізді анықтайды, содан кейін ғана жеке оқу жолын құрады.",
+            button:
+              language === "RU"
+                ? "Начать диагностику"
+                : language === "EN"
+                  ? "Start diagnostic"
+                  : "Диагностиканы бастау",
+            note:
+              language === "RU"
+                ? "План, темы и статистика откроются после результата диагностики."
+                : language === "EN"
+                  ? "The plan, topics and stats unlock after the diagnostic result."
+                  : "Жоспар, тақырыптар және статистика диагностика нәтижесінен кейін ашылады.",
+          }}
+        />
+      </GameLayout>
+    );
+  }
+
   return (
     <GameLayout>
       <div className="space-y-5">
@@ -206,6 +247,42 @@ export function Dashboard() {
         </section>
       </div>
     </GameLayout>
+  );
+}
+
+function DiagnosticOnlyHome({
+  copy,
+}: {
+  copy: { button: string; eyebrow: string; note: string; subtitle: string; title: string };
+}) {
+  return (
+    <section className="mx-auto flex min-h-[calc(100vh-11rem)] max-w-3xl items-center">
+      <GameCard className="relative w-full overflow-hidden border-[#C4B5FD] bg-white p-6 text-center shadow-[0_12px_0_rgba(109,40,217,0.14)] md:p-10">
+        <div className="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-[#C084FC]/30 blur-3xl" />
+        <div className="relative mx-auto grid h-24 w-24 place-items-center rounded-full bg-[#6D28D9] text-white shadow-[0_8px_0_#4C1D95]">
+          <span className="material-symbols-outlined text-5xl">psychology</span>
+        </div>
+        <p className="relative mt-7 text-sm font-black uppercase tracking-[0.28em] text-[#8B5CF6]">
+          {copy.eyebrow}
+        </p>
+        <h1 className="relative mt-3 text-3xl font-black leading-tight text-[#1E1B4B] md:text-5xl">
+          {copy.title}
+        </h1>
+        <p className="relative mx-auto mt-4 max-w-2xl text-base font-bold leading-relaxed text-[#6B5E8F] md:text-lg">
+          {copy.subtitle}
+        </p>
+        <Link
+          to="/diagnostic"
+          className="relative mt-8 inline-flex w-full justify-center rounded-2xl bg-[#FACC15] px-6 py-4 text-center text-lg font-black text-[#1E1B4B] shadow-[0_7px_0_#CA8A04] transition hover:-translate-y-0.5 sm:w-auto"
+        >
+          {copy.button}
+          <span className="material-symbols-outlined ml-2">arrow_forward</span>
+        </Link>
+        <p className="relative mx-auto mt-5 max-w-xl text-sm font-bold text-[#8A7AAF]">
+          {copy.note}
+        </p>
+      </GameCard>
+    </section>
   );
 }
 
