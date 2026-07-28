@@ -1,8 +1,7 @@
 ﻿import { useEffect, useRef, useState } from "react";
-import { AiSanaAvatar } from "@/components/ai-sana-avatar";
 import { ReadableMathText } from "@/components/readable-math-text";
 import { useLanguage } from "@/hooks/use-language";
-import aiSanaAvatarImage from "@/assets/ai-sana-avatar.png";
+import aiSanaBotAvatarImage from "@/assets/ai-sana-bot-avatar.png";
 
 type ChatMessage = {
   role: "user" | "assistant";
@@ -212,7 +211,7 @@ export function AIAssistant() {
           aria-hidden="true"
           className="h-full w-full object-cover"
           draggable={false}
-          src={aiSanaAvatarImage}
+          src={aiSanaBotAvatarImage}
         />
       </button>
 
@@ -229,7 +228,7 @@ export function AIAssistant() {
             <div className="mx-auto mt-3 h-1.5 w-[92px] rounded-full bg-muted shrink-0" />
             <header className="shrink-0 border-b border-outline-variant px-4 py-3 sm:py-4">
               <div className="flex items-center gap-3">
-                <AiSanaAvatar size="md" />
+                <BotAvatar />
                 <div className="min-w-0 flex-1">
                   <h2 className="font-headline-md text-title-lg sm:text-headline-md">
                     AI-Sana AI Tutor
@@ -381,6 +380,24 @@ export function AIAssistant() {
         </div>
       )}
     </>
+  );
+}
+
+function BotAvatar({ className = "h-11 w-11" }: { className?: string }) {
+  return (
+    <div
+      aria-label="AI-Sana bot"
+      className={`shrink-0 overflow-hidden rounded-full border border-[#DDD6FE] bg-white shadow-sm ${className}`}
+      role="img"
+    >
+      <img
+        alt=""
+        aria-hidden="true"
+        className="h-full w-full object-cover object-top"
+        draggable={false}
+        src={aiSanaBotAvatarImage}
+      />
+    </div>
   );
 }
 
