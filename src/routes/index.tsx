@@ -1,6 +1,7 @@
 ﻿import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { GameCard, GameLayout, ProgressBar } from "@/components/gamified-platform";
+import { LandingPage } from "@/components/landing-page";
 import aiSanaBotAvatarImage from "@/assets/ai-sana-bot-avatar.png";
 import { useLanguage } from "@/hooks/use-language";
 import { useDocumentTitle } from "@/hooks/use-document-title";
@@ -12,6 +13,7 @@ import {
 } from "@/lib/adaptive-learning-path";
 
 export const Route = createFileRoute("/")({
+  loader: async () => getAccountDashboard(),
   head: () => ({
     meta: [
       { title: "AI-Sana — НЗМ және БИЛ-ге дайындық платформасы" },
@@ -21,8 +23,18 @@ export const Route = createFileRoute("/")({
       },
     ],
   }),
-  component: Dashboard,
+  component: HomeRoute,
 });
+
+function HomeRoute() {
+  const loaderDashboard = Route.useLoaderData();
+
+  if (!loaderDashboard.authenticated) {
+    return <LandingPage />;
+  }
+
+  return <Dashboard />;
+}
 
 export function Dashboard() {
   const { language } = useLanguage();
