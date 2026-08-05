@@ -11,7 +11,7 @@ import type { VocabularyPartOfSpeech, VocabularyWordDifficulty } from "@/lib/voc
 
 export const Route = createFileRoute("/admin/vocabulary")({
   loader: async () => getAdminVocabularyTopicsFn(),
-  head: () => ({ meta: [{ title: "Admin Vocabulary — AI-Sana" }] }),
+  head: () => ({ meta: [{ title: "Әкімші: Сөздік — AI-Sana" }] }),
   component: AdminVocabularyPage,
 });
 

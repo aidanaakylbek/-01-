@@ -10,6 +10,7 @@ import {
   vocabularyCopy,
 } from "@/components/vocabulary-ui";
 import { useLanguage } from "@/hooks/use-language";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 import {
   getVocabularyTopicFn,
   getVocabularyAIResponseFn,
@@ -24,7 +25,9 @@ export const Route = createFileRoute("/vocabulary/$topicSlug")({
     if (!topic) throw notFound();
     return topic;
   },
-  head: () => ({ meta: [{ title: "Vocabulary Topic — AI-Sana" }] }),
+  head: ({ loaderData }) => ({
+    meta: [{ title: `${loaderData?.title_kk ?? "Тақырып"} — AI-Sana` }],
+  }),
   component: VocabularyTopicPage,
 });
 
@@ -46,6 +49,7 @@ function VocabularyTopicPage() {
   const [aiResponse, setAiResponse] = useState<VocabularyAIResponse | undefined>();
 
   const title = lang === "RU" ? topic.title_ru : lang === "EN" ? topic.title_en : topic.title_kk;
+  useDocumentTitle(`${title} — AI-Sana`);
   const description = lang === "RU" ? topic.description_ru : lang === "EN" ? topic.description_en : topic.description_kk;
   const activeWords = topic.sections[activePart];
   const activeIndex = Math.min(cardIndexByPart[activePart], Math.max(0, activeWords.length - 1));

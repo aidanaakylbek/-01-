@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { GameCard, GameLayout, ProgressBar } from "@/components/gamified-platform";
 import aiSanaBotAvatarImage from "@/assets/ai-sana-bot-avatar.png";
 import { useLanguage } from "@/hooks/use-language";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 import { getAccountDashboard } from "@/lib/api/account.functions";
 import type { DashboardAccount } from "@/lib/account-store.server";
 import {
@@ -13,7 +14,7 @@ import {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "AI-Sana — Gamified Exam Preparation" },
+      { title: "AI-Sana — НЗМ және БИЛ-ге дайындық платформасы" },
       {
         name: "description",
         content: "AI-Sana is a purple AI-powered learning game for NIS and BIL exams.",
@@ -25,6 +26,11 @@ export const Route = createFileRoute("/")({
 
 export function Dashboard() {
   const { language } = useLanguage();
+  useDocumentTitle(
+    language === "RU"
+      ? "AI-Sana — Платформа подготовки к НИШ и БИЛ"
+      : "AI-Sana — НЗМ және БИЛ-ге дайындық платформасы",
+  );
   const [dashboard, setDashboard] = useState<DashboardAccount | null>(null);
 
   useEffect(() => {

@@ -7,6 +7,7 @@ import {
   vocabularyCopy,
 } from "@/components/vocabulary-ui";
 import { useLanguage } from "@/hooks/use-language";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 import { getVocabularyOverviewFn } from "@/lib/api/vocabulary.functions";
 import type { VocabularyLanguage, VocabularyPartOfSpeech, VocabularyTopicSummary } from "@/lib/vocabulary.server";
 
@@ -14,7 +15,7 @@ export const Route = createFileRoute("/vocabulary")({
   loader: async () => getVocabularyOverviewFn(),
   head: () => ({
     meta: [
-      { title: "Vocabulary — AI-Sana" },
+      { title: "Сөздік — AI-Sana" },
       { name: "description", content: "AI-Sana English vocabulary flashcards." },
     ],
   }),
@@ -27,6 +28,7 @@ function VocabularyPage() {
   const { language } = useLanguage();
   const lang = language as VocabularyLanguage;
   const c = vocabularyCopy[lang];
+  useDocumentTitle(`${c.title} — AI-Sana`);
   const overview = loaderData;
   const dailyLearned = overview.dailyGoal.learnedToday + overview.dailyGoal.reviewedToday;
   const currentTopic = findCurrentTopic(overview.topics);

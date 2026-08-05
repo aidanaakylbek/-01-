@@ -3,12 +3,13 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { GameCard, GameLayout } from "@/components/gamified-platform";
 import { WeakWordsList, vocabularyCopy } from "@/components/vocabulary-ui";
 import { useLanguage } from "@/hooks/use-language";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 import { getVocabularyWeakWordsFn } from "@/lib/api/vocabulary.functions";
 import type { VocabularyLanguage } from "@/lib/vocabulary.server";
 
 export const Route = createFileRoute("/vocabulary/weak-words")({
   loader: async () => getVocabularyWeakWordsFn(),
-  head: () => ({ meta: [{ title: "Weak Words — AI-Sana" }] }),
+  head: () => ({ meta: [{ title: "Қиын сөздер — AI-Sana" }] }),
   component: WeakWordsPage,
 });
 
@@ -17,6 +18,7 @@ function WeakWordsPage() {
   const { language } = useLanguage();
   const lang = language as VocabularyLanguage;
   const c = vocabularyCopy[lang];
+  useDocumentTitle(`${c.weakWords} — AI-Sana`);
   return (
     <GameLayout>
       <div className="space-y-5">

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { GameCard, GameLayout } from "@/components/gamified-platform";
 import { VocabularyTestResultCard, VocabularyTestRunner } from "@/components/vocabulary-ui";
 import { useLanguage } from "@/hooks/use-language";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 import {
   answerVocabularyTestFn,
   completeVocabularyTestFn,
@@ -13,7 +14,7 @@ import type { VocabularyLanguage, VocabularyQuestion, VocabularyTestAttempt, Voc
 
 export const Route = createFileRoute("/vocabulary/$topicSlug/final-test")({
   loader: async ({ params }) => startVocabularyMixedTestFn({ data: { topicSlug: params.topicSlug } }),
-  head: () => ({ meta: [{ title: "Vocabulary Check Test — AI-Sana" }] }),
+  head: () => ({ meta: [{ title: "Сөзді тексеру тесті — AI-Sana" }] }),
   component: VocabularyFinalTestPage,
 });
 
@@ -21,6 +22,7 @@ function VocabularyFinalTestPage() {
   const initialAttempt = Route.useLoaderData();
   const { language } = useLanguage();
   const lang = language as VocabularyLanguage;
+  useDocumentTitle(language === "RU" ? "Тест на знание слов — AI-Sana" : "Сөзді тексеру тесті — AI-Sana");
   const [attempt, setAttempt] = useState<VocabularyTestAttempt>(initialAttempt);
   const [result, setResult] = useState<VocabularyTestResult | null>(null);
   const [saving, setSaving] = useState(false);

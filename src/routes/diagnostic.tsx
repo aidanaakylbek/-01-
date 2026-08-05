@@ -5,6 +5,7 @@ import { GameCard, GameLayout, ProgressBar } from "@/components/gamified-platfor
 import { diagnosticQuestions } from "@/data/diagnostic-questions";
 import { nisDiagnosticQuestions } from "@/data/nis-diagnostic-questions";
 import { useLanguage } from "@/hooks/use-language";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 import { getAccountDashboard, saveDiagnosticResult } from "@/lib/api/account.functions";
 import {
   DIAGNOSTIC_VERSION,
@@ -16,7 +17,7 @@ export const Route = createFileRoute("/diagnostic")({
   loader: async () => getAccountDashboard(),
   head: () => ({
     meta: [
-      { title: "Find Your Level — AI-Sana" },
+      { title: "Өз деңгейіңізді анықтаңыз — AI-Sana" },
       {
         name: "description",
         content: "Take the AI-Sana diagnostic to find your level across NIS and BIL subjects.",
@@ -166,6 +167,9 @@ function Diagnostic() {
   const navigate = useNavigate();
   const { language } = useLanguage();
   const c = copy[language];
+  useDocumentTitle(
+    language === "RU" ? "Определите свой уровень — AI-Sana" : "Өз деңгейіңізді анықтаңыз — AI-Sana",
+  );
   const [status, setStatus] = useState<TestStatus>("intro");
   const [selectedTrack, setSelectedTrack] = useState<DiagnosticTrack>("NIS");
   const [currentIndex, setCurrentIndex] = useState(0);

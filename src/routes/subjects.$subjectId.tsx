@@ -2,6 +2,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { GameCard, GameLayout, MascotCoach, ProgressBar } from "@/components/gamified-platform";
 import { getSubject } from "@/data/subjects";
 import { useLanguage } from "@/hooks/use-language";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 
 export const Route = createFileRoute("/subjects/$subjectId")({
   loader: ({ params }) => {
@@ -11,7 +12,7 @@ export const Route = createFileRoute("/subjects/$subjectId")({
   },
   head: ({ loaderData }) => ({
     meta: [
-      { title: `${loaderData?.subject.title.EN ?? "Subject"} — AI-Sana` },
+      { title: `${loaderData?.subject.title.KZ ?? "Пән"} — AI-Sana` },
       { name: "description", content: "AI-Sana subject path." },
     ],
   }),
@@ -27,6 +28,7 @@ const difficulty = {
 function SubjectPage() {
   const { subject } = Route.useLoaderData();
   const { language } = useLanguage();
+  useDocumentTitle(`${subject.title[language]} — AI-Sana`);
   const c =
     language === "RU"
       ? {

@@ -15,7 +15,7 @@ export const Route = createFileRoute("/payment")({
   },
   head: () => ({
     meta: [
-      { title: "Payment Request - AI-Sana" },
+      { title: "Төлем сұрауы — AI-Sana" },
       { name: "description", content: "AI-Sana Kaspi Pay payment request." },
     ],
   }),

@@ -7,7 +7,7 @@ import { getAccountDashboard } from "@/lib/api/account.functions";
 import type { Account, DashboardAccount } from "@/lib/account-store.server";
 
 export const Route = createFileRoute("/profile")({
-  head: () => ({ meta: [{ title: "Profile — AI-Sana" }] }),
+  head: () => ({ meta: [{ title: "Профиль — AI-Sana" }] }),
   component: ProfileRoute,
 });
 

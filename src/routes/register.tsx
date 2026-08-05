@@ -2,12 +2,13 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { FormEvent, useState } from "react";
 import { GameCard, GameLayout } from "@/components/gamified-platform";
 import { useLanguage } from "@/hooks/use-language";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 import { registerAccount } from "@/lib/api/account.functions";
 
 export const Route = createFileRoute("/register")({
   head: () => ({
     meta: [
-      { title: "Register - AI-Sana" },
+      { title: "Тіркелу — AI-Sana" },
       { name: "description", content: "Create your AI-Sana student account." },
     ],
   }),
@@ -17,6 +18,7 @@ export const Route = createFileRoute("/register")({
 function Register() {
   const navigate = useNavigate();
   const { language } = useLanguage();
+  useDocumentTitle(language === "RU" ? "Регистрация — AI-Sana" : "Тіркелу — AI-Sana");
   const [statusMessage, setStatusMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [emailError, setEmailError] = useState("");

@@ -3,11 +3,12 @@ import { FormEvent, useEffect, useState } from "react";
 import { GameCard, GameLayout } from "@/components/gamified-platform";
 import { getAccountDashboard, loginAccount } from "@/lib/api/account.functions";
 import { useLanguage } from "@/hooks/use-language";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
     meta: [
-      { title: "Login - AI-Sana" },
+      { title: "Кіру — AI-Sana" },
       { name: "description", content: "Sign in to your AI-Sana account." },
     ],
   }),
@@ -16,6 +17,7 @@ export const Route = createFileRoute("/login")({
 
 function Login() {
   const { language } = useLanguage();
+  useDocumentTitle(language === "RU" ? "Войти — AI-Sana" : "Кіру — AI-Sana");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 

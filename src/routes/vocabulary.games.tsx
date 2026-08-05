@@ -2,8 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 
 import { GameCard, GameLayout } from "@/components/gamified-platform";
-import { VocabularyGamesGrid } from "@/components/vocabulary-ui";
+import { VocabularyGamesGrid, vocabularyCopy } from "@/components/vocabulary-ui";
 import { useLanguage } from "@/hooks/use-language";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 import {
   completeVocabularyGameFn,
   getVocabularyGamesConfigFn,
@@ -19,7 +20,7 @@ export const Route = createFileRoute("/vocabulary/games")({
     const search = location.search as { topic?: string };
     return getVocabularyGamesConfigFn({ data: { topicSlug: search.topic ?? "greetings-polite-words" } });
   },
-  head: () => ({ meta: [{ title: "Vocabulary Games — AI-Sana" }] }),
+  head: () => ({ meta: [{ title: "Ойындар — AI-Sana" }] }),
   component: VocabularyGamesPage,
 });
 
@@ -28,6 +29,7 @@ function VocabularyGamesPage() {
   const { topic } = Route.useSearch();
   const { language } = useLanguage();
   const lang = language as VocabularyLanguage;
+  useDocumentTitle(`${vocabularyCopy[lang].games} — AI-Sana`);
   const [activeSession, setActiveSession] = useState<VocabularyGameSession | undefined>();
 
   const start = async (gameType: VocabularyGameType) => {

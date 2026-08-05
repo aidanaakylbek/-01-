@@ -1,11 +1,12 @@
 ﻿import { createFileRoute } from "@tanstack/react-router";
 import { GameCard, GameLayout } from "@/components/gamified-platform";
 import { useLanguage } from "@/hooks/use-language";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 
 export const Route = createFileRoute("/privacy")({
   head: () => ({
     meta: [
-      { title: "Privacy Policy - AI-Sana" },
+      { title: "Құпиялылық саясаты — AI-Sana" },
       {
         name: "description",
         content: "AI-Sana privacy policy.",
@@ -17,6 +18,9 @@ export const Route = createFileRoute("/privacy")({
 
 function Privacy() {
   const { language } = useLanguage();
+  useDocumentTitle(
+    language === "RU" ? "Политика конфиденциальности — AI-Sana" : "Құпиялылық саясаты — AI-Sana",
+  );
   const copy =
     language === "KZ"
       ? {

@@ -10,7 +10,7 @@ import { getAccountDashboard } from "@/lib/api/account.functions";
 import type { AITutorMessage } from "@/lib/account-store.server";
 
 export const Route = createFileRoute("/explain-solution")({
-  head: () => ({ meta: [{ title: "AI Tutor — AI-Sana" }] }),
+  head: () => ({ meta: [{ title: "AI-Sana Tutor" }] }),
   component: AITutorPage,
 });
 

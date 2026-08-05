@@ -81,7 +81,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "AI-Sana — NIS & BIL Exam Preparation" },
+      { title: "AI-Sana — НЗМ және БИЛ-ге дайындық платформасы" },
       {
         name: "description",
         content:

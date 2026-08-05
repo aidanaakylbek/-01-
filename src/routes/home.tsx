@@ -4,7 +4,7 @@ import { Dashboard } from "./index";
 export const Route = createFileRoute("/home")({
   head: () => ({
     meta: [
-      { title: "Learning Path — AI-Sana" },
+      { title: "Басты бет — AI-Sana" },
       { name: "description", content: "AI-Sana gamified learning path." },
     ],
   }),

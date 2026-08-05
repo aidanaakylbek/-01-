@@ -1,9 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { GameCard, GameLayout, ProgressBar } from "@/components/gamified-platform";
 import { useLanguage } from "@/hooks/use-language";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 
 export const Route = createFileRoute("/exam")({
-  head: () => ({ meta: [{ title: "Monthly Test — AI-Sana" }] }),
+  head: () => ({ meta: [{ title: "Айлық қорытынды тест — AI-Sana" }] }),
   component: MonthlyTestPage,
 });
 
@@ -36,6 +37,8 @@ function MonthlyTestPage() {
             sections: ["Математика", "Логика", "Оқу", "Ағылшын"],
             badge: "Белгі: Purple Solver",
           };
+
+  useDocumentTitle(`${c.title} — AI-Sana`);
 
   return (
     <GameLayout>

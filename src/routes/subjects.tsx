@@ -2,11 +2,12 @@ import { createFileRoute, Link, Outlet, useLocation } from "@tanstack/react-rout
 import { GameCard, GameLayout, MascotCoach, ProgressBar } from "@/components/gamified-platform";
 import { subjects, type Subject } from "@/data/subjects";
 import { useLanguage } from "@/hooks/use-language";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 
 export const Route = createFileRoute("/subjects")({
   head: () => ({
     meta: [
-      { title: "Subjects — AI-Sana" },
+      { title: "Пәндер — AI-Sana" },
       { name: "description", content: "Gamified AI-Sana subject map." },
     ],
   }),
@@ -15,6 +16,7 @@ export const Route = createFileRoute("/subjects")({
 
 function SubjectsPage() {
   const { language } = useLanguage();
+  useDocumentTitle(language === "RU" ? "Предметы — AI-Sana" : "Пәндер — AI-Sana");
   const location = useLocation();
   if (location.pathname !== "/subjects") return <Outlet />;
 

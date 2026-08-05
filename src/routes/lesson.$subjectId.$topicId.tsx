@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { GameCard, GameLayout, MascotCoach, ProgressBar } from "@/components/gamified-platform";
 import { getTopic } from "@/data/subjects";
 import { useLanguage } from "@/hooks/use-language";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 
 export const Route = createFileRoute("/lesson/$subjectId/$topicId")({
   loader: ({ params }) => {
@@ -12,7 +13,7 @@ export const Route = createFileRoute("/lesson/$subjectId/$topicId")({
   },
   head: ({ loaderData }) => ({
     meta: [
-      { title: `${loaderData?.topic.title.EN ?? "Lesson"} — AI-Sana` },
+      { title: `${loaderData?.topic.title.KZ ?? "Сабақ"} — AI-Sana` },
       { name: "description", content: "AI-Sana game lesson." },
     ],
   }),
@@ -22,6 +23,7 @@ export const Route = createFileRoute("/lesson/$subjectId/$topicId")({
 function TopicLessonPage() {
   const { subject, module, topic } = Route.useLoaderData();
   const { language } = useLanguage();
+  useDocumentTitle(`${topic.title[language]} — AI-Sana`);
   const lesson = topic.lesson!;
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [submitted, setSubmitted] = useState(false);

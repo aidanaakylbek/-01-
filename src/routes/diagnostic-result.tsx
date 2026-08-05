@@ -17,7 +17,7 @@ export const Route = createFileRoute("/diagnostic-result")({
   },
   head: () => ({
     meta: [
-      { title: "Diagnostic Result - AI-Sana" },
+      { title: "Диагностика нәтижесі — AI-Sana" },
       { name: "description", content: "AI-Sana diagnostic result and pricing next step." },
     ],
   }),

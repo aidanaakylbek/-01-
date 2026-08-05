@@ -3,10 +3,11 @@ import { GameCard, GameLayout, ProgressBar } from "@/components/gamified-platfor
 import { AiSanaAvatar } from "@/components/ai-sana-avatar";
 import { getAccountDashboard } from "@/lib/api/account.functions";
 import { useLanguage } from "@/hooks/use-language";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 
 export const Route = createFileRoute("/settings")({
   loader: async () => getAccountDashboard(),
-  head: () => ({ meta: [{ title: "Profile — AI-Sana" }] }),
+  head: () => ({ meta: [{ title: "Оқушы профилі — AI-Sana" }] }),
   component: ProfilePage,
 });
 
@@ -20,6 +21,7 @@ export function ProfilePage() {
 export function ProfileContent({ dashboard }: { dashboard: DashboardData }) {
   const { language } = useLanguage();
   const title = language === "RU" ? "Профиль ученика" : language === "EN" ? "Student Profile" : "Оқушы профилі";
+  useDocumentTitle(`${title} — AI-Sana`);
 
   return (
     <GameLayout>

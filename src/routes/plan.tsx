@@ -3,12 +3,13 @@ import { useMemo, useState } from "react";
 
 import { GameCard, GameLayout, ProgressBar } from "@/components/gamified-platform";
 import { useLanguage } from "@/hooks/use-language";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 import { getAccountDashboard } from "@/lib/api/account.functions";
 
 export const Route = createFileRoute("/plan")({
   loader: async () => getAccountDashboard(),
   head: () => ({
-    meta: [{ title: "Practice — AI-Sana" }],
+    meta: [{ title: "Жаттығу — AI-Sana" }],
   }),
   component: PracticePage,
 });
@@ -174,6 +175,8 @@ function PracticePage() {
       },
     };
   }, [language, weakTopics]);
+
+  useDocumentTitle(`${c.hero} — AI-Sana`);
 
   const cards: PracticeCard[] = [
     {

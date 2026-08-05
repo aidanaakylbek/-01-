@@ -12,7 +12,7 @@ export const Route = createFileRoute("/pricing")({
   },
   head: () => ({
     meta: [
-      { title: "Pricing - AI-Sana" },
+      { title: "Тарифтер — AI-Sana" },
       { name: "description", content: "Choose AI-Sana subscription plan." },
     ],
   }),

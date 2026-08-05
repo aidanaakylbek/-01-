@@ -9,7 +9,7 @@ export const Route = createFileRoute("/admin/payments")({
   loader: async () => listPaymentRequests(),
   head: () => ({
     meta: [
-      { title: "Admin Payments - AI-Sana" },
+      { title: "Әкімші: Төлемдер — AI-Sana" },
       { name: "description", content: "Manual Kaspi Pay payment approval panel." },
     ],
   }),

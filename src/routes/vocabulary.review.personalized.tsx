@@ -4,12 +4,13 @@ import { useState } from "react";
 import { GameCard, GameLayout } from "@/components/gamified-platform";
 import { VocabularyAudioButton, vocabularyCopy } from "@/components/vocabulary-ui";
 import { useLanguage } from "@/hooks/use-language";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 import { startPersonalizedVocabularyReviewFn } from "@/lib/api/vocabulary.functions";
 import type { VocabularyLanguage, VocabularyWordWithState } from "@/lib/vocabulary.server";
 
 export const Route = createFileRoute("/vocabulary/review/personalized")({
   loader: async () => startPersonalizedVocabularyReviewFn({ data: { size: 10 } }),
-  head: () => ({ meta: [{ title: "Personalized Review — AI-Sana" }] }),
+  head: () => ({ meta: [{ title: "Жеке қайталау — AI-Sana" }] }),
   component: PersonalizedReviewPage,
 });
 
@@ -18,6 +19,7 @@ function PersonalizedReviewPage() {
   const { language } = useLanguage();
   const lang = language as VocabularyLanguage;
   const c = vocabularyCopy[lang];
+  useDocumentTitle(`${c.reviewSession} — AI-Sana`);
   const [words] = useState<VocabularyWordWithState[]>(initial.words);
 
   return (

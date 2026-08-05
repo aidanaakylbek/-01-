@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { GameCard, GameLayout } from "@/components/gamified-platform";
 import { useLanguage } from "@/hooks/use-language";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 
 export const Route = createFileRoute("/shop")({
-  head: () => ({ meta: [{ title: "Shop — AI-Sana" }] }),
+  head: () => ({ meta: [{ title: "Сыйлық дүкені — AI-Sana" }] }),
   component: ShopPage,
 });
 
@@ -20,6 +21,7 @@ function ShopPage() {
   const { language } = useLanguage();
   const title =
     language === "RU" ? "Магазин наград" : language === "EN" ? "Rewards Shop" : "Сыйлық дүкені";
+  useDocumentTitle(`${title} — AI-Sana`);
   const subtitle =
     language === "RU"
       ? "Трать Sana Coins на стиль профиля и игровые бонусы."

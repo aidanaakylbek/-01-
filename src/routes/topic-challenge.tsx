@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { GameCard, GameLayout, MascotCoach, ProgressBar } from "@/components/gamified-platform";
 import { challengeLevels, challengeTopics } from "@/data/topic-challenge";
 import { useLanguage } from "@/hooks/use-language";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 import { saveWeakTopicProgress } from "@/lib/api/account.functions";
 
 export const Route = createFileRoute("/topic-challenge")({
@@ -18,6 +19,7 @@ export const Route = createFileRoute("/topic-challenge")({
 function TopicChallenge() {
   const { language } = useLanguage();
   const c = copy[language];
+  useDocumentTitle(`${c.title} — AI-Sana`);
   const [topicId, setTopicId] = useState(challengeTopics[0].id);
   const [level, setLevel] = useState(1);
   const [answers, setAnswers] = useState<Record<string, string>>({});

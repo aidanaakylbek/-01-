@@ -1,11 +1,12 @@
 ﻿import { createFileRoute, Link } from "@tanstack/react-router";
 import { GameCard, GameLayout } from "@/components/gamified-platform";
 import { useLanguage } from "@/hooks/use-language";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
-      { title: "About - AI-Sana" },
+      { title: "Біз туралы — AI-Sana" },
       {
         name: "description",
         content: "About AI-Sana and its mission for exam preparation.",
@@ -17,6 +18,7 @@ export const Route = createFileRoute("/about")({
 
 function About() {
   const { language } = useLanguage();
+  useDocumentTitle(language === "RU" ? "О нас — AI-Sana" : "Біз туралы — AI-Sana");
   const copy =
     language === "KZ"
       ? {

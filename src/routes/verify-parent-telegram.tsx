@@ -8,7 +8,7 @@ import type { Account } from "@/lib/account-store.server";
 export const Route = createFileRoute("/verify-parent-telegram")({
   head: () => ({
     meta: [
-      { title: "Parent Telegram Verification - AI-Sana" },
+      { title: "Ата-ананы растау — AI-Sana" },
       { name: "description", content: "Verify parent Telegram before entering AI-Sana." },
     ],
   }),

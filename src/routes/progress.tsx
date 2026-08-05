@@ -4,11 +4,12 @@ import { useEffect, useMemo, useState } from "react";
 import { AiSanaAvatar } from "@/components/ai-sana-avatar";
 import { GameCard, GameLayout, ProgressBar } from "@/components/gamified-platform";
 import { useLanguage } from "@/hooks/use-language";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 import { getAccountDashboard } from "@/lib/api/account.functions";
 import type { DashboardAccount, RiskArea } from "@/lib/account-store.server";
 
 export const Route = createFileRoute("/progress")({
-  head: () => ({ meta: [{ title: "Progress — AI-Sana" }] }),
+  head: () => ({ meta: [{ title: "Менің прогресім — AI-Sana" }] }),
   component: ProgressPage,
 });
 
@@ -16,6 +17,7 @@ type ProgressCopy = ReturnType<typeof getCopy>;
 
 function ProgressPage() {
   const { language } = useLanguage();
+  useDocumentTitle(language === "RU" ? "Мой прогресс — AI-Sana" : "Менің прогресім — AI-Sana");
   const c = getCopy(language);
   const [dashboard, setDashboard] = useState<DashboardAccount | null>(null);
   const [isLoading, setIsLoading] = useState(true);
