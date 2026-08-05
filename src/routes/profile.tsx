@@ -114,7 +114,6 @@ function ProfileContent({
                 </div>
               </div>
             </div>
-            <CompactCoins />
           </div>
         </section>
 
@@ -160,7 +159,6 @@ function ProfileContent({
               telegramConnected={telegramConnected}
             />
             <AchievementsCard achievements={achievements.slice(0, 3)} copy={c} />
-            <EditProfileCard copy={c} />
           </aside>
         </section>
       </div>
@@ -185,8 +183,6 @@ function PersonalInfoCard({
     [c.studentName, account.name],
     [c.email, account.email],
     [c.grade, account.grade || c.notSet],
-    [c.targetSchool, "НЗМ / БИЛ / НЗМ"],
-    [c.registrationDate, c.notAvailable],
     [c.language, language === "RU" ? c.russian : c.kazakh],
     [c.telegram, telegramConnected ? c.connected : c.notConnected],
     [c.subscription, activeSubscription ? c.active : c.inactive],
@@ -204,12 +200,6 @@ function PersonalInfoCard({
               </p>
               <h2 className="mt-1 text-2xl font-black text-[#1E1B4B]">{account.name}</h2>
             </div>
-            <Link
-              className="inline-flex w-fit items-center justify-center rounded-2xl border-2 border-[#C4B5FD] bg-white px-4 py-3 font-black text-[#6D28D9] shadow-[0_4px_0_#DDD6FE] transition hover:-translate-y-0.5"
-              to="/profile"
-            >
-              {c.editProfile}
-            </Link>
           </div>
 
           <dl className="mt-5 grid gap-3 md:grid-cols-2">
@@ -340,12 +330,7 @@ function AchievementsCard({
 
   return (
     <GameCard className="p-5">
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="text-xl font-black text-[#1E1B4B]">{c.achievements}</h2>
-        <button className="font-black text-[#7C3AED]" type="button">
-          {c.viewAll}
-        </button>
-      </div>
+      <h2 className="text-xl font-black text-[#1E1B4B]">{c.achievements}</h2>
       <div className="mt-4 space-y-3">
         {achievements.map((achievement) => (
           <div
@@ -361,30 +346,6 @@ function AchievementsCard({
         ))}
       </div>
     </GameCard>
-  );
-}
-
-function EditProfileCard({ copy: c }: { copy: Copy }) {
-  return (
-    <GameCard className="p-5">
-      <h2 className="text-xl font-black text-[#1E1B4B]">{c.settings}</h2>
-      <p className="mt-2 font-semibold text-[#6B5E8F]">{c.settingsText}</p>
-      <Link
-        className="mt-4 inline-flex rounded-2xl bg-[#6D28D9] px-5 py-3 font-black text-white shadow-[0_5px_0_#4C1D95] transition hover:-translate-y-0.5"
-        to="/profile"
-      >
-        {c.editProfile}
-      </Link>
-    </GameCard>
-  );
-}
-
-function CompactCoins() {
-  return (
-    <div className="w-fit rounded-2xl border-2 border-white/40 bg-white/15 px-4 py-3">
-      <p className="text-xs font-black uppercase tracking-[0.18em] text-[#FACC15]">Sana Coins</p>
-      <p className="mt-1 text-2xl font-black">💎 0</p>
-    </div>
   );
 }
 
@@ -543,7 +504,6 @@ function getCopy(language: string) {
       connected: "Подключено",
       defaultAdvice: "Сохрани серию и заверши сегодня еще один урок.",
       diagnosticDone: "Диагностика завершена",
-      editProfile: "Редактировать профиль",
       email: "Email",
       emailRegistered: "Email добавлен",
       emailStatus: "Email",
@@ -560,7 +520,6 @@ function getCopy(language: string) {
       level: "Уровень",
       loadError: "Профиль не загрузился",
       loadErrorText: "Попробуйте обновить страницу.",
-      notAvailable: "—",
       notConnected: "Не подключено",
       notSet: "Не указано",
       parentStatus: "Родитель",
@@ -568,22 +527,17 @@ function getCopy(language: string) {
       profile: "Профиль",
       purpleLeague: "Фиолетовая лига",
       recentActivity: "Недавняя активность",
-      registrationDate: "Дата регистрации",
       russian: "Русский",
-      settings: "Настройки профиля",
-      settingsText: "Здесь позже появится изменение имени, класса и цели.",
       startDiagnostic: "Начать диагностику",
       streak: "Серия",
       streakText: "Первый учебный шаг сделан.",
       studentName: "Имя ученика",
       subscription: "Подписка",
       subscriptionStatus: "Подписка",
-      targetSchool: "Цель",
       telegram: "Telegram",
       telegramStatus: "Telegram",
       test: "Тест",
       today: "Сегодня",
-      viewAll: "Все",
     };
   }
 
@@ -599,7 +553,6 @@ function getCopy(language: string) {
     connected: "Қосылған",
     defaultAdvice: "Серияңды сақтап, бүгін тағы бір сабақ аяқта.",
     diagnosticDone: "Диагностика аяқталды",
-    editProfile: "Профильді өзгерту",
     email: "Электрондық пошта",
     emailRegistered: "Email қосылған",
     emailStatus: "Email",
@@ -616,7 +569,6 @@ function getCopy(language: string) {
     level: "Деңгей",
     loadError: "Профиль ашылмады",
     loadErrorText: "Бетті жаңартып көріңіз.",
-    notAvailable: "—",
     notConnected: "Қосылмаған",
     notSet: "Көрсетілмеген",
     parentStatus: "Ата-ана",
@@ -624,21 +576,16 @@ function getCopy(language: string) {
     profile: "Профиль",
     purpleLeague: "Күлгін лига",
     recentActivity: "Соңғы белсенділік",
-    registrationDate: "Тіркелген күні",
     russian: "Орысша",
-    settings: "Профиль баптауы",
-    settingsText: "Мұнда кейін аты-жөн, сынып және мақсат өзгерту қосылады.",
     startDiagnostic: "Диагностиканы бастау",
     streak: "Серия",
     streakText: "Алғашқы оқу қадамы жасалды.",
     studentName: "Оқушының аты",
     subscription: "Жазылым",
     subscriptionStatus: "Жазылым",
-    targetSchool: "Мақсат",
     telegram: "Telegram",
     telegramStatus: "Telegram",
     test: "Тест",
     today: "Бүгін",
-    viewAll: "Барлығын көру",
   };
 }
