@@ -66,7 +66,7 @@ const translations: Record<Lang, Record<string, string>> = {
     cta_desc:
       "Take the first step towards your NIS or BIL dream today with our sophisticated AI platform.",
     footer_desc: "AI preparation for every student. Intelligent, adaptive, and human-centric.",
-    footer_rights: "© 2024 AI-Sana Inc.",
+    footer_rights: "© 2026 AI-Sana Inc.",
     footer_for_parents: "For Parents",
     footer_success_stories: "Success Stories",
     footer_privacy: "Privacy Policy",
@@ -232,7 +232,7 @@ const translations: Record<Lang, Record<string, string>> = {
       "Біздің озық AI платформамызбен бүгін Зияткерлік мектеп немесе БИЛ арманыңызға алғашқы қадам жасаңыз.",
     footer_desc:
       "Әр оқушы үшін жарқын болашаққа көпір салу. Ақылды, бейімделгіш және адамға бағытталған.",
-    footer_rights: "© 2024 AI-Sana Inc.",
+    footer_rights: "© 2026 AI-Sana Inc.",
     footer_for_parents: "Ата-аналар үшін",
     footer_success_stories: "Жетістік тарихы",
     footer_privacy: "Құпиялылық саясаты",
@@ -402,7 +402,7 @@ const translations: Record<Lang, Record<string, string>> = {
       "Сделайте первый шаг к своей мечте о НИШ или БИЛ сегодня с помощью нашей продвинутой AI-платформы.",
     footer_desc:
       "Строим мост в светлое будущее для каждого ученика. Интеллектуальный, адаптивный и человекоцентричный подход.",
-    footer_rights: "© 2024 AI-Sana Inc.",
+    footer_rights: "© 2026 AI-Sana Inc.",
     footer_for_parents: "Родителям",
     footer_success_stories: "Истории успеха",
     footer_privacy: "Политика конфиденциальности",
