@@ -103,17 +103,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       {
         property: "og:image",
-        content:
-          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/5186e822-d928-471f-afb5-457b4bd87965/id-preview-5dc4d2e3--3d510b11-be9d-4844-b080-8d5fa018b382.lovable.app-1781435872034.png",
+        content: "https://01hh.vercel.app/og-image.jpg",
       },
       {
         name: "twitter:image",
-        content:
-          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/5186e822-d928-471f-afb5-457b4bd87965/id-preview-5dc4d2e3--3d510b11-be9d-4844-b080-8d5fa018b382.lovable.app-1781435872034.png",
+        content: "https://01hh.vercel.app/og-image.jpg",
       },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
+      { rel: "icon", type: "image/png", href: "/favicon.png" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "" },
       {
@@ -134,7 +134,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="kk">
       <head>
         <HeadContent />
       </head>
