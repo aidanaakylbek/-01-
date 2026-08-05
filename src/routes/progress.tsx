@@ -93,9 +93,8 @@ function ProgressPage() {
             <WeeklyProgress c={c} data={weeklyData} hasActivity={hasActivity} />
             <WeakTopics c={c} hasDiagnostic={hasDiagnostic} topics={dashboard.risks} />
             <Achievements c={c} achievements={achievements} />
-            <StreakCard c={c} data={weeklyData} hasActivity={hasActivity} />
           </div>
-          <div className="space-y-4 xl:hidden">
+          <div className="space-y-4 lg:hidden">
             <ProgressRightRail c={c} dashboard={dashboard} />
           </div>
         </section>
@@ -308,43 +307,6 @@ function Achievements({ c, achievements }: { c: ProgressCopy; achievements: stri
   );
 }
 
-function StreakCard({
-  c,
-  data,
-  hasActivity,
-}: {
-  c: ProgressCopy;
-  data: WeeklyPoint[];
-  hasActivity: boolean;
-}) {
-  return (
-    <GameCard>
-      <h2 className="text-2xl font-black">{c.streakTitle}</h2>
-      {hasActivity ? (
-        <div className="mt-4 grid grid-cols-7 gap-2">
-          {data.map((item) => (
-            <div
-              key={item.key}
-              className={`grid h-11 place-items-center rounded-2xl text-xs font-black ${
-                item.value > 0
-                  ? "bg-[#6D28D9] text-white shadow-[0_4px_0_#4C1D95]"
-                  : item.isToday
-                    ? "border-2 border-[#FACC15] bg-[#FFFBEB] text-[#1E1B4B]"
-                    : "bg-[#EDE9FE] text-[#6B5E8F]"
-              }`}
-              title={`${item.dateText}: ${item.value}`}
-            >
-              {item.label}
-            </div>
-          ))}
-        </div>
-      ) : (
-        <CompactEmpty actionLabel={c.startLesson} icon="local_fire_department" text={c.noStreak} to="/diagnostic" />
-      )}
-    </GameCard>
-  );
-}
-
 function ProgressRightRail({ c, dashboard }: { c: ProgressCopy; dashboard: DashboardAccount }) {
   return (
     <>
@@ -514,7 +476,6 @@ function getCopy(language: "EN" | "KZ" | "RU") {
       lessons: "Уроки",
       metricSolvedQuestions: "Решенные вопросы",
       neutralAdvice: "Пройдите диагностику, чтобы увидеть личные рекомендации.",
-      noStreak: "Завершите первый урок и начните серию.",
       noWeakTopics: "Чтобы определить слабые темы, сначала пройдите диагностический тест.",
       noWeeklyActivity: "На этой неделе активности пока нет.",
       parentEmpty: "Отчет для родителей появится после первой учебной недели.",
@@ -527,7 +488,6 @@ function getCopy(language: "EN" | "KZ" | "RU") {
       rewardUnlocked: "Подарок открыт!",
       startDiagnostic: "Начать диагностику",
       startLesson: "Начать урок",
-      streakTitle: "Серия",
       studyTime: "Время",
       subjectMixed: "Смешанная подготовка",
       testsPassed: "Тесты",
@@ -553,7 +513,6 @@ function getCopy(language: "EN" | "KZ" | "RU") {
     lessons: "Сабақ",
     metricSolvedQuestions: "Шешілген сұрақтар",
     neutralAdvice: "Жеке ұсыныс алу үшін алдымен диагностикалық тесттен өтіңіз.",
-    noStreak: "Бірінші сабақты аяқтап, серияңызды бастаңыз.",
     noWeakTopics: "Әлсіз тақырыптарды анықтау үшін алдымен диагностикалық тесттен өтіңіз.",
     noWeeklyActivity: "Бұл аптада белсенділік әлі жоқ.",
     parentEmpty: "Ата-ана есебі алғашқы оқу аптасынан кейін қолжетімді болады.",
@@ -566,7 +525,6 @@ function getCopy(language: "EN" | "KZ" | "RU") {
     rewardUnlocked: "Сыйлық ашылды!",
     startDiagnostic: "Диагностиканы бастау",
     startLesson: "Сабақты бастау",
-    streakTitle: "Серия күндері",
     studyTime: "Оқу уақыты",
     subjectMixed: "Аралас дайындық",
     testsPassed: "Өткен тест",
