@@ -15,6 +15,7 @@ import {
   registerAccount as registerStoredAccount,
   saveDiagnosticResult as saveStoredDiagnosticResult,
   saveExamAttempt as saveStoredExamAttempt,
+  saveLessonCompletion as saveStoredLessonCompletion,
   saveSolutionExplanationLog as saveStoredSolutionExplanationLog,
   saveWeakTopicProgress as saveStoredWeakTopicProgress,
   updatePaymentRequest as updateStoredPaymentRequest,
@@ -102,6 +103,19 @@ export const saveExamAttempt = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     return saveStoredExamAttempt(data);
+  });
+
+export const saveLessonCompletion = createServerFn({ method: "POST" })
+  .inputValidator(
+    z.object({
+      subjectId: z.string().min(1),
+      topicId: z.string().min(1),
+      score: z.number().int().min(0),
+      totalQuestions: z.number().int().positive(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    return saveStoredLessonCompletion(data);
   });
 
 export const saveDiagnosticResult = createServerFn({ method: "POST" })

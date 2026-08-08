@@ -16,6 +16,7 @@ import {
   markReportSent,
   needsPasswordRehash,
   updateDiagnosticResult,
+  updateLessonCompletions,
   updatePaymentRequestRow,
   updateUserPasswordHash,
   verifyParentTelegram,
@@ -70,6 +71,16 @@ export type Account = {
   diagnosticTopicScores?: Record<string, number>;
   diagnosticWeakTopics?: string[];
   mentorStyle: MentorStyle;
+  lessonCompletions?: LessonCompletion[];
+};
+
+export type LessonCompletion = {
+  lessonId: string;
+  subjectId: string;
+  topicId: string;
+  score: number;
+  totalQuestions: number;
+  completedAt: string;
 };
 
 export type MentorStyle = "soft" | "strict" | "friendly" | "olympiad";
@@ -512,7 +523,7 @@ export async function getDashboardAccount(): Promise<DashboardAccount> {
   const activeAccount = await getActiveStoredAccount();
   const account = activeAccount ?? guestAccount;
   const examAttempts = account.examAttempts ?? [];
-  const completedLessons = 0;
+  const completedLessons = account.lessonCompletions?.length ?? 0;
   const averageAccuracy = examAttempts.length
     ? Math.round(
         examAttempts.reduce((sum, attempt) => sum + attempt.percent, 0) / examAttempts.length,
@@ -527,7 +538,9 @@ export async function getDashboardAccount(): Promise<DashboardAccount> {
     readiness: averageAccuracy,
     completedLessons,
     weeklyGoal: 5,
-    studyHours: 0,
+    // Actual time-on-page isn't tracked yet, so this is an estimate (15
+    // minutes per completed lesson) rather than a measured value.
+    studyHours: Math.round(completedLessons * 0.25 * 10) / 10,
     averageAccuracy,
     nextExam: {
       day: "Суббота",
@@ -1086,6 +1099,42 @@ function createUniqueParentInviteCode() {
   } while (existingCodes.has(inviteCode));
 
   return inviteCode;
+}
+
+export async function saveLessonCompletion(input: {
+  subjectId: string;
+  topicId: string;
+  score: number;
+  totalQuestions: number;
+}) {
+  const account = await getActiveStoredAccount();
+
+  if (!account) {
+    throw new Error("AUTH_REQUIRED");
+  }
+
+  const lessonId = `${input.subjectId}:${input.topicId}`;
+  const completion: LessonCompletion = {
+    lessonId,
+    subjectId: input.subjectId,
+    topicId: input.topicId,
+    score: input.score,
+    totalQuestions: input.totalQuestions,
+    completedAt: new Date().toISOString(),
+  };
+  const updated = [
+    completion,
+    ...(account.lessonCompletions ?? []).filter((item) => item.lessonId !== lessonId),
+  ];
+
+  if (isSupabaseConfigured()) {
+    await updateLessonCompletions(account.id, updated);
+    return completion;
+  }
+
+  account.lessonCompletions = updated;
+  accounts.set(account.email, account);
+  return completion;
 }
 
 export async function saveExamAttempt(attempt: Omit<ExamAttempt, "id" | "createdAt">) {

@@ -121,6 +121,9 @@ alter table public.users
   add column if not exists mentor_style text not null default 'friendly';
 
 alter table public.users
+  add column if not exists lesson_completions jsonb not null default '[]'::jsonb;
+
+alter table public.users
   add column if not exists telegram_user_id text,
   add column if not exists telegram_chat_id text,
   add column if not exists phone_e164 text,

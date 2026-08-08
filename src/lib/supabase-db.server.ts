@@ -42,6 +42,16 @@ type SupabaseUserRow = {
   telegram_chat_id?: string | null;
   phone_e164?: string | null;
   telegram_verified_at?: string | null;
+  lesson_completions?: SupabaseLessonCompletion[] | null;
+};
+
+export type SupabaseLessonCompletion = {
+  lessonId: string;
+  subjectId: string;
+  topicId: string;
+  score: number;
+  totalQuestions: number;
+  completedAt: string;
 };
 
 type SupabaseParentRow = {
@@ -447,6 +457,15 @@ export async function updateUserPasswordHash(userId: string, passwordHash: strin
   });
 }
 
+export async function updateLessonCompletions(
+  userId: string,
+  lessonCompletions: SupabaseLessonCompletion[],
+) {
+  await updateRows<SupabaseUserRow>("users", `id=eq.${encodeURIComponent(userId)}`, {
+    lesson_completions: lessonCompletions,
+  });
+}
+
 export async function createPaymentRequestRow(request: PaymentRequest) {
   const [row] = await insertRows<SupabasePaymentRequestRow>("payment_requests", [
     {
@@ -606,6 +625,7 @@ function userToAccount(user: SupabaseUserRow, parent?: SupabaseParentRow | null)
     diagnosticTopicScores: user.diagnostic_topic_scores ?? undefined,
     diagnosticWeakTopics: user.diagnostic_weak_topics ?? undefined,
     mentorStyle: user.mentor_style ?? "friendly",
+    lessonCompletions: user.lesson_completions ?? [],
     password: user.password_hash,
   };
 }

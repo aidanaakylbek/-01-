@@ -4,6 +4,7 @@ import { GameCard, GameLayout, MascotCoach, ProgressBar } from "@/components/gam
 import { getTopic } from "@/data/subjects";
 import { useLanguage } from "@/hooks/use-language";
 import { useDocumentTitle } from "@/hooks/use-document-title";
+import { saveLessonCompletion } from "@/lib/api/account.functions";
 
 export const Route = createFileRoute("/lesson/$subjectId/$topicId")({
   loader: ({ params }) => {
@@ -27,6 +28,7 @@ function TopicLessonPage() {
   const lesson = topic.lesson!;
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [submitted, setSubmitted] = useState(false);
+  const [saving, setSaving] = useState(false);
   const score = useMemo(
     () =>
       lesson.quiz.reduce(
@@ -35,6 +37,28 @@ function TopicLessonPage() {
       ),
     [answers, lesson.quiz],
   );
+  const lessonProgress = submitted
+    ? 100
+    : lesson.quiz.length
+      ? Math.round((Object.keys(answers).length / lesson.quiz.length) * 100)
+      : 0;
+
+  const handleSubmit = async () => {
+    setSaving(true);
+    try {
+      await saveLessonCompletion({
+        data: {
+          subjectId: subject.id,
+          topicId: topic.id,
+          score,
+          totalQuestions: lesson.quiz.length,
+        },
+      });
+    } finally {
+      setSaving(false);
+      setSubmitted(true);
+    }
+  };
   const c =
     language === "RU"
       ? {
@@ -87,7 +111,7 @@ function TopicLessonPage() {
           <p className="mt-3 max-w-3xl text-lg font-semibold text-[#EDE9FE]">
             {topic.description[language]}
           </p>
-          <ProgressBar value={48} />
+          <ProgressBar value={lessonProgress} />
         </GameCard>
         <MascotCoach text={c.coach} />
 
@@ -202,8 +226,9 @@ function TopicLessonPage() {
               </div>
               <button
                 type="button"
-                onClick={() => setSubmitted(true)}
-                className="mt-5 w-full rounded-2xl bg-[#6D28D9] px-5 py-4 font-black text-white shadow-[0_6px_0_#4C1D95]"
+                disabled={saving || submitted}
+                onClick={() => void handleSubmit()}
+                className="mt-5 w-full rounded-2xl bg-[#6D28D9] px-5 py-4 font-black text-white shadow-[0_6px_0_#4C1D95] disabled:opacity-70"
               >
                 {c.submit}
               </button>
