@@ -411,6 +411,7 @@ export async function toggleVocabularyFavorite(wordId: string) {
 }
 
 export async function getAdminVocabularyTopics() {
+  await requireAdmin();
   return [...topics.values()]
     .sort((a, b) => a.order_index - b.order_index)
     .map((topic) => ({

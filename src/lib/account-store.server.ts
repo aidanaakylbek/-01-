@@ -1,3 +1,4 @@
+import { createHmac, timingSafeEqual } from "node:crypto";
 import { deleteCookie, getCookie, setCookie } from "@tanstack/start-server-core/request-response";
 import {
   activateSubscription,
@@ -418,12 +419,49 @@ async function getActiveStoredAccount() {
   return accounts.get(email) ?? null;
 }
 
+function getSessionSecret() {
+  // Falls back to a fixed dev-only value so local development still works
+  // without extra setup. In production SESSION_SECRET must be set, or every
+  // session cookie is forgeable by anyone who reads this source file.
+  return process.env.SESSION_SECRET ?? "ai-sana-insecure-dev-only-session-secret";
+}
+
+function signSessionValue(email: string) {
+  const signature = createHmac("sha256", getSessionSecret()).update(email).digest("hex");
+  return `${email}.${signature}`;
+}
+
+function verifySessionValue(value: string): string | null {
+  const separatorIndex = value.lastIndexOf(".");
+
+  if (separatorIndex === -1) {
+    return null;
+  }
+
+  const email = value.slice(0, separatorIndex);
+  const signature = value.slice(separatorIndex + 1);
+  const expectedSignature = createHmac("sha256", getSessionSecret()).update(email).digest("hex");
+  const signatureBuffer = Buffer.from(signature, "hex");
+  const expectedBuffer = Buffer.from(expectedSignature, "hex");
+
+  if (signatureBuffer.length !== expectedBuffer.length) {
+    return null;
+  }
+
+  if (!timingSafeEqual(signatureBuffer, expectedBuffer)) {
+    return null;
+  }
+
+  return email;
+}
+
 function getSessionEmail() {
   try {
-    const cookieEmail = getCookie(SESSION_COOKIE);
+    const cookieValue = getCookie(SESSION_COOKIE);
 
-    if (cookieEmail) {
-      return normalizeEmail(cookieEmail);
+    if (cookieValue) {
+      const verifiedEmail = verifySessionValue(cookieValue);
+      return verifiedEmail ? normalizeEmail(verifiedEmail) : null;
     }
   } catch {
     // Cookie helpers are only available during server requests. Without a
@@ -449,7 +487,7 @@ function setSessionEmail(email: string, remember = false) {
       cookieOptions.maxAge = 60 * 60 * 24 * 30;
     }
 
-    setCookie(SESSION_COOKIE, normalizedEmail, cookieOptions);
+    setCookie(SESSION_COOKIE, signSessionValue(normalizedEmail), cookieOptions);
   } catch {
     // See getSessionEmail fallback note.
   }
@@ -1403,7 +1441,19 @@ export async function createPaymentRequest(input: {
   return request;
 }
 
+async function requireAdminAccount() {
+  const account = await getActiveStoredAccount();
+
+  if (!account || account.role !== "admin") {
+    throw new Error("ADMIN_REQUIRED");
+  }
+
+  return account;
+}
+
 export async function listPaymentRequests() {
+  await requireAdminAccount();
+
   if (isSupabaseConfigured()) {
     return listPaymentRequestRows();
   }
@@ -1420,6 +1470,8 @@ export async function updatePaymentRequest(input: {
   kaspiInvoiceReference?: string;
   kaspiPaymentLink?: string;
 }) {
+  await requireAdminAccount();
+
   const request = isSupabaseConfigured()
     ? (await listPaymentRequestRows()).find((item) => item.id === input.id)
     : paymentRequests.get(input.id);
