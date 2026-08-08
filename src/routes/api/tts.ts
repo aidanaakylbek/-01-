@@ -2,7 +2,8 @@ import { GoogleGenAI } from "@google/genai";
 import { createFileRoute } from "@tanstack/react-router";
 import { MsEdgeTTS, OUTPUT_FORMAT } from "msedge-tts";
 import { z } from "zod";
-import { getAccessError } from "@/lib/account-store.server";
+import { getAccessError, getDashboardAccount } from "@/lib/account-store.server";
+import { isRateLimited } from "@/lib/rate-limit.server";
 
 const ttsRequestSchema = z.object({
   language: z.enum(["EN", "KZ", "RU"]).optional(),
@@ -31,6 +32,15 @@ export const Route = createFileRoute("/api/tts")({
 
         if (accessError) {
           return Response.json(accessError, { status: 403 });
+        }
+
+        const dashboard = await getDashboardAccount();
+
+        if (isRateLimited(`tts:${dashboard.account.id}`, 20, 60_000)) {
+          return Response.json(
+            { error: "RATE_LIMITED", message: "Тым жиі сұрау жібердіңіз. Бір минуттан кейін қайта көріңіз." },
+            { status: 429 },
+          );
         }
 
         try {

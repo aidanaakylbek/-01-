@@ -6,6 +6,7 @@ import {
   duplicateEmailMessage,
   duplicateParentPhoneMessage,
   getDashboardAccount as readDashboardAccount,
+  getOwnPaymentRequest as readOwnPaymentRequest,
   getPostLoginRedirect,
   listPaymentRequests as listStoredPaymentRequests,
   loginAccount as loginStoredAccount,
@@ -156,6 +157,12 @@ export const createPaymentRequest = createServerFn({ method: "POST" })
 export const listPaymentRequests = createServerFn({ method: "GET" }).handler(async () => {
   return listStoredPaymentRequests();
 });
+
+export const getOwnPaymentRequest = createServerFn({ method: "GET" })
+  .inputValidator(z.object({ id: z.string() }))
+  .handler(async ({ data }) => {
+    return readOwnPaymentRequest(data.id);
+  });
 
 export const updatePaymentRequest = createServerFn({ method: "POST" })
   .inputValidator(

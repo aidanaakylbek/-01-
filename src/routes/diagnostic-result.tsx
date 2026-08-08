@@ -8,6 +8,7 @@ import {
   getPricingPlans,
 } from "@/lib/api/account.functions";
 import type { PaymentMethod, PricingPlan } from "@/lib/account-store.server";
+import { formatThousands } from "@/lib/utils";
 
 export const Route = createFileRoute("/diagnostic-result")({
   loader: async () => {
@@ -147,7 +148,7 @@ function DiagnosticResult() {
               <h3 className="mt-2 text-3xl font-black text-[#1E1B4B]">{plan.name}</h3>
               <p className="mt-2 min-h-12 font-semibold text-[#6B5E8F]">{plan.description}</p>
               <p className="mt-5 text-4xl font-black text-[#6D28D9]">
-                {plan.price.toLocaleString("kk-KZ")} KZT
+                {formatThousands(plan.price)} KZT
               </p>
               <ul className="mt-5 flex-1 space-y-2 text-sm">
                 {[

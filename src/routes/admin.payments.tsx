@@ -4,6 +4,7 @@ import { FormEvent, MouseEvent, useState } from "react";
 import { GameCard, GameLayout } from "@/components/gamified-platform";
 import { listPaymentRequests, updatePaymentRequest } from "@/lib/api/account.functions";
 import type { PaymentRequest } from "@/lib/account-store.server";
+import { formatThousands } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin/payments")({
   loader: async () => listPaymentRequests(),
@@ -84,7 +85,7 @@ function AdminPayments() {
                   <div className="mt-4 grid gap-2 text-sm font-bold text-[#1E1B4B]">
                     <p>Parent phone: {request.parentPhone}</p>
                     <p>Plan: {request.planName}</p>
-                    <p>Amount: {request.amount.toLocaleString("kk-KZ")} {request.currency}</p>
+                    <p>Amount: {formatThousands(request.amount)} {request.currency}</p>
                     <p>Method: {request.paymentMethod}</p>
                     <p>Created: {new Date(request.createdAt).toLocaleString("kk-KZ")}</p>
                     {request.confirmedAt ? <p>Confirmed: {new Date(request.confirmedAt).toLocaleString("kk-KZ")}</p> : null}

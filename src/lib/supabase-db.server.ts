@@ -1,4 +1,4 @@
-import { createHash } from "node:crypto";
+import { createHash, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
 
 import type {
   MentorStyle,
@@ -98,8 +98,43 @@ export function isSupabaseConfigured() {
   return Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
 }
 
+// Passwords are hashed with scrypt (Node's built-in, salted, deliberately
+// slow KDF) so a leaked users table can't be cracked with a rainbow table.
+// Format: "scrypt:<saltHex>:<hashHex>". Older accounts may still have a
+// plain sha256 hex digest (the previous, weaker scheme) — verifyPassword
+// below understands both, and callers should rehash on successful legacy
+// login so accounts migrate to the new format over time.
+const SCRYPT_KEY_LENGTH = 64;
+
 export function hashPassword(password: string) {
-  return createHash("sha256").update(password).digest("hex");
+  const salt = randomBytes(16).toString("hex");
+  const hash = scryptSync(password, salt, SCRYPT_KEY_LENGTH).toString("hex");
+  return `scrypt:${salt}:${hash}`;
+}
+
+export function verifyPassword(password: string, stored: string) {
+  if (stored.startsWith("scrypt:")) {
+    const [, salt, hash] = stored.split(":");
+
+    if (!salt || !hash) {
+      return false;
+    }
+
+    const expected = Buffer.from(hash, "hex");
+    const actual = scryptSync(password, salt, SCRYPT_KEY_LENGTH);
+    return expected.length === actual.length && timingSafeEqual(expected, actual);
+  }
+
+  // Legacy unsalted sha256 digest from before this scheme existed.
+  const legacyExpected = Buffer.from(stored, "hex");
+  const legacyActual = Buffer.from(createHash("sha256").update(password).digest("hex"), "hex");
+  return (
+    legacyExpected.length === legacyActual.length && timingSafeEqual(legacyExpected, legacyActual)
+  );
+}
+
+export function needsPasswordRehash(stored: string) {
+  return !stored.startsWith("scrypt:");
 }
 
 export async function findAccountByEmail(email: string) {
@@ -404,6 +439,12 @@ export async function updateMentor(userId: string, mentorStyle: MentorStyle) {
     mentor_style: mentorStyle,
   });
   return userToAccount(user);
+}
+
+export async function updateUserPasswordHash(userId: string, passwordHash: string) {
+  await updateRows<SupabaseUserRow>("users", `id=eq.${encodeURIComponent(userId)}`, {
+    password_hash: passwordHash,
+  });
 }
 
 export async function createPaymentRequestRow(request: PaymentRequest) {

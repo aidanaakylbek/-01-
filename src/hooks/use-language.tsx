@@ -70,7 +70,6 @@ const translations: Record<Lang, Record<string, string>> = {
     footer_for_parents: "For Parents",
     footer_success_stories: "Success Stories",
     footer_privacy: "Privacy Policy",
-    footer_terms: "Terms of Service",
 
     // Home Dashboard
     home_title: "Home — AI-Sana",
@@ -236,7 +235,6 @@ const translations: Record<Lang, Record<string, string>> = {
     footer_for_parents: "Ата-аналар үшін",
     footer_success_stories: "Жетістік тарихы",
     footer_privacy: "Құпиялылық саясаты",
-    footer_terms: "Қызмет көрсету шарттары",
 
     // Home Dashboard
     home_title: "Басты бет — AI-Sana",
@@ -406,7 +404,6 @@ const translations: Record<Lang, Record<string, string>> = {
     footer_for_parents: "Родителям",
     footer_success_stories: "Истории успеха",
     footer_privacy: "Политика конфиденциальности",
-    footer_terms: "Условия использования",
 
     // Home Dashboard
     home_title: "Главная — AI-Sana",

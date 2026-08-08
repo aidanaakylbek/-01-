@@ -9,6 +9,7 @@ import {
   hasActiveSubscription,
   saveAITutorMessages,
 } from "@/lib/account-store.server";
+import { isRateLimited } from "@/lib/rate-limit.server";
 
 const chatRequestSchema = z.object({
   context: z
@@ -109,6 +110,16 @@ export const Route = createFileRoute("/api/ai-tutor/chat")({
               message: "AI Tutor қолдану үшін ата-ана Telegram арқылы расталуы керек.",
             },
             { status: 403 },
+          );
+        }
+
+        if (isRateLimited(`ai-tutor:${account.id}`, 15, 60_000)) {
+          return Response.json(
+            {
+              error: "RATE_LIMITED",
+              message: "Тым жиі сұрау жібердіңіз. Бір минуттан кейін қайта көріңіз.",
+            },
+            { status: 429 },
           );
         }
 

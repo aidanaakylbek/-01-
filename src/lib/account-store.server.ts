@@ -14,9 +14,12 @@ import {
   isSupabaseConfigured,
   listPaymentRequestRows,
   markReportSent,
+  needsPasswordRehash,
   updateDiagnosticResult,
   updatePaymentRequestRow,
+  updateUserPasswordHash,
   verifyParentTelegram,
+  verifyPassword,
   wasReportSent,
 } from "./supabase-db.server";
 import type { DiagnosticAttemptSnapshot, DiagnosticLevel } from "./diagnostic-analysis";
@@ -289,7 +292,7 @@ const demoAccount: StoredAccount = {
   diagnosticTopicScores: undefined,
   diagnosticWeakTopics: undefined,
   mentorStyle: "friendly",
-  password: "demo123",
+  password: hashPassword("demo123"),
 };
 
 const ownerAdminEmail = normalizeEmail(process.env.ADMIN_EMAIL ?? "admin@ai-sana.kz");
@@ -332,7 +335,7 @@ const ownerAdminAccount: StoredAccount = {
   diagnosticTopicScores: {},
   diagnosticWeakTopics: [],
   mentorStyle: "friendly",
-  password: ownerAdminPassword,
+  password: hashPassword(ownerAdminPassword),
 };
 
 const accounts = new Map<string, StoredAccount>([
@@ -720,7 +723,7 @@ export async function registerAccount(input: {
     diagnosticTopicScores: undefined,
     diagnosticWeakTopics: undefined,
     mentorStyle: "friendly",
-    password: input.password,
+    password: hashPassword(input.password),
   };
 
   accounts.set(account.email, account);
@@ -1213,7 +1216,7 @@ function normalizePhone(phone: string) {
 export async function loginAccount(input: { email: string; password: string; remember?: boolean }) {
   const email = input.email.trim().toLowerCase();
 
-  if (email === ownerAdminEmail && input.password === ownerAdminPassword) {
+  if (email === ownerAdminEmail && timingSafeEqualStrings(input.password, ownerAdminPassword)) {
     setSessionEmail(ownerAdminAccount.email, Boolean(input.remember));
     return toPublicAccount(ownerAdminAccount);
   }
@@ -1221,8 +1224,13 @@ export async function loginAccount(input: { email: string; password: string; rem
   if (isSupabaseConfigured()) {
     const account = await findAccountByEmail(email);
 
-    if (!account || account.password !== hashPassword(input.password)) {
+    if (!account || !verifyPassword(input.password, account.password)) {
       return null;
+    }
+
+    if (needsPasswordRehash(account.password)) {
+      const upgradedHash = hashPassword(input.password);
+      await updateUserPasswordHash(account.id, upgradedHash).catch(() => undefined);
     }
 
     setSessionEmail(account.email, Boolean(input.remember));
@@ -1231,12 +1239,30 @@ export async function loginAccount(input: { email: string; password: string; rem
 
   const account = accounts.get(email);
 
-  if (!account || account.password !== input.password) {
+  if (!account || !verifyPassword(input.password, account.password)) {
     return null;
+  }
+
+  if (needsPasswordRehash(account.password)) {
+    account.password = hashPassword(input.password);
+    accounts.set(account.email, account);
   }
 
   setSessionEmail(account.email, Boolean(input.remember));
   return toPublicAccount(account);
+}
+
+function timingSafeEqualStrings(a: string, b: string) {
+  const bufferA = Buffer.from(a);
+  const bufferB = Buffer.from(b);
+
+  if (bufferA.length !== bufferB.length) {
+    // Still run a comparison of equal length to avoid leaking length via timing.
+    timingSafeEqual(bufferA, bufferA);
+    return false;
+  }
+
+  return timingSafeEqual(bufferA, bufferB);
 }
 
 export function logoutAccount() {
@@ -1438,6 +1464,27 @@ export async function createPaymentRequest(input: {
   }
 
   paymentRequests.set(request.id, request);
+  return request;
+}
+
+// Scoped to the caller's own request only - used by the customer-facing
+// /payment confirmation page. Unlike listPaymentRequests (admin-only, all
+// requests), this never returns another user's payment data.
+export async function getOwnPaymentRequest(id: string) {
+  const account = await getActiveStoredAccount();
+
+  if (!account || !id) {
+    return null;
+  }
+
+  const request = isSupabaseConfigured()
+    ? (await listPaymentRequestRows()).find((item) => item.id === id)
+    : paymentRequests.get(id);
+
+  if (!request || request.userId !== account.id) {
+    return null;
+  }
+
   return request;
 }
 

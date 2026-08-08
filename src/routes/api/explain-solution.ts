@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { buildMentorSystemPrompt } from "@/lib/ai-mentor";
-import { getAccessError, saveSolutionExplanationLog } from "@/lib/account-store.server";
+import { getAccessError, getDashboardAccount, saveSolutionExplanationLog } from "@/lib/account-store.server";
+import { isRateLimited } from "@/lib/rate-limit.server";
 
 const requestSchema = z.object({
   language: z.enum(["EN", "KZ", "RU"]).default("EN"),
@@ -30,6 +31,15 @@ export const Route = createFileRoute("/api/explain-solution")({
 
         if (accessError) {
           return Response.json(accessError, { status: 403 });
+        }
+
+        const dashboard = await getDashboardAccount();
+
+        if (isRateLimited(`explain-solution:${dashboard.account.id}`, 15, 60_000)) {
+          return Response.json(
+            { error: "RATE_LIMITED", message: "Тым жиі сұрау жібердіңіз. Бір минуттан кейін қайта көріңіз." },
+            { status: 429 },
+          );
         }
 
         const apiKey = process.env.OPENAI_API_KEY;

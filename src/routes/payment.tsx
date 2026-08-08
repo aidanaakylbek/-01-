@@ -1,17 +1,22 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 
 import { GameCard, GameLayout } from "@/components/gamified-platform";
-import { listPaymentRequests } from "@/lib/api/account.functions";
+import { getOwnPaymentRequest } from "@/lib/api/account.functions";
 import type { PaymentRequest } from "@/lib/account-store.server";
+import { formatThousands } from "@/lib/utils";
 
 export const Route = createFileRoute("/payment")({
   validateSearch: (search: Record<string, unknown>) => ({
     requestId: typeof search.requestId === "string" ? search.requestId : "",
   }),
   loader: async ({ location }) => {
-    const requests = await listPaymentRequests();
     const search = location.search as { requestId?: string };
-    return requests.find((request) => request.id === search.requestId) ?? requests[0] ?? null;
+
+    if (!search.requestId) {
+      return null;
+    }
+
+    return getOwnPaymentRequest({ data: { id: search.requestId } });
   },
   head: () => ({
     meta: [
@@ -48,7 +53,7 @@ function Payment() {
           <GameCard className="bg-white/95">
             <div className="grid gap-4 md:grid-cols-2">
               <Info label="Тариф" value={request.planName} />
-              <Info label="Сома" value={`${request.amount.toLocaleString("kk-KZ")} ${request.currency}`} />
+              <Info label="Сома" value={`${formatThousands(request.amount)} ${request.currency}`} />
               <Info label="Төлем түрі" value={methodLabels[request.paymentMethod] ?? request.paymentMethod} />
               <Info label="Ата-ана телефоны" value={request.parentPhone} />
               <Info label="Статус" value={request.status} />
