@@ -76,7 +76,7 @@ function VocabularyTopicPage() {
   const moveNext = () => {
     setCardIndexByPart((value) => ({
       ...value,
-      [activePart]: Math.min(activeIndex + 1, activeWords.length - 1),
+      [activePart]: activeIndex + 1 >= activeWords.length ? 0 : activeIndex + 1,
     }));
   };
 

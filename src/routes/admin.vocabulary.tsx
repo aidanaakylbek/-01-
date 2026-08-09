@@ -5,6 +5,7 @@ import { GameCard, GameLayout, ProgressBar } from "@/components/gamified-platfor
 import {
   createAdminVocabularyTopicFn,
   getAdminVocabularyTopicsFn,
+  publishVocabularyTopicFn,
   saveAdminVocabularyWordFn,
 } from "@/lib/api/vocabulary.functions";
 import type { VocabularyPartOfSpeech, VocabularyWordDifficulty } from "@/lib/vocabulary.server";
@@ -39,6 +40,17 @@ function AdminVocabularyPage() {
       setStatus("Topic created");
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Could not create topic");
+    }
+  };
+
+  const publishTopic = async (topicId: string) => {
+    setStatus("Publishing topic...");
+    try {
+      await publishVocabularyTopicFn({ data: { topicId } });
+      await refresh();
+      setStatus("Topic published");
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Could not publish topic");
     }
   };
 
@@ -135,10 +147,11 @@ function AdminVocabularyPage() {
                   </div>
                   <button
                     type="button"
-                    disabled={!topic.validation.canPublish}
+                    disabled={!topic.validation.canPublish || topic.is_published}
+                    onClick={() => void publishTopic(topic.id)}
                     className="mt-5 w-full rounded-2xl bg-[#6D28D9] px-5 py-3 font-black text-white shadow-[0_5px_0_#4C1D95] disabled:opacity-50"
                   >
-                    Publish
+                    {topic.is_published ? "Published" : "Publish"}
                   </button>
                 </div>
               </div>

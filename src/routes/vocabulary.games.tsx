@@ -40,9 +40,9 @@ function VocabularyGamesPage() {
     setActiveSession(await completeVocabularyGameFn({
       data: {
         sessionId: session.id,
-        correctItems: session.totalItems,
-        incorrectItems: 0,
-        hintsUsed: 0,
+        correctItems: session.correctItems,
+        incorrectItems: session.incorrectItems,
+        hintsUsed: session.hintsUsed,
       },
     }));
   };

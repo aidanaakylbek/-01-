@@ -395,7 +395,7 @@ export async function saveVocabularyProgress(input: {
   const next = updateProgress(previous, input.action);
   progressMap.set(input.wordId, next);
   updateDailyActivity(userId, input.wordId, input.action);
-  syncTopicUnlocks(userId, word.topic_id);
+  await syncTopicUnlocks(userId, word.topic_id);
 
   if (previous.status !== "known" && next.status === "known") {
     await awardXpToCurrentAccount(XP_REWARDS.vocabularyWordKnown);
@@ -450,6 +450,16 @@ export async function createAdminVocabularyTopic(input: {
     updated_at: new Date().toISOString(),
   };
   topics.set(slug, topic);
+  return topic;
+}
+
+export async function publishVocabularyTopic(topicId: string) {
+  await requireAdmin();
+  const topic = topicsById(topicId);
+  if (!topic) throw new Error("TOPIC_NOT_FOUND");
+  if (!isTopicPublishable(topic.id).canPublish) throw new Error("TOPIC_NOT_READY");
+  topic.is_published = true;
+  topic.updated_at = new Date().toISOString();
   return topic;
 }
 
@@ -602,7 +612,7 @@ export async function completeVocabularyTest(attemptId: string) {
   recalculateAttempt(attempt);
   attempt.xpEarned = calculateTestXp(attempt);
   await grantRewardOnce(userId, `vocabulary:test:${attempt.id}:completed`, attempt.xpEarned);
-  syncTopicUnlocks(userId, attempt.topicId);
+  await syncTopicUnlocks(userId, attempt.topicId);
   return getVocabularyTestResult(attemptId);
 }
 
@@ -1311,11 +1321,11 @@ function assertTopicUnlocked(topic: VocabularyTopic, userId: string) {
   throw error;
 }
 
-function syncTopicUnlocks(userId: string, topicId: string) {
+async function syncTopicUnlocks(userId: string, topicId: string) {
   if (!isTopicMastered(topicId, userId)) return;
   const topic = topicsById(topicId);
   if (!topic) return;
-  grantRewardOnce(userId, `vocabulary:topic:${topic.id}:completed`, 40);
+  await grantRewardOnce(userId, `vocabulary:topic:${topic.id}:completed`, 40);
 }
 
 function orderedVocabularyTopics() {

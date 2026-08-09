@@ -14,6 +14,7 @@ import {
   getVocabularyTopic,
   getVocabularyTestResult,
   getVocabularyWeakWords,
+  publishVocabularyTopic,
   saveAdminVocabularyWord,
   saveVocabularyProgress,
   searchVocabulary,
@@ -94,6 +95,10 @@ export const createAdminVocabularyTopicFn = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     return createAdminVocabularyTopic(data);
   });
+
+export const publishVocabularyTopicFn = createServerFn({ method: "POST" })
+  .inputValidator(z.object({ topicId: z.string().min(1) }))
+  .handler(async ({ data }) => publishVocabularyTopic(data.topicId));
 
 export const saveAdminVocabularyWordFn = createServerFn({ method: "POST" })
   .inputValidator(
