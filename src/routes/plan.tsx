@@ -5,6 +5,7 @@ import { GameCard, GameLayout, ProgressBar } from "@/components/gamified-platfor
 import { useLanguage } from "@/hooks/use-language";
 import { useDocumentTitle } from "@/hooks/use-document-title";
 import { getAccountDashboard } from "@/lib/api/account.functions";
+import { getLessonSubjectIdForDiagnosticSubject } from "@/lib/diagnostic-analysis";
 
 export const Route = createFileRoute("/plan")({
   loader: async () => getAccountDashboard(),
@@ -45,9 +46,21 @@ function PracticePage() {
   const [topic, setTopic] = useState("Пайыздар");
   const [quickCount, setQuickCount] = useState(10);
 
+  const diagnosticCompleted = dashboard.account.diagnosticCompleted;
+  const topicScores = dashboard.account.diagnosticTopicScores ?? {};
+  const subjectScores = dashboard.account.diagnosticSubjectScores ?? {};
+  const subjectLevels = dashboard.account.diagnosticSubjectLevels ?? {};
   const weakTopics = dashboard.account.diagnosticWeakTopics?.length
     ? dashboard.account.diagnosticWeakTopics
     : ["Пайыздар", "Логика", "Оқу сауаттылығы"];
+  const subjectPlan = Object.entries(subjectScores)
+    .sort((a, b) => a[1] - b[1])
+    .map(([subject, score]) => ({
+      subject,
+      score,
+      level: subjectLevels[subject],
+      lessonSubjectId: getLessonSubjectIdForDiagnosticSubject(subject),
+    }));
   const mistakesCount = dashboard.examAttempts.reduce(
     (total, attempt) => total + attempt.questions.filter((answer) => !answer.isCorrect).length,
     0,
@@ -76,6 +89,15 @@ function PracticePage() {
         rules: "Как работает",
         rulesText:
           "Слабые темы берутся из диагностики, тестов и ошибок. Смешанная практика помогает готовиться к реальному формату НИШ/БИЛ/НЗМ.",
+        planTitle: "План подготовки по результату диагностики",
+        planSubtitle: "Предметы отсортированы от самого слабого к самому сильному.",
+        planLevel: "Уровень",
+        planScore: "Результат",
+        planPracticeSubject: "Тренировать этот предмет",
+        planNoDiagnosticTitle: "Пройдите диагностику, чтобы получить план",
+        planNoDiagnosticText:
+          "Пока диагностика не пройдена, темы ниже — это общий пример, а не ваш реальный результат.",
+        planNoDiagnosticCta: "Пройти диагностику",
         cards: {
           topic: {
             title: "По теме",
@@ -136,6 +158,15 @@ function PracticePage() {
       rules: "Қалай жұмыс істейді",
       rulesText:
         "Әлсіз тақырыптар диагностика, тесттер және бұрынғы қателер бойынша анықталады. Аралас жаттығу НЗМ/БИЛ нақты тест форматына дайындайды.",
+      planTitle: "Диагностика нәтижесі бойынша дайындық жоспары",
+      planSubtitle: "Пәндер ең әлсізінен ең күштісіне қарай тізілген.",
+      planLevel: "Деңгей",
+      planScore: "Нәтиже",
+      planPracticeSubject: "Осы пәнді жаттықтыру",
+      planNoDiagnosticTitle: "Жоспар алу үшін диагностиканы өтіңіз",
+      planNoDiagnosticText:
+        "Диагностика өтілмегенше, төмендегі тақырыптар — жалпы мысал, сіздің нақты нәтижеңіз емес.",
+      planNoDiagnosticCta: "Диагностиканы бастау",
       cards: {
         topic: {
           title: "Тақырып бойынша",
@@ -276,15 +307,20 @@ function PracticePage() {
             <h3 className="text-lg font-black">{c.rules}</h3>
             <p className="mt-2 text-sm font-semibold text-[#6B5E8F]">{c.rulesText}</p>
             <div className="mt-4 space-y-3">
-              {weakTopics.slice(0, 3).map((weakTopic, index) => (
-                <div key={weakTopic}>
-                  <div className="flex items-center justify-between text-sm font-black">
-                    <span>{weakTopic}</span>
-                    <span className="text-[#EF4444]">{28 + index * 7}%</span>
+              {weakTopics.slice(0, 3).map((weakTopic) => {
+                const score = topicScores[weakTopic];
+                return (
+                  <div key={weakTopic}>
+                    <div className="flex items-center justify-between text-sm font-black">
+                      <span>{weakTopic}</span>
+                      <span className="text-[#EF4444]">
+                        {score === undefined ? "—" : `${score}%`}
+                      </span>
+                    </div>
+                    <ProgressBar danger value={score ?? 0} />
                   </div>
-                  <ProgressBar danger value={28 + index * 7} />
-                </div>
-              ))}
+                );
+              })}
             </div>
           </GameCard>
         </div>
@@ -307,6 +343,60 @@ function PracticePage() {
             </div>
           </div>
         </GameCard>
+
+        {diagnosticCompleted && subjectPlan.length ? (
+          <GameCard className="bg-white/95">
+            <p className="text-sm font-black uppercase tracking-[0.22em] text-[#8B5CF6]">
+              {c.planTitle}
+            </p>
+            <p className="mt-1 font-semibold text-[#6B5E8F]">{c.planSubtitle}</p>
+            <div className="mt-5 grid gap-3 md:grid-cols-2">
+              {subjectPlan.map((item) => (
+                <div
+                  className="rounded-3xl border-2 border-[#DDD6FE] bg-[#F5F3FF] p-4"
+                  key={item.subject}
+                >
+                  <div className="flex items-center justify-between">
+                    <p className="font-black text-[#1E1B4B]">{item.subject}</p>
+                    <span
+                      className={`font-black ${item.score < 70 ? "text-[#EF4444]" : "text-[#22C55E]"}`}
+                    >
+                      {item.score}%
+                    </span>
+                  </div>
+                  <ProgressBar danger={item.score < 70} value={item.score} />
+                  <div className="mt-2 flex items-center justify-between gap-2">
+                    <p className="text-sm font-bold text-[#6B5E8F]">
+                      {c.planLevel}: {item.level ?? "—"}
+                    </p>
+                    {item.lessonSubjectId ? (
+                      <Link
+                        className="rounded-xl bg-[#6D28D9] px-3 py-2 text-xs font-black text-white shadow-[0_4px_0_#4C1D95]"
+                        params={{ subjectId: item.lessonSubjectId }}
+                        to="/subjects/$subjectId"
+                      >
+                        {c.planPracticeSubject}
+                      </Link>
+                    ) : null}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </GameCard>
+        ) : !diagnosticCompleted ? (
+          <GameCard className="border-[#FACC15] bg-[#FFFBEB]">
+            <p className="text-sm font-black uppercase tracking-[0.22em] text-[#8B5CF6]">
+              {c.planNoDiagnosticTitle}
+            </p>
+            <p className="mt-2 font-semibold text-[#6B5E8F]">{c.planNoDiagnosticText}</p>
+            <Link
+              className="mt-4 inline-flex rounded-2xl bg-[#6D28D9] px-5 py-3 font-black text-white shadow-[0_5px_0_#4C1D95]"
+              to="/diagnostic"
+            >
+              {c.planNoDiagnosticCta}
+            </Link>
+          </GameCard>
+        ) : null}
 
         <GameCard className="bg-white/95">
           <div className="grid gap-4 lg:grid-cols-[1fr_260px]">

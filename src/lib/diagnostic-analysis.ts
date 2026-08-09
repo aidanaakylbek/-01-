@@ -100,6 +100,27 @@ export function analyzeDiagnosticAttempts(
   };
 }
 
+const diagnosticSubjectToLessonSubjectId: Record<string, string> = {
+  Mathematics: "math",
+  Математика: "math",
+  "Quantitative Reasoning": "math",
+  Logic: "logic",
+  Логика: "logic",
+  Science: "natural-science",
+  Жаратылыстану: "natural-science",
+  "Reading Literacy": "reading",
+  "Оқу сауаттылығы": "reading",
+  English: "english",
+  "English language": "english",
+  "Ағылшын тілі": "english",
+  "Қазақ тілі": "kazakh",
+  "Русский язык": "russian",
+};
+
+export function getLessonSubjectIdForDiagnosticSubject(subject: string): string | undefined {
+  return diagnosticSubjectToLessonSubjectId[subject];
+}
+
 function calculateScores(
   attempts: DiagnosticAttemptSnapshot[],
   key: "subject" | "topic",
