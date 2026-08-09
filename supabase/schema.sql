@@ -101,23 +101,6 @@ create table if not exists public.telegram_verification_tokens (
   updated_at timestamptz not null default now()
 );
 
-create index if not exists parents_student_id_idx on public.parents(student_id);
-create index if not exists parents_invite_code_idx on public.parents(invite_code);
-create index if not exists payment_requests_user_id_idx on public.payment_requests(user_id);
-create unique index if not exists users_email_unique_idx on public.users(email);
-create unique index if not exists users_email_lower_unique_idx on public.users(lower(email));
-create unique index if not exists users_telegram_user_id_unique_idx
-  on public.users(telegram_user_id)
-  where telegram_user_id is not null;
-create unique index if not exists users_phone_e164_unique_idx
-  on public.users(phone_e164)
-  where phone_e164 is not null;
-create index if not exists telegram_verification_tokens_user_id_idx
-  on public.telegram_verification_tokens(user_id);
-create index if not exists telegram_verification_tokens_pending_idx
-  on public.telegram_verification_tokens(telegram_chat_id, telegram_user_id, expires_at)
-  where used_at is null;
-
 alter table public.users
   add column if not exists mentor_style text not null default 'friendly';
 
@@ -152,6 +135,28 @@ alter table public.users
 alter table public.users
   add constraint users_mentor_style_check
   check (mentor_style in ('soft', 'strict', 'friendly', 'olympiad'));
+
+-- These indexes reference columns added by the alter table statements
+-- above, so they must run after those (some existing databases created
+-- the `users` table before these columns were part of the base schema,
+-- and "create table if not exists" does not retroactively add columns
+-- to an already-existing table).
+create index if not exists parents_student_id_idx on public.parents(student_id);
+create index if not exists parents_invite_code_idx on public.parents(invite_code);
+create index if not exists payment_requests_user_id_idx on public.payment_requests(user_id);
+create unique index if not exists users_email_unique_idx on public.users(email);
+create unique index if not exists users_email_lower_unique_idx on public.users(lower(email));
+create unique index if not exists users_telegram_user_id_unique_idx
+  on public.users(telegram_user_id)
+  where telegram_user_id is not null;
+create unique index if not exists users_phone_e164_unique_idx
+  on public.users(phone_e164)
+  where phone_e164 is not null;
+create index if not exists telegram_verification_tokens_user_id_idx
+  on public.telegram_verification_tokens(user_id);
+create index if not exists telegram_verification_tokens_pending_idx
+  on public.telegram_verification_tokens(telegram_chat_id, telegram_user_id, expires_at)
+  where used_at is null;
 
 alter table public.parents add column if not exists phone_normalized text;
 
