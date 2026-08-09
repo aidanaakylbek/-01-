@@ -143,16 +143,30 @@ export const vocabularyCopy = {
   },
 } satisfies Record<VocabularyLanguage, Record<string, string>>;
 
-const partLabels = {
+export const partLabels = {
   verb: { KZ: "Етістіктер", RU: "Глаголы", EN: "Verbs" },
   adjective: { KZ: "Сын есімдер", RU: "Прилагательные", EN: "Adjectives" },
   noun: { KZ: "Зат есімдер", RU: "Существительные", EN: "Nouns" },
+  adverb: { KZ: "Үстеулер", RU: "Наречия", EN: "Adverbs" },
+  preposition: { KZ: "Септеуліктер", RU: "Предлоги", EN: "Prepositions" },
+  conjunction: { KZ: "Жалғаулықтар", RU: "Союзы", EN: "Conjunctions" },
+  pronoun: { KZ: "Есімдіктер", RU: "Местоимения", EN: "Pronouns" },
+  number: { KZ: "Сан есімдер", RU: "Числительные", EN: "Numbers" },
+  auxiliary_verb: { KZ: "Көмекші етістіктер", RU: "Вспомогательные глаголы", EN: "Auxiliary verbs" },
+  exclamation: { KZ: "Одағайлар", RU: "Восклицания", EN: "Exclamations" },
 } satisfies Record<VocabularyPartOfSpeech, Record<VocabularyLanguage, string>>;
 
 const singularPartLabels = {
   verb: { KZ: "Етістік", RU: "Глагол", EN: "Verb" },
   adjective: { KZ: "Сын есім", RU: "Прилагательное", EN: "Adjective" },
   noun: { KZ: "Зат есім", RU: "Существительное", EN: "Noun" },
+  adverb: { KZ: "Үстеу", RU: "Наречие", EN: "Adverb" },
+  preposition: { KZ: "Септеулік", RU: "Предлог", EN: "Preposition" },
+  conjunction: { KZ: "Жалғаулық", RU: "Союз", EN: "Conjunction" },
+  pronoun: { KZ: "Есімдік", RU: "Местоимение", EN: "Pronoun" },
+  number: { KZ: "Сан есім", RU: "Числительное", EN: "Number" },
+  auxiliary_verb: { KZ: "Көмекші етістік", RU: "Вспомогательный глагол", EN: "Auxiliary verb" },
+  exclamation: { KZ: "Одағай", RU: "Восклицание", EN: "Exclamation" },
 } satisfies Record<VocabularyPartOfSpeech, Record<VocabularyLanguage, string>>;
 
 export function VocabularyHero({
@@ -302,9 +316,12 @@ export function VocabularyTopicCard({ language, topic }: { language: VocabularyL
         </div>
         <ProgressBar value={topic.progress.completionPercentage} danger={locked} />
         <div className="mt-3 grid gap-2 text-sm font-bold text-[#6B5E8F]">
-          <span>{c.verbs}: {topic.progress.knownVerbs} / 15 {topic.progress.tests.verbsPassed ? "✅" : ""}</span>
-          <span>{c.adjectives}: {topic.progress.knownAdjectives} / 15 {topic.progress.tests.adjectivesPassed ? "✅" : ""}</span>
-          <span>{c.nouns}: {topic.progress.knownNouns} / 15 {topic.progress.tests.nounsPassed ? "✅" : ""}</span>
+          {topic.categories.map((category) => (
+            <span key={category}>
+              {partLabels[category][language]}: {topic.progress.knownByCategory[category] ?? 0} / 15{" "}
+              {topic.progress.tests.passedByCategory[category] ? "✅" : ""}
+            </span>
+          ))}
           <span>{c.memorizationTest}: {topic.progress.tests.mixedPassed ? "✅" : "80%+"}</span>
         </div>
       </div>
@@ -457,18 +474,23 @@ function Requirement({ done, label }: { done: boolean; label: string }) {
 
 export function VocabularyTabs({
   active,
+  categories,
   counts,
   language,
   onChange,
 }: {
   active: VocabularyPartOfSpeech;
-  counts: Record<VocabularyPartOfSpeech, number>;
+  categories: VocabularyPartOfSpeech[];
+  counts: Partial<Record<VocabularyPartOfSpeech, number>>;
   language: VocabularyLanguage;
   onChange: (part: VocabularyPartOfSpeech) => void;
 }) {
   return (
-    <div className="grid gap-2 rounded-[26px] border-2 border-[#DDD6FE] bg-white p-2 md:grid-cols-3">
-      {(["verb", "adjective", "noun"] as VocabularyPartOfSpeech[]).map((part) => (
+    <div
+      className="grid gap-2 rounded-[26px] border-2 border-[#DDD6FE] bg-white p-2"
+      style={{ gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))" }}
+    >
+      {categories.map((part) => (
         <button
           key={part}
           type="button"
@@ -477,7 +499,7 @@ export function VocabularyTabs({
             active === part ? "bg-[#6D28D9] text-white shadow-[0_5px_0_#4C1D95]" : "bg-[#F5F3FF] text-[#4B3D73]"
           }`}
         >
-          {partLabels[part][language]} {counts[part]}
+          {partLabels[part][language]} {counts[part] ?? 0}
         </button>
       ))}
     </div>
@@ -551,6 +573,10 @@ export function VocabularyFlashcard({
             </div>
             {word.image_url ? (
               <img src={word.image_url} alt="" className="mx-auto max-h-32 rounded-3xl object-contain" />
+            ) : word.emoji ? (
+              <p className="text-center text-6xl" aria-hidden="true">
+                {word.emoji}
+              </p>
             ) : null}
             <div className="flex flex-wrap items-center gap-3">
               <VocabularyAudioButton word={word.word_en} audioUrl={word.audio_url} />
@@ -930,10 +956,10 @@ export function VocabularyTestResultCard({ language, result }: { language: Vocab
         {result.attempt.correctAnswers} / {result.attempt.totalQuestions} дұрыс · +{result.attempt.xpEarned} XP
       </p>
       <div className="mt-5 grid gap-3 md:grid-cols-3">
-        {(["verb", "adjective", "noun"] as VocabularyPartOfSpeech[]).map((part) => (
+        {(Object.keys(result.categoryScores) as VocabularyPartOfSpeech[]).map((part) => (
           <div key={part} className="rounded-3xl bg-[#F5F3FF] p-4">
             <p className="font-black text-[#8B5CF6]">{partLabels[part][language]}</p>
-            <p className="mt-2 text-2xl font-black">{result.categoryScores[part].percentage}%</p>
+            <p className="mt-2 text-2xl font-black">{result.categoryScores[part]?.percentage ?? 0}%</p>
           </div>
         ))}
       </div>

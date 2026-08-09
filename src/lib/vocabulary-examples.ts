@@ -4,7 +4,7 @@ export type VocabularyExampleSource = {
   word_en: string;
   translation_kk: string;
   translation_ru: string;
-  part_of_speech: VocabularyExamplePart;
+  part_of_speech: string;
 };
 
 type VocabularyUsageExamples = {

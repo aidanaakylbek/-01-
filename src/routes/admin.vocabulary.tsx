@@ -125,13 +125,16 @@ function AdminVocabularyPage() {
                   </p>
                   <h2 className="mt-2 text-3xl font-black">{topic.title_en}</h2>
                   <p className="mt-2 font-bold text-[#6B5E8F]">
-                    {topic.is_published ? "Published" : "Draft"} · Total {topic.counts.total} / 45
+                    {topic.is_published ? "Published" : "Draft"} · Total {topic.counts.total} /{" "}
+                    {topic.categories.length * 15}
                   </p>
-                  <ProgressBar value={Math.round((topic.counts.total / 45) * 100)} />
+                  <ProgressBar
+                    value={Math.round((topic.counts.total / Math.max(1, topic.categories.length * 15)) * 100)}
+                  />
                   <div className="mt-4 grid gap-3 md:grid-cols-3">
-                    <Counter label="Verbs" value={topic.counts.verbs} />
-                    <Counter label="Adjectives" value={topic.counts.adjectives} />
-                    <Counter label="Nouns" value={topic.counts.nouns} />
+                    {topic.categories.map((category) => (
+                      <Counter key={category} label={category} value={topic.counts.byCategory[category] ?? 0} />
+                    ))}
                   </div>
                 </div>
                 <div className="rounded-3xl bg-[#F5F3FF] p-5">

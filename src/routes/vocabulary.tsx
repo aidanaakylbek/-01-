@@ -4,6 +4,7 @@ import { GameCard, GameLayout, ProgressBar } from "@/components/gamified-platfor
 import {
   VocabularyLearningPath,
   VocabularyEmptyState,
+  partLabels,
   vocabularyCopy,
 } from "@/components/vocabulary-ui";
 import { useLanguage } from "@/hooks/use-language";
@@ -126,19 +127,24 @@ function getTopicTitle(topic: VocabularyTopicSummary, language: VocabularyLangua
 }
 
 function getCurrentStage(topic: VocabularyTopicSummary, language: VocabularyLanguage) {
-  if (topic.progress.totalKnown >= 45 && !topic.progress.tests.mixedPassed) {
-    return {
-      part: "noun" as const,
-      label: language === "RU" ? "Тест на знание слов" : language === "EN" ? "Vocabulary check test" : "Сөзді тексеру тесті",
-      known: 45,
-      passed: false,
-    };
+  const topicTotalWords = topic.categories.length * 15;
+  const checkTestLabel =
+    language === "RU" ? "Тест на знание слов" : language === "EN" ? "Vocabulary check test" : "Сөзді тексеру тесті";
+  if (topic.progress.totalKnown >= topicTotalWords && !topic.progress.tests.mixedPassed) {
+    return { part: topic.categories[0] ?? ("noun" as const), label: checkTestLabel, known: topicTotalWords, passed: false };
   }
-  const stages: Array<{ part: VocabularyPartOfSpeech; label: string; known: number; passed: boolean }> = [
-    { part: "verb", label: language === "RU" ? "Глаголы" : language === "EN" ? "Verbs" : "Етістіктер", known: topic.progress.knownVerbs, passed: topic.progress.tests.verbsPassed },
-    { part: "adjective", label: language === "RU" ? "Прилагательные" : language === "EN" ? "Adjectives" : "Сын есімдер", known: topic.progress.knownAdjectives, passed: topic.progress.tests.adjectivesPassed },
-    { part: "noun", label: language === "RU" ? "Существительные" : language === "EN" ? "Nouns" : "Зат есімдер", known: topic.progress.knownNouns, passed: topic.progress.tests.nounsPassed },
-  ];
-  return stages.find((stage) => stage.known < 15 || !stage.passed)
-    ?? { part: "noun" as const, label: language === "RU" ? "Тест на знание слов" : language === "EN" ? "Vocabulary check test" : "Сөзді тексеру тесті", known: 15, passed: topic.progress.tests.mixedPassed };
+  const stages = topic.categories.map((part) => ({
+    part,
+    label: partLabels[part][language],
+    known: topic.progress.knownByCategory[part] ?? 0,
+    passed: Boolean(topic.progress.tests.passedByCategory[part]),
+  }));
+  return (
+    stages.find((stage) => stage.known < 15 || !stage.passed) ?? {
+      part: topic.categories[topic.categories.length - 1] ?? ("noun" as const),
+      label: checkTestLabel,
+      known: 15,
+      passed: topic.progress.tests.mixedPassed,
+    }
+  );
 }

@@ -25,7 +25,18 @@ import {
   toggleVocabularyFavorite,
 } from "../vocabulary.server";
 
-const partOfSpeechSchema = z.enum(["verb", "adjective", "noun"]);
+const partOfSpeechSchema = z.enum([
+  "verb",
+  "adjective",
+  "noun",
+  "adverb",
+  "preposition",
+  "conjunction",
+  "pronoun",
+  "number",
+  "auxiliary_verb",
+  "exclamation",
+]);
 const wordDifficultySchema = z.enum(["A1", "beginner", "intermediate"]);
 const gameTypeSchema = z.enum([
   "match_pairs",
@@ -90,6 +101,7 @@ export const createAdminVocabularyTopicFn = createServerFn({ method: "POST" })
       title_kk: z.string().min(1),
       title_ru: z.string().min(1),
       difficulty: z.enum(["beginner", "intermediate", "mixed"]),
+      categories: z.array(partOfSpeechSchema).optional(),
     }),
   )
   .handler(async ({ data }) => {
@@ -113,6 +125,7 @@ export const saveAdminVocabularyWordFn = createServerFn({ method: "POST" })
       audio_url: z.string().optional(),
       image_url: z.string().optional(),
       image_prompt: z.string().optional(),
+      emoji: z.string().optional(),
       example_en: z.string().optional(),
       example_kk: z.string().optional(),
       example_ru: z.string().optional(),

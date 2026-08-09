@@ -6,7 +6,17 @@ import { XP_REWARDS } from "./xp-system";
 export type VocabularyLanguage = "KZ" | "RU" | "EN";
 export type VocabularyDifficulty = "beginner" | "intermediate" | "mixed";
 export type VocabularyWordDifficulty = "A1" | "beginner" | "intermediate";
-export type VocabularyPartOfSpeech = "verb" | "adjective" | "noun";
+export type VocabularyPartOfSpeech =
+  | "verb"
+  | "adjective"
+  | "noun"
+  | "adverb"
+  | "preposition"
+  | "conjunction"
+  | "pronoun"
+  | "number"
+  | "auxiliary_verb"
+  | "exclamation";
 export type VocabularyProgressStatus = "new" | "learning" | "review" | "known";
 export type VocabularyQuestionType =
   | "translation_choice"
@@ -53,6 +63,7 @@ export type VocabularyTopic = {
   icon?: string;
   cover_image_url?: string;
   difficulty: VocabularyDifficulty;
+  categories: VocabularyPartOfSpeech[];
   order_index: number;
   is_published: boolean;
   is_featured: boolean;
@@ -72,6 +83,7 @@ export type VocabularyWord = {
   audio_url?: string;
   image_url?: string;
   image_prompt?: string;
+  emoji?: string;
   example_en?: string;
   example_kk?: string;
   example_ru?: string;
@@ -101,25 +113,19 @@ export type VocabularyTopicSummary = VocabularyTopic & {
 };
 
 export type VocabularyCounts = {
-  verbs: number;
-  adjectives: number;
-  nouns: number;
+  byCategory: Partial<Record<VocabularyPartOfSpeech, number>>;
   total: number;
 };
 
 export type VocabularyTopicProgress = {
-  knownVerbs: number;
-  knownAdjectives: number;
-  knownNouns: number;
+  knownByCategory: Partial<Record<VocabularyPartOfSpeech, number>>;
   totalKnown: number;
   completionPercentage: number;
   state: "locked" | "available" | "in_progress" | "completed" | "mastered" | "needs_review";
   unlocked: boolean;
   lockedReason?: string;
   tests: {
-    verbsPassed: boolean;
-    adjectivesPassed: boolean;
-    nounsPassed: boolean;
+    passedByCategory: Partial<Record<VocabularyPartOfSpeech, boolean>>;
     mixedPassed: boolean;
   };
   rewards?: {
@@ -160,7 +166,7 @@ export type VocabularyOverview = {
 
 export type VocabularyTopicDetail = VocabularyTopicSummary & {
   words: VocabularyWordWithState[];
-  sections: Record<VocabularyPartOfSpeech, VocabularyWordWithState[]>;
+  sections: Partial<Record<VocabularyPartOfSpeech, VocabularyWordWithState[]>>;
 };
 
 export type VocabularyWordWithState = VocabularyWord & {
@@ -241,7 +247,7 @@ export type VocabularyTestResult = {
   attempt: VocabularyTestAttempt;
   resultState: "needs_review" | "almost_there" | "passed" | "excellent";
   weakWords: VocabularyWordWithState[];
-  categoryScores: Record<VocabularyPartOfSpeech, { correct: number; total: number; percentage: number }>;
+  categoryScores: Partial<Record<VocabularyPartOfSpeech, { correct: number; total: number; percentage: number }>>;
   strongestCategory?: VocabularyPartOfSpeech;
   weakestCategory?: VocabularyPartOfSpeech;
   topicCompleted: boolean;
@@ -339,7 +345,7 @@ export async function getVocabularyTopic(slug: string): Promise<VocabularyTopicD
   const userId = await getCurrentUserId();
   const topic = topics.get(slug);
   if (!topic || !topic.is_published) return null;
-  assertTopicUnlocked(topic, userId);
+  if (!isTopicUnlocked(topic.id, userId)) return null;
 
   const topicWords = getTopicWords(topic.id).map((word) => withState(word, userId));
 
@@ -347,16 +353,17 @@ export async function getVocabularyTopic(slug: string): Promise<VocabularyTopicD
     return null;
   }
 
+  const sections: Partial<Record<VocabularyPartOfSpeech, VocabularyWordWithState[]>> = {};
+  for (const category of topic.categories) {
+    sections[category] = topicWords.filter((word) => word.part_of_speech === category);
+  }
+
   return {
     ...topic,
     counts: countTopicWords(topic.id),
     progress: calculateTopicProgress(topic.id, userId),
     words: topicWords,
-    sections: {
-      verb: topicWords.filter((word) => word.part_of_speech === "verb"),
-      adjective: topicWords.filter((word) => word.part_of_speech === "adjective"),
-      noun: topicWords.filter((word) => word.part_of_speech === "noun"),
-    },
+    sections,
   };
 }
 
@@ -432,6 +439,7 @@ export async function createAdminVocabularyTopic(input: {
   title_kk: string;
   title_ru: string;
   difficulty: VocabularyDifficulty;
+  categories?: VocabularyPartOfSpeech[];
 }) {
   await requireAdmin();
   const slug = normalizeSlug(input.slug);
@@ -443,6 +451,7 @@ export async function createAdminVocabularyTopic(input: {
     title_kk: input.title_kk.trim(),
     title_ru: input.title_ru.trim(),
     difficulty: input.difficulty,
+    categories: input.categories ?? ["verb", "adjective", "noun"],
     order_index: topics.size + 1,
     is_published: false,
     is_featured: false,
@@ -532,18 +541,14 @@ export async function startVocabularyMixedTest(topicSlug: string) {
   const topicWords = getTopicWords(topic.id);
   const learnedAllWords = topicWords.every((word) => getUserProgressMap(userId).get(word.id)?.status === "known");
   if (!learnedAllWords) throw new Error("VOCABULARY_WORDS_REQUIRED");
-  validateSectionPool(topic.id, topicWords.filter((word) => word.is_active && word.part_of_speech === "verb"), "verb");
-  validateSectionPool(topic.id, topicWords.filter((word) => word.is_active && word.part_of_speech === "adjective"), "adjective");
-  validateSectionPool(topic.id, topicWords.filter((word) => word.is_active && word.part_of_speech === "noun"), "noun");
-  const questions = shuffle([
-    ...buildSectionQuestions(topic.id, topicWords.filter((word) => word.is_active && word.part_of_speech === "verb"), "verb").slice(0, 5),
-    ...buildSectionQuestions(
-      topic.id,
-      topicWords.filter((word) => word.is_active && word.part_of_speech === "adjective"),
-      "adjective",
-    ).slice(0, 5),
-    ...buildSectionQuestions(topic.id, topicWords.filter((word) => word.is_active && word.part_of_speech === "noun"), "noun").slice(0, 5),
-  ]);
+  const categories = topic.categories.length ? topic.categories : (["verb", "adjective", "noun"] as const);
+  const questionsPerCategory = Math.max(3, Math.round(15 / categories.length));
+  const questionSets = categories.map((category) => {
+    const pool = topicWords.filter((word) => word.is_active && word.part_of_speech === category);
+    validateSectionPool(topic.id, pool, category);
+    return buildSectionQuestions(topic.id, pool, category).slice(0, questionsPerCategory);
+  });
+  const questions = shuffle(questionSets.flat());
   const attempt = createAttempt({
     userId,
     topic,
@@ -776,11 +781,12 @@ export async function getVocabularyAnalytics(): Promise<VocabularyAnalytics> {
   const progress = [...getUserProgressMap(userId).values()];
   const attempts = [...testAttempts.values()].filter((attempt) => attempt.userId === userId);
   const games = [...gameSessions.values()].filter((session) => session.userId === userId);
-  const categoryScores = ["verb", "adjective", "noun"].map((part) => {
+  const activeCategories = [...new Set(getPublishedActiveWords().map((word) => word.part_of_speech))];
+  const categoryScores = activeCategories.map((part) => {
     const partWords = getPublishedActiveWords().filter((word) => word.part_of_speech === part);
     const correct = partWords.reduce((sum, word) => sum + (getUserProgressMap(userId).get(word.id)?.timesCorrect ?? 0), 0);
     const incorrect = partWords.reduce((sum, word) => sum + (getUserProgressMap(userId).get(word.id)?.timesIncorrect ?? 0), 0);
-    return { part: part as VocabularyPartOfSpeech, percentage: Math.round((correct / Math.max(1, correct + incorrect)) * 100) };
+    return { part, percentage: Math.round((correct / Math.max(1, correct + incorrect)) * 100) };
   });
   return {
     learnedWords: progress.filter((item) => item.status === "known").length,
@@ -964,6 +970,13 @@ function partLabel(partOfSpeech: VocabularyPartOfSpeech, language: VocabularyLan
     verb: { KZ: "Етістік", RU: "Глагол", EN: "Verb" },
     adjective: { KZ: "Сын есім", RU: "Прилагательное", EN: "Adjective" },
     noun: { KZ: "Зат есім", RU: "Существительное", EN: "Noun" },
+    adverb: { KZ: "Үстеу", RU: "Наречие", EN: "Adverb" },
+    preposition: { KZ: "Септеулік", RU: "Предлог", EN: "Preposition" },
+    conjunction: { KZ: "Жалғаулық", RU: "Союз", EN: "Conjunction" },
+    pronoun: { KZ: "Есімдік", RU: "Местоимение", EN: "Pronoun" },
+    number: { KZ: "Сан есім", RU: "Числительное", EN: "Number" },
+    auxiliary_verb: { KZ: "Көмекші етістік", RU: "Вспомогательный глагол", EN: "Auxiliary verb" },
+    exclamation: { KZ: "Одағай", RU: "Восклицание", EN: "Exclamation" },
   } satisfies Record<VocabularyPartOfSpeech, Record<VocabularyLanguage, string>>;
   return labels[partOfSpeech][language];
 }
@@ -1019,11 +1032,12 @@ function resultState(percentage: number): VocabularyTestResult["resultState"] {
 }
 
 function buildCategoryScores(attempt: VocabularyTestAttempt): VocabularyTestResult["categoryScores"] {
-  return {
-    verb: scorePart(attempt, "verb"),
-    adjective: scorePart(attempt, "adjective"),
-    noun: scorePart(attempt, "noun"),
-  };
+  const categories = [...new Set(attempt.questions.map((question) => question.partOfSpeech))];
+  const scores: VocabularyTestResult["categoryScores"] = {};
+  for (const category of categories) {
+    scores[category] = scorePart(attempt, category);
+  }
+  return scores;
 }
 
 function scorePart(attempt: VocabularyTestAttempt, part: VocabularyPartOfSpeech) {
@@ -1229,21 +1243,29 @@ function getPublishedActiveWords() {
 
 function countTopicWords(topicId: string): VocabularyCounts {
   const topicWords = getTopicWords(topicId);
-  return {
-    verbs: topicWords.filter((word) => word.part_of_speech === "verb").length,
-    adjectives: topicWords.filter((word) => word.part_of_speech === "adjective").length,
-    nouns: topicWords.filter((word) => word.part_of_speech === "noun").length,
-    total: topicWords.length,
-  };
+  const byCategory: Partial<Record<VocabularyPartOfSpeech, number>> = {};
+  for (const word of topicWords) {
+    byCategory[word.part_of_speech] = (byCategory[word.part_of_speech] ?? 0) + 1;
+  }
+  return { byCategory, total: topicWords.length };
 }
 
 function isTopicPublishable(topicId: string): VocabularyValidationResult {
+  const topic = topicsById(topicId);
+  const categories = topic?.categories ?? [];
   const counts = countTopicWords(topicId);
   const errors: string[] = [];
-  if (counts.verbs !== 15) errors.push(`Verbs must be exactly 15. Current: ${counts.verbs}.`);
-  if (counts.adjectives !== 15) errors.push(`Adjectives must be exactly 15. Current: ${counts.adjectives}.`);
-  if (counts.nouns !== 15) errors.push(`Nouns must be exactly 15. Current: ${counts.nouns}.`);
-  if (counts.total !== 45) errors.push(`Topic must contain exactly 45 active words. Current: ${counts.total}.`);
+  if (!categories.length) errors.push("Topic must declare at least one word category.");
+  for (const category of categories) {
+    const count = counts.byCategory[category] ?? 0;
+    if (count !== 15) {
+      errors.push(`${partLabel(category, "EN")} must be exactly 15. Current: ${count}.`);
+    }
+  }
+  const expectedTotal = categories.length * 15;
+  if (counts.total !== expectedTotal) {
+    errors.push(`Topic must contain exactly ${expectedTotal} active words. Current: ${counts.total}.`);
+  }
   return {
     canPublish: errors.length === 0,
     counts,
@@ -1256,14 +1278,18 @@ function isTopicPublishable(topicId: string): VocabularyValidationResult {
 }
 
 function calculateTopicProgress(topicId: string, userId: string): VocabularyTopicProgress {
+  const topic = topicsById(topicId);
+  const categories = topic?.categories ?? [];
   const progress = getUserProgressMap(userId);
   const knownWords = getTopicWords(topicId).filter((word) => progress.get(word.id)?.status === "known");
-  const knownVerbs = knownWords.filter((word) => word.part_of_speech === "verb").length;
-  const knownAdjectives = knownWords.filter((word) => word.part_of_speech === "adjective").length;
-  const knownNouns = knownWords.filter((word) => word.part_of_speech === "noun").length;
+  const knownByCategory: Partial<Record<VocabularyPartOfSpeech, number>> = {};
+  for (const category of categories) {
+    knownByCategory[category] = knownWords.filter((word) => word.part_of_speech === category).length;
+  }
   const totalKnown = knownWords.length;
   const tests = getTopicTestStatus(topicId, userId);
-  const wordsProgress = Math.round((totalKnown / 45) * 80);
+  const totalWords = categories.length * 15;
+  const wordsProgress = totalWords ? Math.round((totalKnown / totalWords) * 80) : 0;
   const completionPercentage = wordsProgress + (tests.mixedPassed ? 20 : 0);
   const unlocked = isTopicUnlocked(topicId, userId);
   const completed = isTopicCompleted(topicId, userId);
@@ -1273,9 +1299,7 @@ function calculateTopicProgress(topicId: string, userId: string): VocabularyTopi
     totalKnown > 0 ||
     [...testAttempts.values()].some((attempt) => attempt.userId === userId && attempt.topicId === topicId);
   return {
-    knownVerbs,
-    knownAdjectives,
-    knownNouns,
+    knownByCategory,
     totalKnown,
     completionPercentage: Math.max(0, Math.min(100, completionPercentage)),
     state: !unlocked
@@ -1297,11 +1321,17 @@ function calculateTopicProgress(topicId: string, userId: string): VocabularyTopi
 }
 
 function getTopicTestStatus(topicId: string, userId: string) {
+  const topic = topicsById(topicId);
+  const categories = topic?.categories ?? [];
   const attempts = [...testAttempts.values()].filter((attempt) => attempt.userId === userId && attempt.topicId === topicId);
+  const passedByCategory: Partial<Record<VocabularyPartOfSpeech, boolean>> = {};
+  for (const category of categories) {
+    passedByCategory[category] = attempts.some(
+      (attempt) => attempt.partOfSpeech === category && attempt.status === "completed" && attempt.percentage >= 80,
+    );
+  }
   return {
-    verbsPassed: attempts.some((attempt) => attempt.partOfSpeech === "verb" && attempt.status === "completed" && attempt.percentage >= 80),
-    adjectivesPassed: attempts.some((attempt) => attempt.partOfSpeech === "adjective" && attempt.status === "completed" && attempt.percentage >= 80),
-    nounsPassed: attempts.some((attempt) => attempt.partOfSpeech === "noun" && attempt.status === "completed" && attempt.percentage >= 80),
+    passedByCategory,
     mixedPassed: attempts.some((attempt) => attempt.testType === "mixed_topic" && attempt.status === "completed" && attempt.percentage >= 80),
   };
 }
@@ -1468,8 +1498,22 @@ function normalizeSlug(slug: string) {
   return slug.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
 
+const partOrderList: VocabularyPartOfSpeech[] = [
+  "noun",
+  "verb",
+  "adjective",
+  "adverb",
+  "pronoun",
+  "preposition",
+  "conjunction",
+  "number",
+  "auxiliary_verb",
+  "exclamation",
+];
+
 function partOrder(part: VocabularyPartOfSpeech) {
-  return part === "verb" ? 1 : part === "adjective" ? 2 : 3;
+  const index = partOrderList.indexOf(part);
+  return index === -1 ? partOrderList.length : index;
 }
 
 function validateWordInput(input: Omit<VocabularyWord, "id" | "created_at" | "updated_at">) {
@@ -1477,7 +1521,7 @@ function validateWordInput(input: Omit<VocabularyWord, "id" | "created_at" | "up
   if (!input.word_en.trim()) return "WORD_REQUIRED";
   if (!input.translation_kk.trim()) return "TRANSLATION_KK_REQUIRED";
   if (!input.translation_ru.trim()) return "TRANSLATION_RU_REQUIRED";
-  if (!["verb", "adjective", "noun"].includes(input.part_of_speech)) return "INVALID_PART_OF_SPEECH";
+  if (!partOrderList.includes(input.part_of_speech)) return "INVALID_PART_OF_SPEECH";
   if (input.order_index < 1 || input.order_index > 15) return "ORDER_INDEX_INVALID";
   return null;
 }
@@ -1488,6 +1532,7 @@ function topicsById(topicId: string) {
 
 function seedA1VocabularyModule() {
   a1VocabularyTopics.forEach((topic, topicIndex) => {
+    const categories = Object.keys(topic.categories) as VocabularyPartOfSpeech[];
     topics.set(topic.slug, {
       id: `vocab-topic-${topic.slug}`,
       slug: topic.slug,
@@ -1499,6 +1544,7 @@ function seedA1VocabularyModule() {
       description_ru: topic.description_ru,
       icon: topic.icon,
       difficulty: "beginner",
+      categories,
       order_index: topicIndex + 1,
       is_published: true,
       is_featured: topicIndex < 3,
@@ -1506,9 +1552,9 @@ function seedA1VocabularyModule() {
       updated_at: now,
     });
 
-    seedA1Words(topic.slug, "verb", topic.verbs);
-    seedA1Words(topic.slug, "adjective", topic.adjectives);
-    seedA1Words(topic.slug, "noun", topic.nouns);
+    for (const category of categories) {
+      seedA1Words(topic.slug, category, topic.categories[category] ?? []);
+    }
   });
 }
 
@@ -1533,6 +1579,7 @@ function seedA1Words(topicSlug: string, part: VocabularyPartOfSpeech, data: A1Vo
       part_of_speech: part,
       pronunciation: undefined,
       phonetic_ipa: undefined,
+      emoji: item.emoji,
       example_en: examples.en,
       example_kk: examples.kk,
       example_ru: examples.ru,

@@ -7,6 +7,7 @@ import {
   VocabularyAIPanel,
   VocabularyFlashcard,
   VocabularyTabs,
+  partLabels,
   vocabularyCopy,
 } from "@/components/vocabulary-ui";
 import { useLanguage } from "@/hooks/use-language";
@@ -38,12 +39,10 @@ function VocabularyTopicPage() {
   const lang = language as VocabularyLanguage;
   const c = vocabularyCopy[lang];
   const [topic, setTopic] = useState(initialTopic);
-  const [activePart, setActivePart] = useState<VocabularyPartOfSpeech>(() => getInitialPart(initialTopic.progress));
-  const [cardIndexByPart, setCardIndexByPart] = useState<Record<VocabularyPartOfSpeech, number>>({
-    verb: 0,
-    adjective: 0,
-    noun: 0,
-  });
+  const [activePart, setActivePart] = useState<VocabularyPartOfSpeech>(() =>
+    getInitialPart(initialTopic.categories, initialTopic.progress),
+  );
+  const [cardIndexByPart, setCardIndexByPart] = useState<Partial<Record<VocabularyPartOfSpeech, number>>>({});
   const [saving, setSaving] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiResponse, setAiResponse] = useState<VocabularyAIResponse | undefined>();
@@ -51,19 +50,12 @@ function VocabularyTopicPage() {
   const title = lang === "RU" ? topic.title_ru : lang === "EN" ? topic.title_en : topic.title_kk;
   useDocumentTitle(`${title} — AI-Sana`);
   const description = lang === "RU" ? topic.description_ru : lang === "EN" ? topic.description_en : topic.description_kk;
-  const activeWords = topic.sections[activePart];
-  const activeIndex = Math.min(cardIndexByPart[activePart], Math.max(0, activeWords.length - 1));
+  const activeWords = topic.sections[activePart] ?? [];
+  const activeIndex = Math.min(cardIndexByPart[activePart] ?? 0, Math.max(0, activeWords.length - 1));
   const activeWord = activeWords[activeIndex];
-  const counts = {
-    verb: topic.counts.verbs,
-    adjective: topic.counts.adjectives,
-    noun: topic.counts.nouns,
-  };
-  const sectionKnown = {
-    verb: topic.progress.knownVerbs,
-    adjective: topic.progress.knownAdjectives,
-    noun: topic.progress.knownNouns,
-  };
+  const counts = topic.counts.byCategory;
+  const sectionKnown = topic.progress.knownByCategory;
+  const topicTotalWords = topic.categories.length * 15;
   if (pathname !== `/vocabulary/${topic.slug}`) {
     return <Outlet />;
   }
@@ -127,7 +119,7 @@ function VocabularyTopicPage() {
               <p className="mt-3 max-w-2xl text-lg font-semibold text-[#EDE9FE]">{description}</p>
             </div>
             <div className="rounded-[26px] bg-white/15 p-5">
-              <p className="font-black">{topic.progress.totalKnown} / 45 сөз</p>
+              <p className="font-black">{topic.progress.totalKnown} / {topicTotalWords} сөз</p>
               <ProgressBar value={topic.progress.completionPercentage} />
               <p className="mt-2 font-black text-[#FACC15]">{topic.progress.completionPercentage}%</p>
             </div>
@@ -142,10 +134,12 @@ function VocabularyTopicPage() {
               </p>
               <h2 className="mt-2 text-3xl font-black text-[#1E1B4B]">{title}</h2>
               <p className="mt-2 font-bold text-[#6B5E8F]">
-                {lang === "RU" ? "Цель: выучить 45 слов и пройти тесты по разделам." : "Мақсат: 45 сөзді үйреніп, бөлім тесттерін тапсыру."}
+                {lang === "RU"
+                  ? `Цель: выучить ${topicTotalWords} слов и пройти тесты по разделам.`
+                  : `Мақсат: ${topicTotalWords} сөзді үйреніп, бөлім тесттерін тапсыру.`}
               </p>
             </div>
-            {sectionKnown[activePart] >= 15 ? (
+            {(sectionKnown[activePart] ?? 0) >= 15 ? (
               <Link
                 to="/vocabulary/$topicSlug/test/$partOfSpeech"
                 params={{ topicSlug: topic.slug, partOfSpeech: activePart }}
@@ -164,9 +158,15 @@ function VocabularyTopicPage() {
             )}
           </div>
           <div className="mt-5 grid gap-3 md:grid-cols-4">
-            <SectionStatus label={partLabel("verb", lang)} known={topic.progress.knownVerbs} passed={topic.progress.tests.verbsPassed} active={activePart === "verb"} />
-            <SectionStatus label={partLabel("adjective", lang)} known={topic.progress.knownAdjectives} passed={topic.progress.tests.adjectivesPassed} active={activePart === "adjective"} />
-            <SectionStatus label={partLabel("noun", lang)} known={topic.progress.knownNouns} passed={topic.progress.tests.nounsPassed} active={activePart === "noun"} />
+            {topic.categories.map((category) => (
+              <SectionStatus
+                key={category}
+                label={partLabel(category, lang)}
+                known={sectionKnown[category] ?? 0}
+                passed={Boolean(topic.progress.tests.passedByCategory[category])}
+                active={activePart === category}
+              />
+            ))}
             <div className={`rounded-3xl border-2 p-4 ${topic.progress.tests.mixedPassed ? "border-[#FACC15] bg-[#FFFBEB]" : "border-[#DDD6FE] bg-[#F5F3FF]"}`}>
               <p className="font-black text-[#1E1B4B]">{lang === "RU" ? "Тест на знание слов" : "Сөзді тексеру тесті"}</p>
               <p className="mt-1 text-sm font-black text-[#6B5E8F]">
@@ -174,7 +174,7 @@ function VocabularyTopicPage() {
               </p>
             </div>
           </div>
-          {topic.progress.totalKnown >= 45 ? (
+          {topic.progress.totalKnown >= topicTotalWords ? (
             <Link
               to="/vocabulary/$topicSlug/final-test"
               params={{ topicSlug: topic.slug }}
@@ -184,12 +184,20 @@ function VocabularyTopicPage() {
             </Link>
           ) : (
             <p className="mt-5 rounded-2xl bg-[#F5F3FF] px-5 py-3 font-black text-[#6B5E8F]">
-              {lang === "RU" ? "Тест откроется после изучения всех 45 слов." : "Тест барлық 45 сөз оқылғаннан кейін ашылады."}
+              {lang === "RU"
+                ? `Тест откроется после изучения всех ${topicTotalWords} слов.`
+                : `Тест барлық ${topicTotalWords} сөз оқылғаннан кейін ашылады.`}
             </p>
           )}
         </GameCard>
 
-        <VocabularyTabs active={activePart} counts={counts} language={lang} onChange={setActivePart} />
+        <VocabularyTabs
+          active={activePart}
+          categories={topic.categories}
+          counts={counts}
+          language={lang}
+          onChange={setActivePart}
+        />
 
         <div id="vocabulary-flashcards">
           {activeWord ? (
@@ -221,11 +229,11 @@ function VocabularyTopicPage() {
               </h2>
               <p className="mt-1 font-bold text-[#6B5E8F]">
                 {lang === "RU"
-                  ? "Чтобы открыть следующий раздел, изучите 45 слов и наберите 80% или выше."
-                  : "Келесі бөлімді ашу үшін 45 сөзді оқып, тесттен 80% немесе одан жоғары нәтиже жина."}
+                  ? `Чтобы открыть следующий раздел, изучите ${topicTotalWords} слов и наберите 80% или выше.`
+                  : `Келесі бөлімді ашу үшін ${topicTotalWords} сөзді оқып, тесттен 80% немесе одан жоғары нәтиже жина.`}
               </p>
             </div>
-            {topic.progress.totalKnown >= 45 ? (
+            {topic.progress.totalKnown >= topicTotalWords ? (
               <Link
                 to="/vocabulary/$topicSlug/final-test"
                 params={{ topicSlug: topic.slug }}
@@ -239,7 +247,7 @@ function VocabularyTopicPage() {
                 disabled
                 className="rounded-2xl bg-[#DDD6FE] px-5 py-3 font-black text-[#6B5E8F]"
               >
-                {topic.progress.totalKnown} / 45
+                {topic.progress.totalKnown} / {topicTotalWords}
               </button>
             )}
           </div>
@@ -252,18 +260,21 @@ function VocabularyTopicPage() {
 }
 
 function partLabel(part: VocabularyPartOfSpeech, language: VocabularyLanguage) {
-  const labels = {
-    verb: { KZ: "Етістіктер", RU: "Глаголы", EN: "Verbs" },
-    adjective: { KZ: "Сын есімдер", RU: "Прилагательные", EN: "Adjectives" },
-    noun: { KZ: "Зат есімдер", RU: "Существительные", EN: "Nouns" },
-  } satisfies Record<VocabularyPartOfSpeech, Record<VocabularyLanguage, string>>;
-  return labels[part][language];
+  return partLabels[part][language];
 }
 
-function getInitialPart(progress: { knownVerbs: number; knownAdjectives: number; knownNouns: number; tests: { verbsPassed: boolean; adjectivesPassed: boolean; nounsPassed: boolean } }) {
-  if (progress.knownVerbs < 15 || !progress.tests.verbsPassed) return "verb";
-  if (progress.knownAdjectives < 15 || !progress.tests.adjectivesPassed) return "adjective";
-  return "noun";
+function getInitialPart(
+  categories: VocabularyPartOfSpeech[],
+  progress: {
+    knownByCategory: Partial<Record<VocabularyPartOfSpeech, number>>;
+    tests: { passedByCategory: Partial<Record<VocabularyPartOfSpeech, boolean>> };
+  },
+): VocabularyPartOfSpeech {
+  for (const category of categories) {
+    const known = progress.knownByCategory[category] ?? 0;
+    if (known < 15 || !progress.tests.passedByCategory[category]) return category;
+  }
+  return categories[categories.length - 1] ?? "noun";
 }
 
 function SectionStatus({ label, known, passed, active }: { label: string; known: number; passed: boolean; active: boolean }) {
