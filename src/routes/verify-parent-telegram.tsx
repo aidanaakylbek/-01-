@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { FormEvent, useEffect, useState } from "react";
 
 import { GameCard, GameLayout } from "@/components/gamified-platform";
@@ -144,12 +144,12 @@ function VerifyParentTelegram() {
               {loading ? "Жаңартылуда..." : "Статусты жаңарту"}
             </button>
             {verified ? (
-              <Link
+              <a
                 className="rounded-2xl bg-[#6D28D9] px-6 py-4 font-black text-white shadow-[0_6px_0_#4C1D95]"
-                to="/diagnostic"
+                href="/diagnostic"
               >
                 Диагностикаға өту
-              </Link>
+              </a>
             ) : null}
           </div>
 
