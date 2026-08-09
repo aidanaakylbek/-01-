@@ -77,6 +77,7 @@ type SupabaseTelegramVerificationTokenRow = {
   user_id: string;
   purpose: "student_verification" | "parent_link";
   token_hash: string;
+  code: string | null;
   telegram_chat_id: string | null;
   telegram_user_id: string | null;
   expires_at: string;
@@ -195,10 +196,6 @@ async function findUserByTelegramUserId(telegramUserId: string) {
   );
 }
 
-async function findUserByPhoneE164(phoneE164: string) {
-  return selectOne<SupabaseUserRow>("users", `phone_e164=eq.${encodeURIComponent(phoneE164)}`);
-}
-
 export async function createAccountWithParent(input: {
   name: string;
   email: string;
@@ -297,6 +294,7 @@ export async function createTelegramVerificationToken(input: {
   userId: string;
   purpose: "student_verification" | "parent_link";
   tokenHash: string;
+  code: string;
   expiresAt: string;
 }) {
   const [row] = await insertRows<SupabaseTelegramVerificationTokenRow>(
@@ -306,6 +304,7 @@ export async function createTelegramVerificationToken(input: {
         user_id: input.userId,
         purpose: input.purpose,
         token_hash: input.tokenHash,
+        code: input.code,
         expires_at: input.expiresAt,
       },
     ],
@@ -324,7 +323,7 @@ export async function beginTelegramVerificationToken(input: {
     `token_hash=eq.${encodeURIComponent(input.tokenHash)}&used_at=is.null`,
   );
 
-  if (!token || new Date(token.expires_at).getTime() <= Date.now()) {
+  if (!token || new Date(token.expires_at).getTime() <= Date.now() || !token.code) {
     return { status: "invalid" as const };
   }
 
@@ -337,20 +336,16 @@ export async function beginTelegramVerificationToken(input: {
     },
   );
 
-  return { status: "contact_required" as const, purpose: token.purpose };
+  return { status: "code_sent" as const, code: token.code };
 }
 
-export async function completeTelegramContactVerification(input: {
-  chatId: string;
-  telegramUserId: string;
-  phoneE164: string;
-}) {
+export async function completeTelegramCodeVerification(input: { userId: string; code: string }) {
   const tokens = await selectMany<SupabaseTelegramVerificationTokenRow>(
     "telegram_verification_tokens",
     [
       "select=*",
-      `telegram_chat_id=eq.${encodeURIComponent(input.chatId)}`,
-      `telegram_user_id=eq.${encodeURIComponent(input.telegramUserId)}`,
+      `user_id=eq.${encodeURIComponent(input.userId)}`,
+      `code=eq.${encodeURIComponent(input.code)}`,
       "used_at=is.null",
       `expires_at=gt.${encodeURIComponent(new Date().toISOString())}`,
       "order=created_at.desc",
@@ -359,18 +354,13 @@ export async function completeTelegramContactVerification(input: {
   );
   const token = tokens[0];
 
-  if (!token) {
+  if (!token || !token.telegram_chat_id || !token.telegram_user_id) {
     return { status: "invalid" as const };
   }
 
-  const existingTelegramUser = await findUserByTelegramUserId(input.telegramUserId);
+  const existingTelegramUser = await findUserByTelegramUserId(token.telegram_user_id);
   if (existingTelegramUser && existingTelegramUser.id !== token.user_id) {
     return { status: "telegram_already_connected" as const };
-  }
-
-  const existingPhoneUser = await findUserByPhoneE164(input.phoneE164);
-  if (existingPhoneUser && existingPhoneUser.id !== token.user_id) {
-    return { status: "phone_already_used" as const };
   }
 
   const now = new Date().toISOString();
@@ -379,10 +369,9 @@ export async function completeTelegramContactVerification(input: {
     "users",
     `id=eq.${encodeURIComponent(token.user_id)}`,
     {
-      phone_e164: input.phoneE164,
-      telegram_chat_id: input.chatId,
+      telegram_chat_id: token.telegram_chat_id,
       telegram_parent_verified: true,
-      telegram_user_id: input.telegramUserId,
+      telegram_user_id: token.telegram_user_id,
       telegram_verified_at: now,
     },
   );
@@ -392,9 +381,9 @@ export async function completeTelegramContactVerification(input: {
     `student_id=eq.${encodeURIComponent(token.user_id)}`,
     {
       phone_verified: true,
-      telegram_chat_id: input.chatId,
+      telegram_chat_id: token.telegram_chat_id,
       telegram_connected: true,
-      telegram_user_id: input.telegramUserId,
+      telegram_user_id: token.telegram_user_id,
       telegram_verified_at: now,
     },
   ).catch(() => [null as unknown as SupabaseParentRow]);

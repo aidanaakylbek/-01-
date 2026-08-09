@@ -24,7 +24,6 @@ function Register() {
   const [emailError, setEmailError] = useState("");
   const [parentPhoneError, setParentPhoneError] = useState("");
   const [parentInvite, setParentInvite] = useState<{
-    code: string;
     configured: boolean;
     link: string;
     webhookConnected: boolean;
@@ -47,8 +46,8 @@ function Register() {
             "Аккаунт создан, но код для Telegram не получилось сгенерировать. Обновите страницу или зайдите в аккаунт позже.",
           success:
             "Аккаунт создан. Недельный отчет будет отправляться после подтверждения родителя через Telegram.",
-          inviteTitle: "Код для Telegram готов",
-          inviteHint: "Отправьте код родителю. Родитель должен открыть Telegram bot и отправить этот код.",
+          inviteTitle: "Подключение Telegram",
+          inviteHint: "Откройте бота и нажмите Start — бот пришлёт код подтверждения. Введите этот код на следующей странице.",
           inviteConfigMissing:
             "Telegram bot username еще не настроен. Добавьте TELEGRAM_BOT_USERNAME в Vercel Environment Variables.",
           webhookMissing:
@@ -74,8 +73,8 @@ function Register() {
             inviteRequestFailed:
               "Account created, but the Telegram code could not be generated. Refresh or sign in later.",
             success: "Account created. Weekly reports will be sent after Telegram parent verification.",
-            inviteTitle: "Telegram code is ready",
-            inviteHint: "Send this code to the parent. The parent should open the Telegram bot and send this code.",
+            inviteTitle: "Connect Telegram",
+            inviteHint: "Open the bot and press Start — it will send a confirmation code. Enter that code on the next page.",
             inviteConfigMissing:
               "Telegram bot username is not configured yet. Add TELEGRAM_BOT_USERNAME in Vercel Environment Variables.",
             webhookMissing:
@@ -101,8 +100,8 @@ function Register() {
               "Аккаунт ашылды, бірақ Telegram коды жасалмады. Бетті жаңартыңыз немесе кейінірек кіріңіз.",
             success:
               "Аккаунт ашылды. Ата-анаңыз Telegram арқылы расталғаннан кейін апталық есеп жіберіледі.",
-            inviteTitle: "Telegram коды дайын",
-            inviteHint: "Осы кодты ата-анаңызға жіберіңіз. Ата-ана Telegram bot-қа кіріп, осы кодты жібереді.",
+            inviteTitle: "Telegram қосу",
+            inviteHint: "Ботты ашып, Start басыңыз — бот растау кодын жібереді. Осы кодты келесі бетте енгізіңіз.",
             inviteConfigMissing:
               "Telegram bot username әлі қойылмаған. Vercel Environment Variables ішіне TELEGRAM_BOT_USERNAME қосыңыз.",
             webhookMissing:
@@ -149,7 +148,6 @@ function Register() {
       }
 
       setParentInvite({
-        code: invite.inviteCode,
         configured: invite.telegramConfigured,
         link: invite.telegramLink,
         webhookConnected: Boolean(invite.webhookStatus?.connected),
@@ -201,7 +199,6 @@ function Register() {
               <p className="text-sm font-black uppercase tracking-[0.2em] text-[#8B5CF6]">
                 {copy.inviteTitle}
               </p>
-              <p className="mt-2 text-4xl font-black text-[#1E1B4B]">{parentInvite.code}</p>
               <p className="mt-2 font-semibold text-[#6B5E8F]">
                 {parentInvite.configured ? copy.inviteHint : copy.inviteConfigMissing}
               </p>
@@ -327,7 +324,6 @@ function Register() {
 }
 
 type ParentInviteResponse = {
-  inviteCode: string;
   telegramConfigured: boolean;
   telegramLink: string;
   webhookStatus?: {

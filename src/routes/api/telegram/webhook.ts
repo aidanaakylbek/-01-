@@ -1,24 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import {
-  completeTelegramVerificationFromContact,
-  startTelegramVerificationSession,
-} from "@/lib/account-store.server";
-import {
-  getPhoneRequestKeyboard,
-  getRemoveKeyboard,
-  isValidTelegramWebhookSecret,
-  sendTelegramMessage,
-} from "@/lib/telegram.server";
+import { startTelegramVerificationSession } from "@/lib/account-store.server";
+import { isValidTelegramWebhookSecret, sendTelegramMessage } from "@/lib/telegram.server";
 
 type TelegramUpdate = {
   message?: {
     chat?: {
       id?: number | string;
-    };
-    contact?: {
-      phone_number?: string;
-      user_id?: number | string;
     };
     from?: {
       id?: number | string;
@@ -48,7 +36,6 @@ export const Route = createFileRoute("/api/telegram/webhook")({
 
           console.log("[telegram:webhook] incoming update", {
             chatId: chatId ? String(chatId) : "",
-            hasContact: Boolean(update?.message?.contact),
             hasMessage: Boolean(update?.message),
             hasText: Boolean(update?.message?.text),
           });
@@ -59,18 +46,6 @@ export const Route = createFileRoute("/api/telegram/webhook")({
 
           const chatIdText = String(chatId);
           const fromIdText = String(fromId);
-          const contact = update?.message?.contact;
-
-          if (contact) {
-            await handleContact({
-              chatId: chatIdText,
-              contactTelegramUserId: String(contact.user_id ?? ""),
-              fromTelegramUserId: fromIdText,
-              phoneNumber: contact.phone_number ?? "",
-            });
-            return Response.json({ ok: true, handled: "contact" });
-          }
-
           const text = update?.message?.text?.trim() ?? "";
           const startPayload = getStartPayload(text);
 
@@ -113,64 +88,10 @@ async function handleStartToken(input: { chatId: string; telegramUserId: string;
   await sendTelegramMessage(
     input.chatId,
     [
-      "AI-Sana растауын аяқтау үшін төмендегі батырманы басып, өз Telegram нөміріңізді жіберіңіз.",
-      "Қауіпсіздік үшін тек өз нөміріңіз қабылданады.",
+      `Растау коды: ${result.code}`,
+      "Осы кодты AI-Sana сайтындағы өріске енгізіп, растауды аяқтаңыз.",
+      "Код 10 минут ішінде жарамды.",
     ].join("\n"),
-    { replyMarkup: getPhoneRequestKeyboard() },
-  );
-}
-
-async function handleContact(input: {
-  chatId: string;
-  contactTelegramUserId: string;
-  fromTelegramUserId: string;
-  phoneNumber: string;
-}) {
-  const result = await completeTelegramVerificationFromContact(input);
-
-  if (result.status === "forged_contact") {
-    await sendTelegramMessage(
-      input.chatId,
-      "Өз Telegram нөміріңізді ғана растауға болады. Батырманы қайта басып көріңіз.",
-      { replyMarkup: getPhoneRequestKeyboard() },
-    );
-    return;
-  }
-
-  if (result.status === "telegram_already_connected") {
-    await sendTelegramMessage(
-      input.chatId,
-      "Бұл Telegram аккаунт басқа AI-Sana профиліне қосылған.",
-      { replyMarkup: getRemoveKeyboard() },
-    );
-    return;
-  }
-
-  if (result.status === "phone_already_used") {
-    await sendTelegramMessage(
-      input.chatId,
-      "Бұл телефон нөмірі басқа AI-Sana аккаунтында қолданылған.",
-      { replyMarkup: getRemoveKeyboard() },
-    );
-    return;
-  }
-
-  if (result.status === "invalid" || result.status === "invalid_phone") {
-    await sendTelegramMessage(
-      input.chatId,
-      "Сілтеме жарамсыз немесе мерзімі өткен. AI-Sana сайтынан қайта қосылып көріңіз.",
-      { replyMarkup: getRemoveKeyboard() },
-    );
-    return;
-  }
-
-  await sendTelegramMessage(
-    input.chatId,
-    [
-      "Telegram нөміріңіз сәтті расталды ✅",
-      "AI-Sana сайтына қайта оралыңыз. Диагностикалық тест енді ашылады.",
-    ].join("\n"),
-    { replyMarkup: getRemoveKeyboard() },
   );
 }
 
@@ -187,10 +108,10 @@ function getStartPayload(text: string) {
 function getPlainStartMessage() {
   return [
     "Сәлеметсіз бе! Бұл AI-Sana боты 🤖",
-    "Ата-ана есебін қосу үшін AI-Sana сайтындағы арнайы Telegram сілтемесі арқылы кіріңіз.",
+    "Растау коды алу үшін AI-Sana сайтындағы арнайы Telegram сілтемесі арқылы кіріңіз.",
   ].join("\n");
 }
 
 function getUnknownMessage() {
-  return "Мен AI-Sana ата-ана есебін жіберетін ботпын. Қосылу үшін сайттағы Telegram батырмасын басыңыз.";
+  return "Мен AI-Sana растау ботымын. Растау коды алу үшін сайттағы Telegram батырмасын басыңыз.";
 }

@@ -1,8 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 
 import { GameCard, GameLayout } from "@/components/gamified-platform";
-import { getAccountDashboard } from "@/lib/api/account.functions";
+import { getAccountDashboard, verifyTelegramCode } from "@/lib/api/account.functions";
 import type { Account } from "@/lib/account-store.server";
 
 export const Route = createFileRoute("/verify-parent-telegram")({
@@ -31,6 +31,9 @@ function VerifyParentTelegram() {
   const [account, setAccount] = useState<Account | null>(null);
   const [invite, setInvite] = useState<InviteResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [code, setCode] = useState("");
+  const [checking, setChecking] = useState(false);
+  const [codeError, setCodeError] = useState("");
 
   const loadStatus = async () => {
     setLoading(true);
@@ -51,6 +54,36 @@ function VerifyParentTelegram() {
     invite?.status.verified ||
     Boolean(account?.telegramParentVerified) ||
     Boolean(account?.parentTelegramConnected && account?.parentPhoneVerified);
+
+  const submitCode = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setCodeError("");
+    setChecking(true);
+
+    try {
+      const result = await verifyTelegramCode({ data: { code: code.trim() } });
+
+      if (result.status === "verified") {
+        setCode("");
+        await loadStatus();
+        return;
+      }
+
+      if (result.status === "rate_limited") {
+        setCodeError("Тым жиі көрдіңіз. Бірнеше минуттан кейін қайта көріңіз.");
+        return;
+      }
+
+      if (result.status === "telegram_already_connected") {
+        setCodeError("Бұл Telegram аккаунт басқа AI-Sana профиліне қосылған.");
+        return;
+      }
+
+      setCodeError("Код қате немесе мерзімі өткен. Telegram ботта жаңа кодты сұраңыз.");
+    } finally {
+      setChecking(false);
+    }
+  };
 
   return (
     <GameLayout>
@@ -75,15 +108,18 @@ function VerifyParentTelegram() {
               value={verified ? "Ата-ана расталды ✅" : "Ата-ана расталмаған"}
             />
             <Info
-              label="Қауіпсіз сілтеме"
+              label="Растау коды"
               value={invite?.expiresAt ? "10 минутқа жарамды" : "Дайындалуда..."}
             />
           </div>
 
-          <p className="mt-5 rounded-3xl bg-[#F5F3FF] p-4 font-semibold text-[#6B5E8F]">
-            Растау аяқталғаннан кейін сайтқа кіру ашылады.
-            Telegram ботта “Телефон нөмірімді растау” батырмасын басу керек.
-          </p>
+          {verified ? null : (
+            <ol className="mt-5 list-inside list-decimal space-y-2 rounded-3xl bg-[#F5F3FF] p-4 font-semibold text-[#6B5E8F]">
+              <li>Төмендегі батырма арқылы Telegram ботты ашып, Start басыңыз.</li>
+              <li>Бот сізге 6-таңбалы растау кодын жібереді.</li>
+              <li>Сол кодты осы бетте төменгі өріске енгізіп, растаңыз.</li>
+            </ol>
+          )}
 
           <div className="mt-6 flex flex-wrap gap-3">
             {invite?.telegramConfigured ? (
@@ -93,7 +129,7 @@ function VerifyParentTelegram() {
                 target="_blank"
                 rel="noreferrer"
               >
-                Telegram арқылы растау
+                Telegram ботты ашу
               </a>
             ) : (
               <p className="rounded-2xl bg-[#FEE2E2] px-5 py-4 font-bold text-[#991B1B]">
@@ -116,6 +152,34 @@ function VerifyParentTelegram() {
               </Link>
             ) : null}
           </div>
+
+          {verified ? null : (
+            <form className="mt-5 flex flex-wrap items-start gap-3" onSubmit={submitCode}>
+              <label className="flex flex-col gap-2 font-black text-[#1E1B4B]">
+                Telegram-нан келген код
+                <input
+                  className="h-13 w-48 rounded-2xl border-2 border-[#DDD6FE] bg-[#F5F3FF] px-4 font-semibold tracking-widest text-[#1E1B4B] focus:border-[#8B5CF6] focus:outline-none"
+                  inputMode="numeric"
+                  maxLength={6}
+                  onChange={(event) => setCode(event.target.value)}
+                  placeholder="000000"
+                  value={code}
+                />
+              </label>
+              <button
+                className="mt-8 rounded-2xl bg-[#6D28D9] px-6 py-4 font-black text-white shadow-[0_5px_0_#4C1D95] disabled:opacity-60"
+                disabled={checking || code.trim().length === 0}
+                type="submit"
+              >
+                {checking ? "Тексерілуде..." : "Кодты растау"}
+              </button>
+              {codeError ? (
+                <p className="w-full rounded-2xl border-2 border-[#FCA5A5] bg-[#FEF2F2] px-4 py-3 text-sm font-black text-[#EF4444]">
+                  {codeError}
+                </p>
+              ) : null}
+            </form>
+          )}
         </GameCard>
       </div>
     </GameLayout>

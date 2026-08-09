@@ -19,6 +19,7 @@ import {
   saveSolutionExplanationLog as saveStoredSolutionExplanationLog,
   saveWeakTopicProgress as saveStoredWeakTopicProgress,
   updatePaymentRequest as updateStoredPaymentRequest,
+  verifyTelegramCode as verifyStoredTelegramCode,
 } from "../account-store.server";
 
 export const getAccountDashboard = createServerFn({ method: "GET" }).handler(async () => {
@@ -76,6 +77,12 @@ export const loginAccount = createServerFn({ method: "POST" })
 export const logoutAccount = createServerFn({ method: "POST" }).handler(async () => {
   return logoutStoredAccount();
 });
+
+export const verifyTelegramCode = createServerFn({ method: "POST" })
+  .inputValidator(z.object({ code: z.string().trim().min(1) }))
+  .handler(async ({ data }) => {
+    return verifyStoredTelegramCode(data.code);
+  });
 
 export const saveExamAttempt = createServerFn({ method: "POST" })
   .inputValidator(

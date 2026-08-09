@@ -42,26 +42,8 @@ export function hashTelegramStartToken(token: string) {
   return createHash("sha256").update(`${secret}:${token}`).digest("hex");
 }
 
-export function normalizeTelegramPhone(phone: string) {
-  const digits = phone.replace(/\D/g, "");
-
-  if (!digits) {
-    return "";
-  }
-
-  if (digits.length === 11 && digits.startsWith("8")) {
-    return `+7${digits.slice(1)}`;
-  }
-
-  if (digits.length === 11 && digits.startsWith("7")) {
-    return `+${digits}`;
-  }
-
-  if (digits.length === 10) {
-    return `+7${digits}`;
-  }
-
-  return `+${digits}`;
+export function generateVerificationCode() {
+  return String(Math.floor(100000 + Math.random() * 900000));
 }
 
 export function isValidTelegramWebhookSecret(request: Request) {
@@ -158,25 +140,6 @@ export async function sendTelegramMessage(
       detail: error instanceof Error ? error.message : "Could not reach Telegram API.",
     };
   }
-}
-
-export function getPhoneRequestKeyboard() {
-  return {
-    keyboard: [
-      [
-        {
-          request_contact: true,
-          text: "Телефон нөмірімді растау",
-        },
-      ],
-    ],
-    one_time_keyboard: true,
-    resize_keyboard: true,
-  };
-}
-
-export function getRemoveKeyboard() {
-  return { remove_keyboard: true };
 }
 
 export async function setTelegramWebhook(webhookUrl: string): Promise<TelegramWebhookResult> {

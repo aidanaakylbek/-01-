@@ -92,6 +92,7 @@ create table if not exists public.telegram_verification_tokens (
   user_id uuid not null references public.users(id) on delete cascade,
   purpose text not null check (purpose in ('student_verification', 'parent_link')),
   token_hash text not null unique,
+  code text,
   telegram_chat_id text,
   telegram_user_id text,
   expires_at timestamptz not null,
@@ -122,6 +123,9 @@ alter table public.users
 
 alter table public.users
   add column if not exists lesson_completions jsonb not null default '[]'::jsonb;
+
+alter table public.telegram_verification_tokens
+  add column if not exists code text;
 
 alter table public.users
   add column if not exists telegram_user_id text,
