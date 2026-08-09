@@ -43,6 +43,8 @@ function Register() {
           parentPhone: "Телефон родителя",
           parentHint: "Отчет будет отправляться только после подключения родителя к Telegram-боту.",
           submitError: "Не получилось создать аккаунт. Проверьте данные.",
+          inviteRequestFailed:
+            "Аккаунт создан, но код для Telegram не получилось сгенерировать. Обновите страницу или зайдите в аккаунт позже.",
           success:
             "Аккаунт создан. Недельный отчет будет отправляться после подтверждения родителя через Telegram.",
           inviteTitle: "Код для Telegram готов",
@@ -69,6 +71,8 @@ function Register() {
             parentPhone: "Parent phone number",
             parentHint: "Reports are sent only after the parent connects to the Telegram bot.",
             submitError: "Could not create account. Check the form.",
+            inviteRequestFailed:
+              "Account created, but the Telegram code could not be generated. Refresh or sign in later.",
             success: "Account created. Weekly reports will be sent after Telegram parent verification.",
             inviteTitle: "Telegram code is ready",
             inviteHint: "Send this code to the parent. The parent should open the Telegram bot and send this code.",
@@ -93,6 +97,8 @@ function Register() {
             parentPhone: "Ата-ананың телефон нөмірі",
             parentHint: "Есеп ата-ана Telegram ботқа қосылғаннан кейін ғана жіберіледі.",
             submitError: "Аккаунт ашылмады. Мәліметтерді тексеріңіз.",
+            inviteRequestFailed:
+              "Аккаунт ашылды, бірақ Telegram коды жасалмады. Бетті жаңартыңыз немесе кейінірек кіріңіз.",
             success:
               "Аккаунт ашылды. Ата-анаңыз Telegram арқылы расталғаннан кейін апталық есеп жіберіледі.",
             inviteTitle: "Telegram коды дайын",
@@ -135,9 +141,13 @@ function Register() {
       }
 
       setStatusMessage(copy.success);
-      const invite = (await fetch("/api/parent/create-invite", { method: "POST" }).then((response) =>
-        response.json(),
-      )) as ParentInviteResponse;
+      const inviteResponse = await fetch("/api/parent/create-invite", { method: "POST" });
+      const invite = (await inviteResponse.json()) as ParentInviteResponse;
+
+      if (!inviteResponse.ok) {
+        throw new Error(copy.inviteRequestFailed);
+      }
+
       setParentInvite({
         code: invite.inviteCode,
         configured: invite.telegramConfigured,
