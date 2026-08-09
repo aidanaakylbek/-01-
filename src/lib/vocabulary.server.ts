@@ -1381,7 +1381,7 @@ function updateProgress(progress: VocabularyWordProgress, action: "known" | "rev
   const nowDate = new Date();
   return {
     ...progress,
-    status: action === "known" && confidenceLevel >= 3 ? "known" : action === "known" ? "learning" : "review",
+    status: action === "known" ? "known" : "review",
     confidenceLevel,
     timesSeen: progress.timesSeen + 1,
     timesCorrect: progress.timesCorrect + (action === "known" ? 1 : 0),
