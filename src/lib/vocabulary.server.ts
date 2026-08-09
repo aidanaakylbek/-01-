@@ -1,6 +1,7 @@
-import { getDashboardAccount } from "./account-store.server";
+import { awardXpToCurrentAccount, getDashboardAccount } from "./account-store.server";
 import { a1VocabularyTopics, type A1VocabularyWordSeed } from "./a1-vocabulary-content";
 import { buildVocabularyUsageExamples } from "./vocabulary-examples";
+import { XP_REWARDS } from "./xp-system";
 
 export type VocabularyLanguage = "KZ" | "RU" | "EN";
 export type VocabularyDifficulty = "beginner" | "intermediate" | "mixed";
@@ -123,7 +124,6 @@ export type VocabularyTopicProgress = {
   };
   rewards?: {
     xp: number;
-    coins: number;
     badge: string;
   };
 };
@@ -318,6 +318,7 @@ export async function getVocabularyOverview(): Promise<VocabularyOverview> {
   const today = getDailyActivity(userId);
   const reviewCount = [...progress.values()].filter((item) => item.status === "review").length;
   const totalLearned = [...progress.values()].filter((item) => item.status === "known").length;
+  const dashboard = await getDashboardAccount();
 
   return {
     topics: publishedTopics,
@@ -328,7 +329,7 @@ export async function getVocabularyOverview(): Promise<VocabularyOverview> {
     stats: {
       streak: totalLearned > 0 ? 1 : 0,
       totalLearned,
-      xpEarned: today.xpEarned,
+      xpEarned: dashboard.account.xp,
       favorites: favorites.size,
     },
   };
@@ -395,6 +396,10 @@ export async function saveVocabularyProgress(input: {
   progressMap.set(input.wordId, next);
   updateDailyActivity(userId, input.wordId, input.action);
   syncTopicUnlocks(userId, word.topic_id);
+
+  if (previous.status !== "known" && next.status === "known") {
+    await awardXpToCurrentAccount(XP_REWARDS.vocabularyWordKnown);
+  }
   return withState(word, userId);
 }
 
@@ -596,7 +601,7 @@ export async function completeVocabularyTest(attemptId: string) {
   attempt.completedAt = new Date().toISOString();
   recalculateAttempt(attempt);
   attempt.xpEarned = calculateTestXp(attempt);
-  grantRewardOnce(userId, `vocabulary:test:${attempt.id}:completed`, attempt.xpEarned);
+  await grantRewardOnce(userId, `vocabulary:test:${attempt.id}:completed`, attempt.xpEarned);
   syncTopicUnlocks(userId, attempt.topicId);
   return getVocabularyTestResult(attemptId);
 }
@@ -735,7 +740,7 @@ export async function completeVocabularyGame(sessionId: string, correctItems: nu
   session.score = Math.round((session.correctItems / Math.max(1, session.totalItems)) * 100);
   session.xpEarned = session.score >= 70 ? 10 : 5;
   session.completedAt = new Date().toISOString();
-  grantRewardOnce(userId, `vocabulary:game:${session.id}:completed`, session.xpEarned);
+  await grantRewardOnce(userId, `vocabulary:game:${session.id}:completed`, session.xpEarned);
   return session;
 }
 
@@ -1032,13 +1037,16 @@ function isTopicMastered(topicId: string, userId: string) {
   return isTopicCompleted(topicId, userId);
 }
 
-function grantRewardOnce(userId: string, key: string, xp: number) {
+async function grantRewardOnce(userId: string, key: string, xp: number) {
   if (!rewardedKeysByUser.has(userId)) rewardedKeysByUser.set(userId, new Set());
   const keys = rewardedKeysByUser.get(userId)!;
   if (keys.has(key)) return 0;
   keys.add(key);
   const activity = getDailyActivity(userId);
   activity.xpEarned += xp;
+  if (xp > 0) {
+    await awardXpToCurrentAccount(xp);
+  }
   return xp;
 }
 
@@ -1274,7 +1282,7 @@ function calculateTopicProgress(topicId: string, userId: string): VocabularyTopi
     unlocked,
     lockedReason: unlocked ? undefined : "Previous topic test must be passed with at least 80%.",
     tests,
-    rewards: completed || mastered ? { xp: 40, coins: 20, badge: "Topic Completed" } : undefined,
+    rewards: completed || mastered ? { xp: 40, badge: "Topic Completed" } : undefined,
   };
 }
 

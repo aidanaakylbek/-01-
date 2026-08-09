@@ -87,6 +87,7 @@ export const verifyTelegramCode = createServerFn({ method: "POST" })
 export const saveExamAttempt = createServerFn({ method: "POST" })
   .inputValidator(
     z.object({
+      kind: z.enum(["topic", "weekly", "monthly"]).optional(),
       examTrack: z.enum(["NIS", "BIL", "MIXED"]),
       totalQuestions: z.number().int().positive(),
       correctAnswers: z.number().int().nonnegative(),
@@ -204,6 +205,7 @@ export const saveWeakTopicProgress = createServerFn({ method: "POST" })
     z.object({
       topicId: z.string().min(1),
       currentLevel: z.number().int().min(1).max(5),
+      correctAnswers: z.number().int().min(0).optional(),
       levels: z.array(
         z.object({
           level: z.number().int().min(1).max(5),
@@ -216,7 +218,8 @@ export const saveWeakTopicProgress = createServerFn({ method: "POST" })
     }),
   )
   .handler(async ({ data }) => {
-    return saveStoredWeakTopicProgress(data);
+    const { correctAnswers, ...progress } = data;
+    return saveStoredWeakTopicProgress(progress, correctAnswers ?? 0);
   });
 
 export const saveSolutionExplanationLog = createServerFn({ method: "POST" })

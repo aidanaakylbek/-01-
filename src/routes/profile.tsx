@@ -1,10 +1,11 @@
 ﻿import { Link, createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { AiSanaAvatar } from "@/components/ai-sana-avatar";
-import { GameCard, GameLayout } from "@/components/gamified-platform";
+import { GameCard, GameLayout, ProgressBar } from "@/components/gamified-platform";
 import { useLanguage } from "@/hooks/use-language";
 import { getAccountDashboard } from "@/lib/api/account.functions";
 import type { Account, DashboardAccount } from "@/lib/account-store.server";
+import { getLevelProgress } from "@/lib/xp-system";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({ meta: [{ title: "Профиль — AI-Sana" }] }),
@@ -79,8 +80,9 @@ function ProfileContent({
     account.telegramParentVerified ||
     (account.parentTelegramConnected && account.parentPhoneVerified);
   const activeSubscription = hasActiveSubscription(account);
+  const levelProgress = getLevelProgress(account.xp ?? 0);
   const stats = [
-    { icon: "⭐", label: "XP", value: `${dashboard.completedLessons * 40}` },
+    { icon: "⭐", label: "XP", value: `${account.xp ?? 0}` },
     { icon: "🔥", label: c.streak, value: `${dashboard.completedLessons}` },
     { icon: "🏅", label: c.badges, value: `${achievements.length}` },
     { icon: "🎯", label: c.accuracy, value: `${dashboard.averageAccuracy}%` },
@@ -108,12 +110,30 @@ function ProfileContent({
                   {account.name}
                 </h1>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  <ProfileChip text={`${c.level} 1`} />
-                  <ProfileChip text={`${c.league}: ${c.purpleLeague}`} />
+                  <ProfileChip text={`${c.level} ${levelProgress.level}`} />
                   <ProfileChip text={`${c.grade}: ${account.grade || c.notSet}`} />
                 </div>
               </div>
             </div>
+          </div>
+          <div className="mt-5 rounded-2xl bg-white/15 p-4">
+            <div className="flex items-center justify-between text-sm font-black">
+              <span>⭐ {c.level} {levelProgress.level}</span>
+              <span>
+                {levelProgress.isMaxLevel
+                  ? `${levelProgress.xp} XP`
+                  : `${levelProgress.xpIntoLevel} / ${levelProgress.xpForNextLevel} XP`}
+              </span>
+            </div>
+            <ProgressBar
+              value={
+                levelProgress.isMaxLevel
+                  ? 100
+                  : Math.round(
+                      (levelProgress.xpIntoLevel / (levelProgress.xpForNextLevel || 1)) * 100,
+                    )
+              }
+            />
           </div>
         </section>
 

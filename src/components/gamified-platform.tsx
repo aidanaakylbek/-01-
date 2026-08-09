@@ -13,6 +13,14 @@ type NavItem = {
   to: string;
 };
 
+const XP_UPDATED_EVENT = "ai-sana:xp-updated";
+
+export function notifyXpUpdated() {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event(XP_UPDATED_EVENT));
+  }
+}
+
 const labels = {
   KZ: {
     home: "Басты бет",
@@ -21,7 +29,6 @@ const labels = {
     practice: "Жаттығу",
     progress: "Прогресс",
     profile: "Профиль",
-    shop: "Дүкен",
     vocabulary: "Сөздік",
     today: "Бүгінгі мақсат",
     lessons: "3 сабақ",
@@ -40,7 +47,6 @@ const labels = {
     practice: "Практика",
     progress: "Прогресс",
     profile: "Профиль",
-    shop: "Магазин",
     vocabulary: "Словарь",
     today: "Цель дня",
     lessons: "3 урока",
@@ -59,7 +65,6 @@ const labels = {
     practice: "Practice",
     progress: "Progress",
     profile: "Profile",
-    shop: "Shop",
     vocabulary: "Vocabulary",
     today: "Daily Goal",
     lessons: "3 lessons",
@@ -241,7 +246,6 @@ function isFullGameShellRoute(pathname: string) {
     pathname.startsWith("/progress") ||
     pathname.startsWith("/reports") ||
     pathname.startsWith("/profile") ||
-    pathname.startsWith("/shop") ||
     pathname.startsWith("/topic-challenge") ||
     pathname.startsWith("/explain-solution")
   );
@@ -327,7 +331,6 @@ function isPaidRoute(pathname: string) {
     pathname.startsWith("/vocabulary") ||
     pathname.startsWith("/progress") ||
     pathname.startsWith("/reports") ||
-    pathname.startsWith("/shop") ||
     pathname.startsWith("/topic-challenge") ||
     pathname.startsWith("/explain-solution")
   );
@@ -371,15 +374,21 @@ export function GameTopBar({ compact = false }: { compact?: boolean }) {
 
   useEffect(() => {
     let mounted = true;
-    void getAccountDashboard().then((dashboard) => {
-      if (mounted) {
-        setAuthenticated(dashboard.authenticated);
-        setDashboard(dashboard);
-      }
-    });
+    const refresh = () => {
+      void getAccountDashboard().then((dashboard) => {
+        if (mounted) {
+          setAuthenticated(dashboard.authenticated);
+          setDashboard(dashboard);
+        }
+      });
+    };
+
+    refresh();
+    window.addEventListener(XP_UPDATED_EVENT, refresh);
 
     return () => {
       mounted = false;
+      window.removeEventListener(XP_UPDATED_EVENT, refresh);
     };
   }, []);
 
@@ -394,7 +403,7 @@ export function GameTopBar({ compact = false }: { compact?: boolean }) {
         </Link>
         {!compact ? (
           <div className="hidden flex-1 items-center justify-center gap-2 md:flex">
-            <StatusPill icon="⭐" value={`${(dashboard?.completedLessons ?? 0) * 40} XP`} />
+            <StatusPill icon="⭐" value={`${dashboard?.account.xp ?? 0} XP`} />
           </div>
         ) : (
           <nav className="hidden flex-1 items-center justify-center gap-6 text-sm font-black text-[#4B3D73] md:flex">
@@ -467,7 +476,6 @@ function GameSidebar() {
     { label: c.vocabulary, icon: "auto_stories", to: "/vocabulary" },
     { label: c.progress, icon: "monitoring", to: "/progress" },
     { label: c.profile, icon: "person", to: "/profile" },
-    { label: c.shop, icon: "storefront", to: "/shop" },
   ];
   return (
     <aside className="hidden max-h-[calc(100vh-5rem)] overflow-y-auto overscroll-contain pr-1 md:sticky md:top-20 md:block">
@@ -509,7 +517,6 @@ function MobileGameNav() {
     { label: c.practice, icon: "exercise", to: "/plan" },
     { label: c.vocabulary, icon: "auto_stories", to: "/vocabulary" },
     { label: c.progress, icon: "monitoring", to: "/progress" },
-    { label: c.shop, icon: "storefront", to: "/shop" },
   ];
   return (
     <nav className="fixed inset-x-3 bottom-3 z-50 rounded-[26px] border-2 border-[#DDD6FE] bg-white/95 p-2 shadow-[0_8px_0_rgba(109,40,217,0.18)] backdrop-blur md:hidden">
@@ -620,6 +627,34 @@ export function ProgressBar({ value, danger = false }: { value: number; danger?:
         className={`h-full rounded-full ${danger ? "bg-[#EF4444]" : "bg-[#22C55E]"}`}
         style={{ width: `${Math.max(0, Math.min(value, 100))}%` }}
       />
+    </div>
+  );
+}
+
+export function XpRewardBanner({
+  xpResult,
+}: {
+  xpResult?: {
+    xpAwarded: number;
+    leveledUp: boolean;
+    level: number;
+    dailyGoalJustCompleted?: boolean;
+    dailyGoalTarget?: number;
+  };
+}) {
+  if (!xpResult || xpResult.xpAwarded <= 0) return null;
+
+  return (
+    <div className="mt-4 space-y-2 rounded-2xl border-2 border-[#FACC15] bg-[#FFFBEB] p-4 font-black text-[#1E1B4B]">
+      <p>⭐ +{xpResult.xpAwarded} XP</p>
+      {xpResult.leveledUp ? (
+        <p className="text-[#6D28D9]">🎉 Деңгейің көтерілді! Level {xpResult.level}</p>
+      ) : null}
+      {xpResult.dailyGoalJustCompleted ? (
+        <p className="text-[#22C55E]">
+          🎉 Күндік мақсат орындалды! +{xpResult.dailyGoalTarget ?? 0} XP
+        </p>
+      ) : null}
     </div>
   );
 }

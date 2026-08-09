@@ -16,9 +16,11 @@ import {
   markReportSent,
   needsPasswordRehash,
   updateDiagnosticResult,
+  updateExamAttempts,
   updateLessonCompletions,
   updatePaymentRequestRow,
   updateUserPasswordHash,
+  updateXp,
   verifyParentTelegram,
   verifyPassword,
   wasReportSent,
@@ -30,6 +32,7 @@ import {
   hashTelegramStartToken,
 } from "./telegram.server";
 import { isRateLimited } from "./rate-limit.server";
+import { DAILY_XP_GOAL, XP_REWARDS, getLevelForXp } from "./xp-system";
 
 export type Account = {
   id: string;
@@ -73,6 +76,9 @@ export type Account = {
   diagnosticWeakTopics?: string[];
   mentorStyle: MentorStyle;
   lessonCompletions?: LessonCompletion[];
+  xp: number;
+  dailyXp?: number;
+  dailyXpDate?: string;
 };
 
 export type LessonCompletion = {
@@ -140,6 +146,7 @@ export type ExamAttemptQuestion = {
 export type ExamAttempt = {
   id: string;
   createdAt: string;
+  kind?: "topic" | "weekly" | "monthly";
   examTrack: "NIS" | "BIL" | "MIXED";
   totalQuestions: number;
   correctAnswers: number;
@@ -232,6 +239,8 @@ export type DashboardAccount = {
   risks: RiskArea[];
   parentRecommendation: string;
   recommendations: string[];
+  dailyXp: number;
+  dailyGoalTarget: number;
   examAttempts: ExamAttempt[];
   weakTopicProgress: WeakTopicProgress[];
   solutionExplanationLogs: SolutionExplanationLog[];
@@ -305,6 +314,9 @@ const demoAccount: StoredAccount = {
   diagnosticTopicScores: undefined,
   diagnosticWeakTopics: undefined,
   mentorStyle: "friendly",
+  xp: 0,
+  dailyXp: 0,
+  dailyXpDate: undefined,
   password: hashPassword("demo123"),
 };
 
@@ -348,6 +360,9 @@ const ownerAdminAccount: StoredAccount = {
   diagnosticTopicScores: {},
   diagnosticWeakTopics: [],
   mentorStyle: "friendly",
+  xp: 0,
+  dailyXp: 0,
+  dailyXpDate: undefined,
   password: hashPassword(ownerAdminPassword),
 };
 
@@ -533,12 +548,16 @@ export async function getDashboardAccount(): Promise<DashboardAccount> {
     : 0;
   const weakTopics = account.diagnosticCompleted ? (account.diagnosticWeakTopics ?? []) : [];
   const hasProgress = examAttempts.length > 0;
+  const today = new Date().toISOString().slice(0, 10);
+  const dailyXp = account.dailyXpDate === today ? (account.dailyXp ?? 0) : 0;
 
   return {
     authenticated: Boolean(activeAccount),
     account: toPublicAccount(account),
     readiness: averageAccuracy,
     completedLessons,
+    dailyXp,
+    dailyGoalTarget: DAILY_XP_GOAL,
     weeklyGoal: 5,
     // Actual time-on-page isn't tracked yet, so this is an estimate (15
     // minutes per completed lesson) rather than a measured value.
@@ -738,6 +757,9 @@ export async function registerAccount(input: {
     diagnosticTopicScores: undefined,
     diagnosticWeakTopics: undefined,
     mentorStyle: "friendly",
+    xp: 0,
+    dailyXp: 0,
+    dailyXpDate: undefined,
     password: hashPassword(input.password),
   };
 
@@ -1086,6 +1108,72 @@ function createUniqueParentInviteCode() {
   return inviteCode;
 }
 
+export type XpAwardResult = {
+  xpAwarded: number;
+  totalXp: number;
+  level: number;
+  previousLevel: number;
+  leveledUp: boolean;
+  dailyXp: number;
+  dailyGoalTarget: number;
+  dailyGoalJustCompleted: boolean;
+};
+
+async function awardXp(account: StoredAccount, amount: number): Promise<XpAwardResult> {
+  const today = new Date().toISOString().slice(0, 10);
+  const previousXp = account.xp ?? 0;
+  const previousLevel = getLevelForXp(previousXp);
+  const dailyXpBefore = account.dailyXpDate === today ? (account.dailyXp ?? 0) : 0;
+
+  if (amount <= 0) {
+    return {
+      xpAwarded: 0,
+      totalXp: previousXp,
+      level: previousLevel,
+      previousLevel,
+      leveledUp: false,
+      dailyXp: dailyXpBefore,
+      dailyGoalTarget: DAILY_XP_GOAL,
+      dailyGoalJustCompleted: false,
+    };
+  }
+
+  const totalXp = previousXp + amount;
+  const dailyXp = dailyXpBefore + amount;
+  const level = getLevelForXp(totalXp);
+
+  account.xp = totalXp;
+  account.dailyXp = dailyXp;
+  account.dailyXpDate = today;
+
+  if (isSupabaseConfigured()) {
+    await updateXp(account.id, { xp: totalXp, dailyXp, dailyXpDate: today });
+  } else {
+    accounts.set(account.email, account);
+  }
+
+  return {
+    xpAwarded: amount,
+    totalXp,
+    level,
+    previousLevel,
+    leveledUp: level > previousLevel,
+    dailyXp,
+    dailyGoalTarget: DAILY_XP_GOAL,
+    dailyGoalJustCompleted: dailyXp >= DAILY_XP_GOAL && dailyXpBefore < DAILY_XP_GOAL,
+  };
+}
+
+export async function awardXpToCurrentAccount(amount: number): Promise<XpAwardResult> {
+  const account = await getActiveStoredAccount();
+
+  if (!account) {
+    throw new Error("AUTH_REQUIRED");
+  }
+
+  return awardXp(account, amount);
+}
+
 export async function saveLessonCompletion(input: {
   subjectId: string;
   topicId: string;
@@ -1099,6 +1187,9 @@ export async function saveLessonCompletion(input: {
   }
 
   const lessonId = `${input.subjectId}:${input.topicId}`;
+  const isNewCompletion = !(account.lessonCompletions ?? []).some(
+    (item) => item.lessonId === lessonId,
+  );
   const completion: LessonCompletion = {
     lessonId,
     subjectId: input.subjectId,
@@ -1114,12 +1205,13 @@ export async function saveLessonCompletion(input: {
 
   if (isSupabaseConfigured()) {
     await updateLessonCompletions(account.id, updated);
-    return completion;
+  } else {
+    account.lessonCompletions = updated;
+    accounts.set(account.email, account);
   }
 
-  account.lessonCompletions = updated;
-  accounts.set(account.email, account);
-  return completion;
+  const xpResult = isNewCompletion ? await awardXp(account, XP_REWARDS.lesson) : undefined;
+  return { completion, xpResult };
 }
 
 export async function saveExamAttempt(attempt: Omit<ExamAttempt, "id" | "createdAt">) {
@@ -1134,12 +1226,29 @@ export async function saveExamAttempt(attempt: Omit<ExamAttempt, "id" | "created
     id: `exam-${Date.now()}`,
     createdAt: new Date().toISOString(),
   };
-  account.examAttempts = [saved, ...(account.examAttempts ?? [])].slice(0, 20);
-  accounts.set(account.email, account);
-  return saved;
+  const updated = [saved, ...(account.examAttempts ?? [])].slice(0, 20);
+
+  if (isSupabaseConfigured()) {
+    await updateExamAttempts(account.id, updated);
+  } else {
+    account.examAttempts = updated;
+    accounts.set(account.email, account);
+  }
+
+  const xpForKind =
+    attempt.kind === "weekly"
+      ? XP_REWARDS.weeklyTest
+      : attempt.kind === "monthly"
+        ? XP_REWARDS.monthlyTest
+        : XP_REWARDS.topicTest;
+  const xpResult = await awardXp(account, xpForKind);
+  return { attempt: saved, xpResult };
 }
 
-export async function saveWeakTopicProgress(progress: WeakTopicProgress) {
+export async function saveWeakTopicProgress(
+  progress: WeakTopicProgress,
+  correctAnswers = 0,
+) {
   const account = await getActiveStoredAccount();
 
   if (!account) {
@@ -1152,7 +1261,10 @@ export async function saveWeakTopicProgress(progress: WeakTopicProgress) {
     ...previous.filter((item) => item.topicId !== progress.topicId),
   ];
   accounts.set(account.email, account);
-  return progress;
+
+  const xpResult =
+    correctAnswers > 0 ? await awardXp(account, correctAnswers * XP_REWARDS.task) : undefined;
+  return { progress, xpResult };
 }
 
 export async function saveSolutionExplanationLog(

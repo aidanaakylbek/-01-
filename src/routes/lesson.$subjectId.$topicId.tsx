@@ -1,6 +1,13 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { GameCard, GameLayout, MascotCoach, ProgressBar } from "@/components/gamified-platform";
+import {
+  GameCard,
+  GameLayout,
+  MascotCoach,
+  ProgressBar,
+  XpRewardBanner,
+  notifyXpUpdated,
+} from "@/components/gamified-platform";
 import { getTopic } from "@/data/subjects";
 import { useLanguage } from "@/hooks/use-language";
 import { useDocumentTitle } from "@/hooks/use-document-title";
@@ -29,6 +36,9 @@ function TopicLessonPage() {
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [submitted, setSubmitted] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [xpResult, setXpResult] = useState<
+    Awaited<ReturnType<typeof saveLessonCompletion>>["xpResult"]
+  >();
   const score = useMemo(
     () =>
       lesson.quiz.reduce(
@@ -46,7 +56,7 @@ function TopicLessonPage() {
   const handleSubmit = async () => {
     setSaving(true);
     try {
-      await saveLessonCompletion({
+      const result = await saveLessonCompletion({
         data: {
           subjectId: subject.id,
           topicId: topic.id,
@@ -54,6 +64,8 @@ function TopicLessonPage() {
           totalQuestions: lesson.quiz.length,
         },
       });
+      setXpResult(result.xpResult);
+      notifyXpUpdated();
     } finally {
       setSaving(false);
       setSubmitted(true);
@@ -170,6 +182,7 @@ function TopicLessonPage() {
                   <p className="text-3xl font-black">
                     {score}/{lesson.quiz.length} {c.correct}
                   </p>
+                  <XpRewardBanner xpResult={xpResult} />
                 </div>
               ) : null}
               <div className="mt-5 space-y-4">

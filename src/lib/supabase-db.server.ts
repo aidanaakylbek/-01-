@@ -43,6 +43,10 @@ type SupabaseUserRow = {
   phone_e164?: string | null;
   telegram_verified_at?: string | null;
   lesson_completions?: SupabaseLessonCompletion[] | null;
+  xp?: number | null;
+  daily_xp?: number | null;
+  daily_xp_date?: string | null;
+  exam_attempts?: SupabaseExamAttempt[] | null;
 };
 
 export type SupabaseLessonCompletion = {
@@ -52,6 +56,20 @@ export type SupabaseLessonCompletion = {
   score: number;
   totalQuestions: number;
   completedAt: string;
+};
+
+export type SupabaseExamAttempt = {
+  id: string;
+  createdAt: string;
+  kind?: "topic" | "weekly" | "monthly";
+  examTrack: "NIS" | "BIL" | "MIXED";
+  totalQuestions: number;
+  correctAnswers: number;
+  percent: number;
+  totalTimeSeconds: number;
+  slowQuestionIds: string[];
+  fastQuestionIds: string[];
+  questions: unknown[];
 };
 
 type SupabaseParentRow = {
@@ -455,6 +473,26 @@ export async function updateLessonCompletions(
   });
 }
 
+export async function updateXp(
+  userId: string,
+  input: { xp: number; dailyXp: number; dailyXpDate: string },
+) {
+  await updateRows<SupabaseUserRow>("users", `id=eq.${encodeURIComponent(userId)}`, {
+    xp: input.xp,
+    daily_xp: input.dailyXp,
+    daily_xp_date: input.dailyXpDate,
+  });
+}
+
+export async function updateExamAttempts(
+  userId: string,
+  examAttempts: SupabaseExamAttempt[],
+) {
+  await updateRows<SupabaseUserRow>("users", `id=eq.${encodeURIComponent(userId)}`, {
+    exam_attempts: examAttempts,
+  });
+}
+
 export async function createPaymentRequestRow(request: PaymentRequest) {
   const [row] = await insertRows<SupabasePaymentRequestRow>("payment_requests", [
     {
@@ -615,6 +653,10 @@ function userToAccount(user: SupabaseUserRow, parent?: SupabaseParentRow | null)
     diagnosticWeakTopics: user.diagnostic_weak_topics ?? undefined,
     mentorStyle: user.mentor_style ?? "friendly",
     lessonCompletions: user.lesson_completions ?? [],
+    xp: user.xp ?? 0,
+    dailyXp: user.daily_xp ?? 0,
+    dailyXpDate: user.daily_xp_date ?? undefined,
+    examAttempts: (user.exam_attempts as StoredAccount["examAttempts"]) ?? [],
     password: user.password_hash,
   };
 }

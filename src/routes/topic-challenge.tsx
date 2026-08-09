@@ -1,6 +1,13 @@
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { GameCard, GameLayout, MascotCoach, ProgressBar } from "@/components/gamified-platform";
+import {
+  GameCard,
+  GameLayout,
+  MascotCoach,
+  ProgressBar,
+  XpRewardBanner,
+  notifyXpUpdated,
+} from "@/components/gamified-platform";
 import { challengeLevels, challengeTopics } from "@/data/topic-challenge";
 import { useLanguage } from "@/hooks/use-language";
 import { useDocumentTitle } from "@/hooks/use-document-title";
@@ -24,6 +31,9 @@ function TopicChallenge() {
   const [level, setLevel] = useState(1);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [feedback, setFeedback] = useState("");
+  const [xpResult, setXpResult] = useState<
+    Awaited<ReturnType<typeof saveWeakTopicProgress>>["xpResult"]
+  >();
   const activeTopic = challengeTopics.find((topic) => topic.id === topicId) ?? challengeTopics[0];
   const activeLevel = challengeLevels.find((item) => item.level === level) ?? challengeLevels[0];
   const unlockedLevel = Math.max(level, 1);
@@ -48,10 +58,11 @@ function TopicChallenge() {
 
     setFeedback(nextFeedback);
 
-    await saveWeakTopicProgress({
+    const saved = await saveWeakTopicProgress({
       data: {
         topicId,
         currentLevel: nextLevel,
+        correctAnswers: result.correct,
         levels: challengeLevels.map((item) => ({
           level: item.level,
           bestPercent: item.level === activeLevel.level ? result.percent : 0,
@@ -61,6 +72,8 @@ function TopicChallenge() {
         })),
       },
     });
+    setXpResult(saved.xpResult);
+    notifyXpUpdated();
 
     if (passed) {
       setLevel(nextLevel);
@@ -239,6 +252,7 @@ function TopicChallenge() {
                   {result.percent}% · {result.correct}/{activeLevel.questions.length}
                 </p>
                 <p className="mt-2 text-lg font-semibold text-[#1E1B4B]">{feedback}</p>
+                <XpRewardBanner xpResult={xpResult} />
               </div>
             ) : null}
           </div>

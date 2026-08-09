@@ -107,6 +107,12 @@ alter table public.users
 alter table public.users
   add column if not exists lesson_completions jsonb not null default '[]'::jsonb;
 
+alter table public.users
+  add column if not exists xp integer not null default 0,
+  add column if not exists daily_xp integer not null default 0,
+  add column if not exists daily_xp_date text,
+  add column if not exists exam_attempts jsonb not null default '[]'::jsonb;
+
 alter table public.telegram_verification_tokens
   add column if not exists code text;
 

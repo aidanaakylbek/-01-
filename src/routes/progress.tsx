@@ -317,10 +317,10 @@ function ProgressRightRail({ c, dashboard }: { c: ProgressCopy; dashboard: Dashb
 }
 
 function TodayGoal({ c, dashboard }: { c: ProgressCopy; dashboard: DashboardAccount }) {
-  const completed = dashboard.completedLessons;
-  const target = Math.max(1, dashboard.weeklyGoal || 3);
-  const progress = Math.min(100, Math.round((completed / target) * 100));
-  const remaining = Math.max(0, target - completed);
+  const earned = dashboard.dailyXp;
+  const target = Math.max(1, dashboard.dailyGoalTarget || 20);
+  const progress = Math.min(100, Math.round((earned / target) * 100));
+  const remaining = Math.max(0, target - earned);
   const completedGoal = remaining === 0;
 
   return (
@@ -331,7 +331,7 @@ function TodayGoal({ c, dashboard }: { c: ProgressCopy; dashboard: DashboardAcco
             {c.todayGoal}
           </p>
           <h3 className="mt-1 text-2xl font-black">
-            {completed} / {target} {c.lessonUnit}
+            {earned} / {target} XP
           </h3>
         </div>
         <div
@@ -340,12 +340,12 @@ function TodayGoal({ c, dashboard }: { c: ProgressCopy; dashboard: DashboardAcco
           }`}
           title={completedGoal ? c.rewardUnlocked : c.rewardLocked}
         >
-          🎁
+          ⭐
         </div>
       </div>
       <ProgressBar value={progress} />
       <p className="mt-3 text-sm font-bold text-[#6B5E8F]">
-        {completedGoal ? c.rewardUnlocked : c.remainingLessons(remaining)}
+        {completedGoal ? c.rewardUnlocked : c.remainingXp(remaining)}
       </p>
     </GameCard>
   );
@@ -483,9 +483,10 @@ function getCopy(language: "EN" | "KZ" | "RU") {
       recentAchievements: "Последние достижения",
       repeat: "Повторить",
       remainingLessons: (count: number) => `Осталось уроков: ${count}`,
+      remainingXp: (count: number) => `Осталось: ${count} XP`,
       review: "Повторить",
-      rewardLocked: "Подарок откроется после цели",
-      rewardUnlocked: "Подарок открыт!",
+      rewardLocked: "Цель дня ещё не выполнена",
+      rewardUnlocked: "🎉 Цель дня выполнена!",
       startDiagnostic: "Начать диагностику",
       startLesson: "Начать урок",
       studyTime: "Время",
@@ -520,9 +521,10 @@ function getCopy(language: "EN" | "KZ" | "RU") {
     recentAchievements: "Соңғы жетістіктер",
     repeat: "Қайталау",
     remainingLessons: (count: number) => `Тағы ${count} сабақ қалды`,
+    remainingXp: (count: number) => `Тағы ${count} XP қалды`,
     review: "Қайталау",
-    rewardLocked: "Сыйлық мақсат орындалғанда ашылады",
-    rewardUnlocked: "Сыйлық ашылды!",
+    rewardLocked: "Күндік мақсат әлі орындалмады",
+    rewardUnlocked: "🎉 Күндік мақсат орындалды!",
     startDiagnostic: "Диагностиканы бастау",
     startLesson: "Сабақты бастау",
     studyTime: "Оқу уақыты",

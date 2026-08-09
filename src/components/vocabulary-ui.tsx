@@ -914,7 +914,7 @@ export function VocabularyTestResultCard({ language, result }: { language: Vocab
         <div className="mb-5 rounded-[28px] border-2 border-[#FACC15] bg-[#FFFBEB] p-5 text-[#1E1B4B]">
           <p className="text-3xl font-black">🎉 Great job!</p>
           <p className="mt-2 text-lg font-bold">
-            You have completed this topic. Rewards: +40 XP, +20 Coins, 🏆 Topic Completed.
+            You have completed this topic. Rewards: +{result.attempt.xpEarned} XP, 🏆 Topic Completed.
           </p>
           <Link
             to="/vocabulary"
