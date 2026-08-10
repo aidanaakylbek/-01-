@@ -49,7 +49,7 @@ export type VocabularyGameType =
   | "speed_round"
   | "sentence_builder";
 
-const FIRST_A1_TOPIC_SLUG = "greetings-polite-words";
+const FIRST_A1_TOPIC_SLUG = "greetings-and-people";
 
 export type VocabularyTopic = {
   id: string;

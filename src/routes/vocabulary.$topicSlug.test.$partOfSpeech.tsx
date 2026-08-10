@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 
-import { GameCard, GameLayout } from "@/components/gamified-platform";
+import { GameCard, GameLayout, notifyXpUpdated } from "@/components/gamified-platform";
 import { VocabularyTestResultCard, VocabularyTestRunner } from "@/components/vocabulary-ui";
 import { useLanguage } from "@/hooks/use-language";
 import { useDocumentTitle } from "@/hooks/use-document-title";
@@ -57,6 +57,7 @@ function VocabularySectionTestPage() {
     setSaving(true);
     try {
       setResult(await completeVocabularyTestFn({ data: { attemptId: attempt.id } }));
+      notifyXpUpdated();
     } finally {
       setSaving(false);
     }

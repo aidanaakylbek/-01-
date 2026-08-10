@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 
-import { GameCard, GameLayout } from "@/components/gamified-platform";
+import { GameCard, GameLayout, notifyXpUpdated } from "@/components/gamified-platform";
 import { VocabularyGamesGrid, vocabularyCopy } from "@/components/vocabulary-ui";
 import { useLanguage } from "@/hooks/use-language";
 import { useDocumentTitle } from "@/hooks/use-document-title";
@@ -14,11 +14,11 @@ import type { VocabularyGameSession, VocabularyGameType, VocabularyLanguage } fr
 
 export const Route = createFileRoute("/vocabulary/games")({
   validateSearch: (search: Record<string, unknown>) => ({
-    topic: typeof search.topic === "string" && search.topic.trim() ? search.topic : "greetings-polite-words",
+    topic: typeof search.topic === "string" && search.topic.trim() ? search.topic : "greetings-and-people",
   }),
   loader: async ({ location }) => {
     const search = location.search as { topic?: string };
-    return getVocabularyGamesConfigFn({ data: { topicSlug: search.topic ?? "greetings-polite-words" } });
+    return getVocabularyGamesConfigFn({ data: { topicSlug: search.topic ?? "greetings-and-people" } });
   },
   head: () => ({ meta: [{ title: "Ойындар — AI-Sana" }] }),
   component: VocabularyGamesPage,
@@ -45,6 +45,7 @@ function VocabularyGamesPage() {
         hintsUsed: session.hintsUsed,
       },
     }));
+    notifyXpUpdated();
   };
 
   return (

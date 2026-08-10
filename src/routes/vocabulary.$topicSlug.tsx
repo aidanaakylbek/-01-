@@ -1,7 +1,7 @@
 import { createFileRoute, Link, Outlet, notFound, useRouterState } from "@tanstack/react-router";
 import { useState } from "react";
 
-import { GameCard, GameLayout, ProgressBar } from "@/components/gamified-platform";
+import { GameCard, GameLayout, ProgressBar, notifyXpUpdated } from "@/components/gamified-platform";
 import {
   VocabularyEmptyState,
   VocabularyAIPanel,
@@ -77,6 +77,7 @@ function VocabularyTopicPage() {
     setSaving(true);
     try {
       await saveVocabularyProgressFn({ data: { wordId: activeWord.id, action } });
+      notifyXpUpdated();
       await reload();
       moveNext();
     } finally {

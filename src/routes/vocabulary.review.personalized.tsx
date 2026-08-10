@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 
-import { GameCard, GameLayout } from "@/components/gamified-platform";
+import { GameCard, GameLayout, notifyXpUpdated } from "@/components/gamified-platform";
 import { VocabularyAudioButton, vocabularyCopy } from "@/components/vocabulary-ui";
 import { useLanguage } from "@/hooks/use-language";
 import { useDocumentTitle } from "@/hooks/use-document-title";
@@ -31,6 +31,7 @@ function PersonalizedReviewPage() {
     setSaving(wordId);
     try {
       await saveVocabularyProgressFn({ data: { wordId, action } });
+      notifyXpUpdated();
       setReviewed((current) => ({ ...current, [wordId]: action }));
     } finally {
       setSaving(undefined);
