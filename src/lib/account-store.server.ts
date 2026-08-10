@@ -320,55 +320,89 @@ const demoAccount: StoredAccount = {
   password: hashPassword("demo123"),
 };
 
-const ownerAdminEmail = normalizeEmail(process.env.ADMIN_EMAIL ?? "admin@ai-sana.kz");
-const ownerAdminPassword = process.env.ADMIN_PASSWORD ?? "AiSanaAdmin2026!";
-
-const ownerAdminAccount: StoredAccount = {
-  id: "owner-admin",
-  name: process.env.ADMIN_NAME ?? "AI-Sana Admin",
-  email: ownerAdminEmail,
-  grade: "admin",
-  initials: "AA",
-  role: "admin",
-  parentName: "AI-Sana",
-  parentPhone: "+77000000000",
-  parentPhoneVerified: true,
-  parentTelegramChatId: undefined,
-  parentTelegramConnected: true,
-  parentTelegramVerifiedAt: new Date("2026-01-01T00:00:00.000Z").toISOString(),
-  parentInviteCode: "owner-admin",
-  parentLastReportSentAt: undefined,
-  parentWhatsApp: "+77000000000",
-  parentWhatsAppVerified: true,
-  telegramParentVerified: true,
-  subscriptionStatus: "active",
-  subscriptionPlan: "yearly",
-  subscriptionStartedAt: new Date("2026-01-01T00:00:00.000Z").toISOString(),
-  subscriptionExpiresAt: new Date("2099-12-31T23:59:59.999Z").toISOString(),
-  diagnosticCompleted: true,
-  diagnosticCompletedAt: new Date("2026-01-01T00:00:00.000Z").toISOString(),
-  diagnosticVersion: "admin-baseline",
-  diagnosticScore: 100,
-  diagnosticAssignedLevel: "Жоғары",
-  diagnosticAttempts: [],
-  diagnosticAiRecommendation: "Админ аккаунты толық қол жеткізе алады.",
-  diagnosticRecommendedStartingLesson: "Оқу жолы",
-  diagnosticStartedAt: new Date("2026-01-01T00:00:00.000Z").toISOString(),
-  diagnosticStrongTopics: [],
-  diagnosticSubjectLevels: {},
-  diagnosticSubjectScores: {},
-  diagnosticTopicScores: {},
-  diagnosticWeakTopics: [],
-  mentorStyle: "friendly",
-  xp: 0,
-  dailyXp: 0,
-  dailyXpDate: undefined,
-  password: hashPassword(ownerAdminPassword),
+type OwnerAdminConfig = {
+  id: string;
+  email: string;
+  password: string;
+  name: string;
 };
+
+function buildOwnerAdminAccount(config: OwnerAdminConfig): StoredAccount {
+  return {
+    id: config.id,
+    name: config.name,
+    email: config.email,
+    grade: "admin",
+    initials: "AA",
+    role: "admin",
+    parentName: "AI-Sana",
+    parentPhone: "+77000000000",
+    parentPhoneVerified: true,
+    parentTelegramChatId: undefined,
+    parentTelegramConnected: true,
+    parentTelegramVerifiedAt: new Date("2026-01-01T00:00:00.000Z").toISOString(),
+    parentInviteCode: config.id,
+    parentLastReportSentAt: undefined,
+    parentWhatsApp: "+77000000000",
+    parentWhatsAppVerified: true,
+    telegramParentVerified: true,
+    subscriptionStatus: "active",
+    subscriptionPlan: "yearly",
+    subscriptionStartedAt: new Date("2026-01-01T00:00:00.000Z").toISOString(),
+    subscriptionExpiresAt: new Date("2099-12-31T23:59:59.999Z").toISOString(),
+    diagnosticCompleted: true,
+    diagnosticCompletedAt: new Date("2026-01-01T00:00:00.000Z").toISOString(),
+    diagnosticVersion: "admin-baseline",
+    diagnosticScore: 100,
+    diagnosticAssignedLevel: "Жоғары",
+    diagnosticAttempts: [],
+    diagnosticAiRecommendation: "Админ аккаунты толық қол жеткізе алады.",
+    diagnosticRecommendedStartingLesson: "Оқу жолы",
+    diagnosticStartedAt: new Date("2026-01-01T00:00:00.000Z").toISOString(),
+    diagnosticStrongTopics: [],
+    diagnosticSubjectLevels: {},
+    diagnosticSubjectScores: {},
+    diagnosticTopicScores: {},
+    diagnosticWeakTopics: [],
+    mentorStyle: "friendly",
+    xp: 0,
+    dailyXp: 0,
+    dailyXpDate: undefined,
+    password: hashPassword(config.password),
+  };
+}
+
+const ownerAdminConfigs: OwnerAdminConfig[] = [
+  {
+    id: "owner-admin",
+    email: normalizeEmail(process.env.ADMIN_EMAIL ?? "admin@ai-sana.kz"),
+    password: process.env.ADMIN_PASSWORD ?? "AiSanaAdmin2026!",
+    name: process.env.ADMIN_NAME ?? "AI-Sana Admin",
+  },
+  ...(process.env.ADMIN2_EMAIL
+    ? [
+        {
+          id: "owner-admin-2",
+          email: normalizeEmail(process.env.ADMIN2_EMAIL),
+          password: process.env.ADMIN2_PASSWORD ?? "AiSanaAdmin2026-Two!",
+          name: process.env.ADMIN2_NAME ?? "AI-Sana Admin 2",
+        },
+      ]
+    : []),
+];
+
+const ownerAdmins = ownerAdminConfigs.map((config) => ({
+  account: buildOwnerAdminAccount(config),
+  rawPassword: config.password,
+}));
+
+function findOwnerAdmin(email: string) {
+  return ownerAdmins.find((admin) => admin.account.email === email);
+}
 
 const accounts = new Map<string, StoredAccount>([
   [demoAccount.email, demoAccount],
-  [ownerAdminAccount.email, ownerAdminAccount],
+  ...ownerAdmins.map((admin): [string, StoredAccount] => [admin.account.email, admin.account]),
 ]);
 const paymentRequests = new Map<string, PaymentRequest>();
 const parentWhatsAppVerifications = new Map<string, ParentWhatsAppVerification>();
@@ -439,8 +473,9 @@ async function getActiveStoredAccount() {
     return null;
   }
 
-  if (email === ownerAdminEmail) {
-    return ownerAdminAccount;
+  const ownerAdmin = findOwnerAdmin(email);
+  if (ownerAdmin) {
+    return ownerAdmin.account;
   }
 
   if (isSupabaseConfigured()) {
@@ -1362,9 +1397,10 @@ function normalizePhone(phone: string) {
 export async function loginAccount(input: { email: string; password: string; remember?: boolean }) {
   const email = input.email.trim().toLowerCase();
 
-  if (email === ownerAdminEmail && timingSafeEqualStrings(input.password, ownerAdminPassword)) {
-    setSessionEmail(ownerAdminAccount.email, Boolean(input.remember));
-    return toPublicAccount(ownerAdminAccount);
+  const ownerAdmin = findOwnerAdmin(email);
+  if (ownerAdmin && timingSafeEqualStrings(input.password, ownerAdmin.rawPassword)) {
+    setSessionEmail(ownerAdmin.account.email, Boolean(input.remember));
+    return toPublicAccount(ownerAdmin.account);
   }
 
   if (isSupabaseConfigured()) {
